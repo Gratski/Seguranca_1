@@ -2,7 +2,6 @@ package server;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -11,7 +10,7 @@ import common.Request;
 
 public class MyWhatsServer {
 	
-	public static void main(String[] args) throws NumberFormatException, IOException, ClassNotFoundException {
+	public static void main(String[] args) throws NumberFormatException, IOException {
 
 		String port = args[0];
 		
@@ -25,11 +24,7 @@ public class MyWhatsServer {
 			Socket clientSocket = server.accept();
 			System.out.println("Connection accepted!");
 			
-			ObjectInputStream in = new ObjectInputStream(clientSocket.getInputStream());
-			
-			Request clientRequest = (Request) in.readObject();
-			in.close();
-			RequestHandler requestHandler = new RequestHandler(clientSocket, clientRequest);
+			RequestHandler requestHandler = new RequestHandler(clientSocket);
 			requestHandler.run();
 			
 			
