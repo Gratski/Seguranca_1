@@ -1,15 +1,15 @@
-package factories;
+package builders;
 
 import java.util.Scanner;
 
 import common.NetworkMessage;
 import common.User;
 
-public class RequestFactory {
+public class RequestBuilder {
 
 	private String[]args;
 	
-	public RequestFactory(String[] args){
+	public RequestBuilder(String[] args){
 		this.args = args;
 	}
 	
@@ -35,12 +35,12 @@ public class RequestFactory {
 		{
 			Scanner sc = new Scanner(System.in);
 			String pwd = sc.nextLine();
-			user.setPassword(pwd);
+			//user.setPassword(pwd);
 		}
 		//se indicou pass
 		else{
 			i++;
-			user.setPassword(args[i++]);
+			//user.setPassword(args[i++]);
 		}
 		request.setUser(user);
 		
