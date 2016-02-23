@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 public class NetworkMessage implements Serializable{
 
-	private String ip;
-	private int port;
 	private String type;
 	private User user;
 	
