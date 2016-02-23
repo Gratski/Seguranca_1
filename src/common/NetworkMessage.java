@@ -4,8 +4,6 @@ import java.io.Serializable;
 
 public class NetworkMessage implements Serializable{
 
-	private String ip;
-	private int port;
 	private String type;
 	private User user;
 	
@@ -28,6 +26,10 @@ public class NetworkMessage implements Serializable{
 
 	public void setType(String type) {
 		this.type = type;
+	}
+	
+	public String getType() {
+		return this.type;
 	}
 
 }
