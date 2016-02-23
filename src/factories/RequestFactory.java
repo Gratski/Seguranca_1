@@ -2,7 +2,7 @@ package factories;
 
 import java.util.Scanner;
 
-import common.Request;
+import common.NetworkMessage;
 import common.User;
 
 public class RequestFactory {
@@ -13,12 +13,12 @@ public class RequestFactory {
 		this.args = args;
 	}
 	
-	public Request make(){
+	public NetworkMessage make(){
 		
 		if(args.length < 4)
 			return null;
 		
-		Request request = new Request();
+		NetworkMessage request = new NetworkMessage();
 		
 		//ip e port
 		String[]address = args[1].split(":");
@@ -50,7 +50,7 @@ public class RequestFactory {
 		case "-m":
 			i++;
 			request.setType("m");
-			request.setMessage(args[i++], args[i]);
+			// request.setMessage(args[i++], args[i]);
 			break;
 		case "-r":
 			break;
