@@ -99,8 +99,22 @@ public class UsersProxy implements Proxy{
 	 * @require
 	 * 		!exists(user)
 	 */
-	public void insert(User user){
-		this.users.put(user.getName(), user);
+	public boolean insert(User user){
+		StringBuilder sb = new StringBuilder();
+		sb.append(user.getName());
+		sb.append(":");
+		sb.append(user.getPassword());
+		try{
+			
+			//escreve em ficheiro de users
+			this.bw.write(sb.toString());
+			this.users.put(user.getName(), user);
+			
+		}catch(Exception e){
+			return false;
+		}
+		
+		return this.users.containsKey(user.getName());
 	}
 	
 	@Override
