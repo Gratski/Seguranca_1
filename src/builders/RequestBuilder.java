@@ -24,8 +24,8 @@ public class RequestBuilder {
 		String[]address = args[1].split(":");
 		if( address.length < 2 )
 			return null;
-		request.setIP(address[0]);
-		request.setPort(Integer.parseInt(address[1]));
+		//request.setIP(address[0]);
+		//request.setPort(Integer.parseInt(address[1]));
 		
 		//user
 		User user = new User(this.args[0]);

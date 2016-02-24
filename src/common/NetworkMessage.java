@@ -7,17 +7,8 @@ public class NetworkMessage implements Serializable{
 	private String type;
 	private User user;
 	
-	
 	public NetworkMessage(){
 		this.user = null;
-	}
-	
-	public void setIP(String ip) {
-		this.ip = ip;
-	}
-
-	public void setPort(int port) {
-		this.port = port;
 	}
 
 	public void setUser(User user) {
