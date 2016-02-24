@@ -1,13 +1,13 @@
 package server;
 
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import common.Message;
 import common.Reply;
 import common.Request;
 import helpers.Connection;
+import proxies.MessagesProxy;
 
 public class RequestHandler extends Thread{
 	
@@ -30,11 +30,29 @@ public class RequestHandler extends Thread{
 			e2.printStackTrace();
 		}
 		
+		//autenticar user aqui
 		
-		
+		//request type
+		boolean valid = true;
+		String errorMessage = null;
 		switch (clientRequest.getType()) {
 		case "-m":
 			System.out.println("Handle send message");
+			Message msg = clientRequest.getMessage();
+			MessagesProxy msgProxy = null;
+			try{
+				msgProxy = MessagesProxy.getInstance();
+			}catch(IOException e){
+				errorMessage = "Erro ao obter instance de MsgsProxy";
+				valid = false;
+				break;
+			}
+			try{
+				valid = msgProxy.addMessage(msg.getFrom(), msg.getTo(), "-u", msg.getBody());
+			}catch(Exception e){
+				errorMessage = "Erro ao gravar mensagem";
+				valid = false;
+			}			
 			break;
 			
 		case "-f":
@@ -54,13 +72,17 @@ public class RequestHandler extends Thread{
 			break;
 			
 		default:
+			System.out.println("Request invalido");
 			break;
 		}
 		
-		
-		
 		Reply reply = new Reply();
-		reply.setMessage("Reply: Message was handled");
+		if(valid){
+			reply.setStatus(200);
+		}else{
+			reply.setStatus(500);
+			reply.setMessage(errorMessage);
+		}
 		
 		try {
 			this.connection.getOutputStream().writeObject(reply);

@@ -30,6 +30,8 @@ public class Reply extends NetworkMessage implements Serializable {
 	public String getMessage(){
 		return this.message;
 	}
-	
+	public int getStatus(){
+		return this.status;
+	}
 	
 }

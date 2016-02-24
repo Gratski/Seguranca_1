@@ -14,5 +14,23 @@ public class Message implements Serializable{
 		this.body = body;
 		this.timestamp = new Date();
 	}
+
+	public String getFrom() {
+		return from;
+	}
+
+	public String getTo() {
+		return to;
+	}
+
+	public String getBody() {
+		return body;
+	}
+
+	public Date getTimestamp() {
+		return timestamp;
+	}
+		
+	
 	
 }

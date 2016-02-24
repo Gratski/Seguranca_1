@@ -11,10 +11,6 @@ import common.Request;
 public class MyWhatsServer {
 	
 	public static void main(String[] args) throws NumberFormatException, IOException {
-
-		
-		
-		// validate port
 		
 		ServerSocket server = new ServerSocket(8080);
 		server.setReuseAddress(true);
@@ -27,8 +23,6 @@ public class MyWhatsServer {
 			
 			RequestHandler requestHandler = new RequestHandler(clientSocket);
 			requestHandler.run();
-			
-			
 		}
 		
 		
