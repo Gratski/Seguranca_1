@@ -22,13 +22,14 @@ public class RequestHandler extends Thread{
 		
 		Request clientRequest = null;
 		try {
+			System.out.println("receiving request");
 			clientRequest = (Request) this.connection.getInputStream().readObject();
-			
 		} catch (ClassNotFoundException e2) {
 			e2.printStackTrace();
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
+		
 		
 		
 		switch (clientRequest.getType()) {
@@ -71,8 +72,6 @@ public class RequestHandler extends Thread{
 			this.connection.destroy();
 		} catch (IOException e1) {
 			e1.printStackTrace();
-		}
-		
-		
+		}	
 	}
 }

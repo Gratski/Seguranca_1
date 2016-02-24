@@ -17,7 +17,7 @@ public class MyWhats {
 			Connection connection = new Connection(new Socket("127.0.0.1", 8080));
 			Request request = new Request();
 			request.setType("-m");
-			connection.getOutputStream().writeObject("HI there!");
+			connection.getOutputStream().writeObject(request);
 			Reply reply = (Reply) connection.getInputStream().readObject();
 			System.out.println(reply.getMessage());
 			connection.destroy();
