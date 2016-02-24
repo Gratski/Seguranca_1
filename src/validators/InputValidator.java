@@ -32,12 +32,38 @@ public class InputValidator {
 		Request request = null;
 		switch(flag){
 		case "-a":
+			try{
+				pos++;
+				request = new Request();
+				request.setUser(user);
+				request.setGroup(input[pos++]);
+				request.setContact(new User(input[pos]));
+				request.setType(flag);
+			}catch(ArrayIndexOutOfBoundsException e){
+				break;
+			}
 			break;
 		case "-d":
+			try{
+				pos++;
+				request = new Request();
+				request.setGroup(input[pos++]);
+				request.setContact(new User(input[pos]));
+				request.setType(flag);
+				request.setUser(user);
+			}catch(ArrayIndexOutOfBoundsException e){
+				break;
+			}
 			break;
 		case "-f":
 			break;
 		case "-r":
+			request = new Request();
+			request.setType(flag);
+			request.setUser(user);
+			//se eh de um contact em especifico
+			if( input.length == (pos + 2) )
+				request.setContact(new User(input[++pos]));
 			break;
 		case "-m":
 			try{

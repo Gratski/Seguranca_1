@@ -2,3 +2,6 @@
 *.db
 .DS_Store
 /bin/
+MESSAGES
+USERS
+GROUPS
