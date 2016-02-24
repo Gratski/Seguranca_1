@@ -1,17 +1,14 @@
 package common;
 
+import java.io.File;
 import java.io.Serializable;
 
 public class Request extends NetworkMessage implements Serializable{
 	
 	private Message message;
 	private User contact;
-	// private File file;
+	private File file;
 	private String group;
-	
-	public Request() {
-		super();
-	}
 
 	public Message getMessage() {
 		return message;
@@ -19,6 +16,12 @@ public class Request extends NetworkMessage implements Serializable{
 
 	public void setMessage(Message message) {
 		this.message = message;
+	}
+	public void setFile(File f){
+		this.file = f;
+	}
+	public File getFile(){
+		return this.file;
 	}
 
 	public User getContact() {

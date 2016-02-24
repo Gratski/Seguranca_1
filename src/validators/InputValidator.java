@@ -1,5 +1,8 @@
 package validators;
 
+import java.io.File;
+import java.io.IOException;
+
 import builders.UserBuilder;
 import common.Message;
 import common.Request;
@@ -56,6 +59,18 @@ public class InputValidator {
 			}
 			break;
 		case "-f":
+			try{
+				File file = new File(input[++pos]);
+				request = new Request();
+				request.setFile(file);
+				request.setType(flag);
+				request.setUser(user);
+			}catch(ArrayIndexOutOfBoundsException e){
+				break;
+			}catch(Exception e){
+				System.out.println("Erro ao abrir ficheiro");
+				break;
+			}
 			break;
 		case "-r":
 			request = new Request();

@@ -1,8 +1,9 @@
 package client;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
 import java.net.Socket;
 
-import common.Message;
 import common.Reply;
 import common.Request;
 import helpers.Connection;
@@ -27,8 +28,22 @@ public class MyWhats {
 			Connection connection = new Connection(new Socket("127.0.0.1", 8080));
 			
 			//Envia request
-			connection.getOutputStream().writeObject(request);
-			
+			if( request.getType().equals("-f") )
+			{
+				FileInputStream finput = new FileInputStream(request.getFile());
+				BufferedInputStream bf = new BufferedInputStream(finput);
+				byte[] arr = new byte[(int) request.getFile().length()];
+				bf.read(arr, 0, (int) request.getFile().length());
+				
+				//send request
+				connection.getOutputStream().writeObject(request);
+				//send file size
+				connection.getOutputStream().writeInt((int) request.getFile().length());
+				//send file
+				connection.getOutputStream().write(arr, 0, (int) request.getFile().length());
+			}
+			else
+				connection.getOutputStream().writeObject(request);
 			//Obtem reply
 			Reply reply = (Reply) connection.getInputStream().readObject();
 			
