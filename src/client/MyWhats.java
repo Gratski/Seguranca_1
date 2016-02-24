@@ -2,36 +2,29 @@ package client;
 
 import java.net.Socket;
 
-import builders.UserBuilder;
 import common.Message;
 import common.Reply;
 import common.Request;
-import common.User;
 import helpers.Connection;
+import validators.InputValidator;
 
 public class MyWhats {
 
 	public static void main(String[]args){
 		
-		//validacao de input
-		//formato <localUser> <ip:port> -p <password> -m <contact> <body>
-		//possiveis flags -m, -f, -r, -a, -d
-		//minimum length 3 <localUser> <ip:port> -r
-		
 		try{
 			
-			//User
-			UserBuilder userFactory = new UserBuilder();
-			User user = userFactory.make(args);
+			//Formula request
+			InputValidator valid = new InputValidator();
+			Request request = valid.validInput(args);
+			if(request == null){
+				System.out.println("Parametros mal formed");
+				System.exit(-1);
+			}
+				
 			
 			//Estabelece ligacao
 			Connection connection = new Connection(new Socket("127.0.0.1", 8080));
-			
-			//Formula request
-			Request request = new Request();
-			request.setType("-m");
-			request.setMessage(new Message("Joao", "Simao", "Hey you! :P"));
-			request.setUser(user);
 			
 			//Envia request
 			connection.getOutputStream().writeObject(request);
