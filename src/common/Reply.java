@@ -1,8 +1,9 @@
 package common;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class Reply extends NetworkMessage {
+public class Reply extends NetworkMessage implements Serializable {
 	
 	private List<Conversation> conversations;
 	private int status;
@@ -24,6 +25,10 @@ public class Reply extends NetworkMessage {
 
 	public void setMessage(String message) {
 		this.message = message;
+	}
+	
+	public String getMessage(){
+		return this.message;
 	}
 	
 	

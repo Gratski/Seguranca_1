@@ -12,12 +12,13 @@ public class MyWhatsServer {
 	
 	public static void main(String[] args) throws NumberFormatException, IOException {
 
-		String port = args[0];
+		
 		
 		// validate port
 		
-		ServerSocket server = new ServerSocket(Integer.parseInt(port));
+		ServerSocket server = new ServerSocket(8080);
 		server.setReuseAddress(true);
+		
 		System.out.println("Waiting for connections...");
 		
 		while(true) {

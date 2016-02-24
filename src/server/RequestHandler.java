@@ -5,41 +5,31 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
-import common.Request;
 import common.Reply;
+import common.Request;
+import helpers.Connection;
 
 public class RequestHandler extends Thread{
 	
-	private Socket clientSocket;
+	private Connection connection;
 
-	public RequestHandler(Socket clientSocket) {
-		this.clientSocket = clientSocket;
-		
+	public RequestHandler(Socket clientSocket) throws IOException{
+		this.connection = new Connection(clientSocket);
 		System.out.println("New Thread created!");
 	}
 	
 	public void run() {
 		
-		ObjectInputStream in = null;
-		try {
-			in = new ObjectInputStream(clientSocket.getInputStream());
-		} catch (IOException e2) {
-			e2.printStackTrace();
-		}
-		
 		Request clientRequest = null;
 		try {
-			clientRequest = (Request) in.readObject();
+			clientRequest = (Request) this.connection.getInputStream().readObject();
+			
 		} catch (ClassNotFoundException e2) {
 			e2.printStackTrace();
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
-		try {
-			in.close();
-		} catch (IOException e2) {
-			e2.printStackTrace();
-		}
+		
 		
 		switch (clientRequest.getType()) {
 		case "-m":
@@ -71,17 +61,14 @@ public class RequestHandler extends Thread{
 		Reply reply = new Reply();
 		reply.setMessage("Reply: Message was handled");
 		
-			
 		try {
-			ObjectOutputStream out = new ObjectOutputStream(clientSocket.getOutputStream());
-			out.writeObject(reply);
-			out.close();
+			this.connection.getOutputStream().writeObject(reply);
 		} catch (IOException e) {	
 			e.printStackTrace();
 		}
 		
 		try {
-			this.clientSocket.close();
+			this.connection.destroy();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

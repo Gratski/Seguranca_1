@@ -1,6 +1,8 @@
 package common;
 
-public class Request extends NetworkMessage {
+import java.io.Serializable;
+
+public class Request extends NetworkMessage implements Serializable{
 	
 	private Message message;
 	private User contact;
