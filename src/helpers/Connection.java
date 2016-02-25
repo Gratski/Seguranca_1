@@ -33,5 +33,8 @@ public class Connection {
 	public ObjectInputStream getInputStream(){
 		return this.input;
 	}
+	public boolean isConnected(){
+		return this.socket.isConnected();
+	}
 	
 }

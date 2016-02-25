@@ -1,5 +1,7 @@
 package server;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
@@ -52,11 +54,35 @@ public class RequestHandler extends Thread{
 			}catch(Exception e){
 				errorMessage = "Erro ao gravar mensagem";
 				valid = false;
+				break;
 			}			
 			break;
 			
 		case "-f":
 			System.out.println("Handle send file");
+			try{
+				int filesize = this.connection.getInputStream().readInt();
+				System.out.println("Server: File size is " + filesize);
+				byte[] arr = new byte[filesize];
+				this.connection.getInputStream().read(arr, 0, filesize);
+				System.out.println("Got the file!");
+				String[] fileNameArr = clientRequest.getFile().getName().split("/");
+				String fileName = fileNameArr[fileNameArr.length - 1];
+				
+				File file = new File(fileName);
+				file.createNewFile();
+				FileOutputStream writer = new FileOutputStream(file);
+				writer.write(arr);
+				writer.flush();
+				writer.close();
+				
+			}catch(Exception e){
+				valid = false;
+				errorMessage = "Error getting file";
+				System.out.println("Error");
+				break;
+			}
+			
 			break;
 			
 		case "-r":
@@ -86,6 +112,7 @@ public class RequestHandler extends Thread{
 		
 		try {
 			this.connection.getOutputStream().writeObject(reply);
+			System.out.println("Replied!");
 		} catch (IOException e) {	
 			e.printStackTrace();
 		}

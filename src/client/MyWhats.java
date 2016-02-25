@@ -30,17 +30,26 @@ public class MyWhats {
 			//Envia request
 			if( request.getType().equals("-f") )
 			{
+				System.out.println("Going to send a file");
 				FileInputStream finput = new FileInputStream(request.getFile());
+				System.out.println("Opened stream: " + request.getFile());
 				BufferedInputStream bf = new BufferedInputStream(finput);
+				System.out.println("Opened buffered stream: " + request.getFile());
 				byte[] arr = new byte[(int) request.getFile().length()];
+				System.out.println("Created byte array");
 				bf.read(arr, 0, (int) request.getFile().length());
+				System.out.println("Bytes copied " + request.getFile().length());
 				
 				//send request
 				connection.getOutputStream().writeObject(request);
+				System.out.println("sent request");
 				//send file size
 				connection.getOutputStream().writeInt((int) request.getFile().length());
+				System.out.println("sent filesize");
 				//send file
+				System.out.println("Is connected: "+connection.isConnected());
 				connection.getOutputStream().write(arr, 0, (int) request.getFile().length());
+				System.out.println("sent file");
 			}
 			else
 				connection.getOutputStream().writeObject(request);
@@ -55,6 +64,7 @@ public class MyWhats {
 			connection.destroy();
 			
 		}catch(Exception e){
+			e.printStackTrace();
 			System.out.println("Erro ao criar socket");
 		}
 		
