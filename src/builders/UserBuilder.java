@@ -6,12 +6,12 @@ import common.User;
 
 public class UserBuilder {
 
-	public User make(String[]args){
+	public static User make(String[]args){
 		int i;
 		String name = args[0];
 		String password = null;
 		//se passou a password em args
-		if( (i = this.containsPassword(args)) != -1 )
+		if( (i = containsPassword(args)) != -1 )
 		{
 			password = args[i];
 		}
@@ -32,7 +32,7 @@ public class UserBuilder {
 	 * @param args
 	 * @return
 	 */
-	private int containsPassword(String[] args){
+	private static int containsPassword(String[] args){
 		int pos = -1;
 		
 		for(int i = 0; i < args.length; i++)

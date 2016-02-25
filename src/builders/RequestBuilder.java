@@ -1,68 +1,90 @@
 package builders;
 
-import java.util.Scanner;
+import java.io.File;
 
-import common.NetworkMessage;
+import common.Message;
+import common.Request;
 import common.User;
 
-public class RequestBuilder {
+import builders.UserBuilder;
 
-	private String[]args;
+
+public class RequestBuilder {
 	
-	public RequestBuilder(String[] args){
-		this.args = args;
-	}
-	
-	public NetworkMessage make(){
+	public static Request make(String[] input){
 		
-		if(args.length < 4)
-			return null;
+		String flag = null;
+		int pos = -1;
 		
-		NetworkMessage request = new NetworkMessage();
+		//init user
+		User user = UserBuilder.make(input);
 		
-		//ip e port
-		String[]address = args[1].split(":");
-		if( address.length < 2 )
-			return null;
-		//request.setIP(address[0]);
-		//request.setPort(Integer.parseInt(address[1]));
-		
-		//user
-		User user = new User(this.args[0]);
-		int i = 2;
-		//se nao indicou pass
-		if( !args[2].equals("-p") )
-		{
-			Scanner sc = new Scanner(System.in);
-			String pwd = sc.nextLine();
-			//user.setPassword(pwd);
-		}
-		//se indicou pass
-		else{
-			i++;
-			//user.setPassword(args[i++]);
-		}
-		request.setUser(user);
-		
-		
-		//request type
-		switch(args[i]){
-		case "-m":
-			i++;
-			request.setType("m");
-			// request.setMessage(args[i++], args[i]);
-			break;
-		case "-r":
-			break;
-		case "-f":
-			break;
+		//verificar o tipo de input
+		Request request = null;
+		switch(flag){
 		case "-a":
+			try{
+				pos++;
+				request = new Request();
+				request.setUser(user);
+				request.setGroup(input[pos++]);
+				request.setContact(new User(input[pos]));
+				request.setType(flag);
+			}catch(ArrayIndexOutOfBoundsException e){
+				break;
+			}
 			break;
 		case "-d":
+			try{
+				pos++;
+				request = new Request();
+				request.setGroup(input[pos++]);
+				request.setContact(new User(input[pos]));
+				request.setType(flag);
+				request.setUser(user);
+			}catch(ArrayIndexOutOfBoundsException e){
+				break;
+			}
+			break;
+		case "-f":
+			try{
+				File file = new File(input[++pos]);
+				request = new Request();
+				request.setFile(file);
+				request.setType(flag);
+				request.setUser(user);
+			}catch(ArrayIndexOutOfBoundsException e){
+				break;
+			}catch(Exception e){
+				System.out.println("Erro ao abrir ficheiro");
+				break;
+			}
+			break;
+		case "-r":
+			request = new Request();
+			request.setType(flag);
+			request.setUser(user);
+			//se eh de um contact em especifico
+			if( input.length == (pos + 2) )
+				request.setContact(new User(input[++pos]));
+			break;
+		case "-m":
+			try{
+				pos++;
+				String to = input[pos++];
+				String body = input[pos];
+				request = new Request();
+				request.setType("-m");
+				request.setUser(user);
+				request.setMessage(new Message(user.getName(), to, body));
+			}catch(ArrayIndexOutOfBoundsException e){
+				break;
+			}
 			break;
 		}
 		
 		return request;
+		
 	}
 	
 }

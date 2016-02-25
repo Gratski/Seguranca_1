@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.net.Socket;
 
+import builders.RequestBuilder;
 import common.Reply;
 import common.Request;
 import helpers.Connection;
@@ -15,17 +16,19 @@ public class MyWhats {
 		
 		try{
 			
-			//Formula request
-			InputValidator valid = new InputValidator();
-			Request request = valid.validInput(args);
-			if(request == null){
+			// Verifica input
+			if (!InputValidator.validInput(args)){
 				System.out.println("Parametros mal formed");
 				System.exit(-1);
-			}
-				
+			}	
 			
 			//Estabelece ligacao
-			Connection connection = new Connection(new Socket("127.0.0.1", 8080));
+			String[] address = args[1].split(":");
+			String ip = address[0];
+			int port = Integer.parseInt(address[1]);
+			Connection connection = new Connection(new Socket(ip, port));
+			
+			Request request = RequestBuilder.make(args);
 			
 			//Envia request
 			if( request.getType().equals("-f") )
