@@ -5,8 +5,10 @@ public class InputValidator {
 
 	public static Boolean validInput(String[] input){
 		if (input.length >= 3 && validName(input[0]) && validAddress(input[1])) {
-			return ((input[2].equals("-p") && validPassword(input[3]) && validFlag(input[4]))
-					 || validFlag(input[2]));
+			if (input[2].equals("-p") && validPassword(input[3]) && validFlag(input[4]))
+				return true;
+			else if (validFlag(input[2]))
+				return true;
 		}
 		return false;
 	}
