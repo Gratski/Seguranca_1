@@ -25,8 +25,10 @@ public class MyWhats {
 			
 			//Estabelece ligacao
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
+			System.out.println("aqui: " + parsedInput.get("port"));
 			Connection connection = new Connection(new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
-
+			
+			System.out.println("Socket criado");
 			
 			Request request = RequestBuilder.make(parsedInput);
 			

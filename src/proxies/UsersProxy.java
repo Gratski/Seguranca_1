@@ -39,10 +39,13 @@ public class UsersProxy implements Proxy{
 	private void init() throws IOException{
 		
 		File file = new File(Filenames.USERS.toString());
-		if( !file.exists() )
+		if( !file.exists() ){
 			file.createNewFile();
+		}else{
+			System.out.println("Users file already exists");
+		}
 		
-		FileReader fr = new FileReader(this.file);
+		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
 		
 		//reading users file
@@ -108,6 +111,7 @@ public class UsersProxy implements Proxy{
 			
 			//escreve em ficheiro de users
 			this.bw.write(sb.toString());
+			this.bw.flush();
 			this.users.put(user.getName(), user);
 			
 		}catch(Exception e){

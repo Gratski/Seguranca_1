@@ -22,5 +22,9 @@ public class NetworkMessage implements Serializable{
 	public String getType() {
 		return this.type;
 	}
+	
+	public User getUser(){
+		return this.user;
+	}
 
 }

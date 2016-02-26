@@ -34,4 +34,13 @@ public class Reply extends NetworkMessage implements Serializable {
 		return this.status;
 	}
 	
+	/**
+	 * Verifica se este reply tem error status
+	 * @return
+	 * 	true se tem, false caso contrario
+	 */
+	public boolean hasError(){
+		return !(this.status == 200 || this.status == 0 );
+	}
+	
 }

@@ -8,8 +8,10 @@ import java.net.Socket;
 import common.Message;
 import common.Reply;
 import common.Request;
+import common.User;
 import helpers.Connection;
 import proxies.MessagesProxy;
+import proxies.UsersProxy;
 
 public class RequestHandler extends Thread{
 	
@@ -23,37 +25,89 @@ public class RequestHandler extends Thread{
 	public void run() {
 		
 		Request clientRequest = null;
+		
+		Reply reply = new Reply();
+		reply.setStatus(200);
+		
+		String errorMessage = null;
+		
+		//Proxies
+		UsersProxy userProxy = null;
+		MessagesProxy msgProxy = null;
+		
 		try {
 			System.out.println("receiving request");
 			clientRequest = (Request) this.connection.getInputStream().readObject();
 		} catch (ClassNotFoundException e2) {
+			this.interrupt();
 			e2.printStackTrace();
 		} catch (IOException e2) {
+			this.interrupt();
 			e2.printStackTrace();
 		}
 		
 		//autenticar user aqui
+		User user = clientRequest.getUser();
+		System.out.println("Server user is " + user.getName());
+		System.out.println("Server user password is " + user.getPassword());
+		try{
+			userProxy = UsersProxy.getInstance();
+			System.out.println("UsersProxy opened: " + (userProxy != null));
+			if( userProxy.exists(user) )
+			{
+				if( !userProxy.autheticate(user) ){
+					reply.setStatus(401);
+					reply.setMessage("Erro de autenticacao");
+				}else{
+					System.out.println("User autenticado");
+				}
+			}else{
+				if( !userProxy.insert(user) ){
+					reply.setStatus(402);
+					reply.setMessage("Erro ao criar o novo utilizador");
+				}
+			}
+			 
+		}catch(Exception e){
+			reply.setStatus(400);
+			reply.setMessage("Erro ao aceder a utilizadores");
+			e.printStackTrace();
+		}
 		
+		
+		/*
 		//request type
-		boolean valid = true;
-		String errorMessage = null;
 		switch (clientRequest.getType()) {
 		case "-m":
 			System.out.println("Handle send message");
 			Message msg = clientRequest.getMessage();
-			MessagesProxy msgProxy = null;
+			
+			//verifica se o user existe
+			if( !userProxy.exists(new User(msg.getTo())) )
+			{
+				reply.setStatus(401);
+				reply.setMessage("User de destino not found");
+				break;
+			}
+			
 			try{
+				
 				msgProxy = MessagesProxy.getInstance();
+				
 			}catch(IOException e){
-				errorMessage = "Erro ao obter instance de MsgsProxy";
-				valid = false;
+				reply.setMessage("Erro ao obter instance de MsgsProxy");
+				reply.setStatus(400);
 				break;
 			}
 			try{
-				valid = msgProxy.addMessage(msg.getFrom(), msg.getTo(), "-u", msg.getBody());
+				if(!msgProxy.addMessage(msg.getFrom(), msg.getTo(), "-u", msg.getBody()))
+				{
+					reply.setStatus(402);
+					reply.setMessage("Erro ao enviar mensagem");
+				}
 			}catch(Exception e){
-				errorMessage = "Erro ao gravar mensagem";
-				valid = false;
+				reply.setStatus(403);
+				reply.setMessage("Erro ao aceder a instance de mensagens");
 				break;
 			}			
 			break;
@@ -77,8 +131,8 @@ public class RequestHandler extends Thread{
 				writer.close();
 				
 			}catch(Exception e){
-				valid = false;
-				errorMessage = "Error getting file";
+				reply.setStatus(400);
+				reply.setMessage("Erro ao enviar files");
 				System.out.println("Error");
 				break;
 			}
@@ -101,14 +155,8 @@ public class RequestHandler extends Thread{
 			System.out.println("Request invalido");
 			break;
 		}
-		
-		Reply reply = new Reply();
-		if(valid){
-			reply.setStatus(200);
-		}else{
-			reply.setStatus(500);
-			reply.setMessage(errorMessage);
-		}
+		*/
+			
 		
 		try {
 			this.connection.getOutputStream().writeObject(reply);
