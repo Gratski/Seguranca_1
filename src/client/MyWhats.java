@@ -3,6 +3,7 @@ package client;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.net.Socket;
+import java.util.HashMap;
 
 import builders.RequestBuilder;
 import common.Reply;
@@ -23,12 +24,11 @@ public class MyWhats {
 			}	
 			
 			//Estabelece ligacao
-			String[] address = args[1].split(":");
-			String ip = address[0];
-			int port = Integer.parseInt(address[1]);
-			Connection connection = new Connection(new Socket(ip, port));
+			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
+			Connection connection = new Connection(new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
+
 			
-			Request request = RequestBuilder.make(args);
+			Request request = RequestBuilder.make(parsedInput);
 			
 			//Envia request
 			if( request.getType().equals("-f") )
