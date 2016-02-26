@@ -6,14 +6,21 @@ import java.util.HashMap;
 public class InputValidator {
 
 	public static Boolean validInput(String[] input){
-		/*
-		if (input.length >= 3 && validName(input[0]) && validAddress(input[1])) {
-			if (input[2].equals("-p") && validPassword(input[3]) && validFlag(input[4]))
+		if (input.length < 3 || !validName(input[0]) || !validAddress(input[1]))
+			return false;
+		
+		int i = 2;
+		if (input[2].equals("-p")){
+			if(!(input.length > 3) || !validPassword(input[3]))
+				return false;
+			if(input.length == 4)
 				return true;
-			else if (validFlag(input[2]))
-				return true;
+			i = 4;
 		}
-		*/
+		
+		else if (!validFlag(input[i]))
+			return false;
+		
 		return true;
 	}
 	
@@ -47,8 +54,6 @@ public class InputValidator {
 
 		parsedInput.put("ip", addressSplit[0]);
 		parsedInput.put("port", addressSplit[1]);
-		
-		System.out.println("This is the port: " + addressSplit[1]);
 
 		int i = 2;
 		if (args[2].equals("-p")) {

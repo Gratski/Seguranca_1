@@ -38,7 +38,7 @@ public class UsersProxy implements Proxy{
 	 */
 	private void init() throws IOException{
 		
-		File file = new File(Filenames.USERS.toString());
+		File file = new File("DATABASE/USERS/"+Filenames.USERS.toString());
 		if( !file.exists() ){
 			file.createNewFile();
 		}else{
@@ -65,7 +65,7 @@ public class UsersProxy implements Proxy{
 		br.close();
 		
 		//open writing streams
-		this.file = new File(Filenames.USERS.toString());
+		this.file = new File("DATABASE/USERS/"+Filenames.USERS.toString());
 		this.fw = new FileWriter(this.file, true);
 		this.bw = new BufferedWriter(this.fw);
 	}
