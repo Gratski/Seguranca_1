@@ -29,6 +29,8 @@ public class MyWhats {
 			
 			Request request = RequestBuilder.make(parsedInput);
 			
+			System.out.println("CLient Request eh null? " + (request == null));
+			
 			//Envia request
 			if( request.getType().equals("-f") )
 			{

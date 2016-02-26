@@ -21,6 +21,11 @@ public class RequestBuilder {
 		// verificar o tipo de input
 		Request request = null;
 		switch(flag){
+		case "-regUser":
+			request = new Request();
+			request.setType(flag);
+			request.setUser(user);
+			break;
 		case "-a":
 			try{
 				request = new Request();

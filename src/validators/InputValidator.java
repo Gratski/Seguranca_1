@@ -63,7 +63,16 @@ public class InputValidator {
 		} else {
 			parsedInput.put("password", null);
 		}
-
+		
+		//se eh apenas para registar user
+		if( parsedInput.get("password") != null && args.length == 4 )
+		{
+			System.out.println("É apenas para registar user");
+			parsedInput.put("flag", "-regUser");
+			return parsedInput;
+		}
+		
+		
 		parsedInput.put("flag", args[i]);
 		parsedInput.put("contact", args[i + 1]);
 		parsedInput.put("type", args[i + 2]);

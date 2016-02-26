@@ -25,15 +25,8 @@ public class RequestHandler extends Thread{
 	public void run() {
 		
 		Request clientRequest = null;
-		
 		Reply reply = new Reply();
 		reply.setStatus(200);
-		
-		String errorMessage = null;
-		
-		//Proxies
-		UsersProxy userProxy = null;
-		MessagesProxy msgProxy = null;
 		
 		try {
 			System.out.println("receiving request");
@@ -46,118 +39,30 @@ public class RequestHandler extends Thread{
 			e2.printStackTrace();
 		}
 		
-		//autenticar user aqui
-		User user = clientRequest.getUser();
-		System.out.println("Server user is " + user.getName());
-		System.out.println("Server user password is " + user.getPassword());
+		
 		try{
-			userProxy = UsersProxy.getInstance();
-			System.out.println("UsersProxy opened: " + (userProxy != null));
-			if( userProxy.exists(user) )
-			{
-				if( !userProxy.autheticate(user) ){
-					reply.setStatus(401);
-					reply.setMessage("Erro de autenticacao");
-				}else{
-					System.out.println("User autenticado");
-				}
-			}else{
-				if( !userProxy.insert(user) ){
-					reply.setStatus(402);
-					reply.setMessage("Erro ao criar o novo utilizador");
-				}
+			
+			UsersProxy userProxy = UsersProxy.getInstance();
+			
+			switch(clientRequest.getType()){
+			case "-regUser":
+				System.out.println("Registar novo user");
+				reply = insertNewUser(clientRequest.getUser(), userProxy);
+				break;
+			default:
+				reply = new Reply();
+				reply.setStatus(400);
+				reply.setMessage("Comando invalido");
+				break;
 			}
-			 
+				
 		}catch(Exception e){
-			reply.setStatus(400);
-			reply.setMessage("Erro ao aceder a utilizadores");
+			System.out.println("Erro ao registar users");
 			e.printStackTrace();
 		}
 		
-		
-		/*
-		//request type
-		switch (clientRequest.getType()) {
-		case "-m":
-			System.out.println("Handle send message");
-			Message msg = clientRequest.getMessage();
 			
-			//verifica se o user existe
-			if( !userProxy.exists(new User(msg.getTo())) )
-			{
-				reply.setStatus(401);
-				reply.setMessage("User de destino not found");
-				break;
-			}
-			
-			try{
-				
-				msgProxy = MessagesProxy.getInstance();
-				
-			}catch(IOException e){
-				reply.setMessage("Erro ao obter instance de MsgsProxy");
-				reply.setStatus(400);
-				break;
-			}
-			try{
-				if(!msgProxy.addMessage(msg.getFrom(), msg.getTo(), "-u", msg.getBody()))
-				{
-					reply.setStatus(402);
-					reply.setMessage("Erro ao enviar mensagem");
-				}
-			}catch(Exception e){
-				reply.setStatus(403);
-				reply.setMessage("Erro ao aceder a instance de mensagens");
-				break;
-			}			
-			break;
-			
-		case "-f":
-			System.out.println("Handle send file");
-			try{
-				int filesize = this.connection.getInputStream().readInt();
-				System.out.println("Server: File size is " + filesize);
-				byte[] arr = new byte[filesize];
-				this.connection.getInputStream().read(arr, 0, filesize);
-				System.out.println("Got the file!");
-				String[] fileNameArr = clientRequest.getFile().getName().split("/");
-				String fileName = fileNameArr[fileNameArr.length - 1];
-				
-				File file = new File(fileName);
-				file.createNewFile();
-				FileOutputStream writer = new FileOutputStream(file);
-				writer.write(arr);
-				writer.flush();
-				writer.close();
-				
-			}catch(Exception e){
-				reply.setStatus(400);
-				reply.setMessage("Erro ao enviar files");
-				System.out.println("Error");
-				break;
-			}
-			
-			break;
-			
-		case "-r":
-			System.out.println("Handle send convos");
-			break;
-			
-		case "-a":
-			System.out.println("Handle add user to group");
-			break;
-			
-		case "-d":
-			System.out.println("Handle delete user from group");
-			break;
-			
-		default:
-			System.out.println("Request invalido");
-			break;
-		}
-		*/
-			
-		
+		//ENVIA RESPOSTA
 		try {
 			this.connection.getOutputStream().writeObject(reply);
 			System.out.println("Replied!");
@@ -165,10 +70,34 @@ public class RequestHandler extends Thread{
 			e.printStackTrace();
 		}
 		
+		//FECHA LIGACAO
 		try {
 			this.connection.destroy();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}	
+	}
+
+	/**
+	 * Adiciona um novo utilizador
+	 * @param user
+	 * 		User a ser adicionado
+	 * @param proxy
+	 * 		UsersProxy a ser utilizado
+	 * @return
+	 * 		reply a ser enviada ao user
+	 */
+	private Reply insertNewUser(User user, UsersProxy proxy) {
+		Reply reply = new Reply();
+		System.out.println("USER NULL: " + (user == null));
+		System.out.println("PROXY NULL: " + (proxy == null));
+		if(proxy.exists(user) || !proxy.insert(user)){
+			reply.setStatus(404);
+			reply.setMessage("Erro ao adicionar novo utilizador");
+		}
+		else
+			reply.setStatus(200);
+			
+		return reply;
 	}
 }
