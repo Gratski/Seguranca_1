@@ -22,11 +22,13 @@ public class RequestBuilder {
 		Request request = null;
 		switch(flag){
 		case "-regUser":
+			System.out.println("User eh nulo? "+ user == null);
 			request = new Request();
 			request.setType(flag);
 			request.setUser(user);
 			break;
 		case "-a":
+			System.out.println("Adicionar user a group");
 			try{
 				request = new Request();
 				request.setUser(user);

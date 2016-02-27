@@ -25,10 +25,12 @@ public class Group {
 	 * @param user
 	 * 		User a ser adicionado ao grupo
 	 */
-	public void addMember(User user){
+	public boolean addMember(User user){
 		if(this.members.containsKey(user.getName()))
-			return;
+			return false;
+		
 		this.members.put(user.getName(), user);
+		return this.members.containsKey(user.getName());
 	}
 	
 	/**
@@ -53,5 +55,10 @@ public class Group {
 	
 	public String getOwner(){
 		return this.owner.getName();
+	}
+	
+	
+	public String getName(){
+		return this.name;
 	}
 }
