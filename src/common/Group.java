@@ -25,7 +25,7 @@ public class Group {
 	 * @param user
 	 * 		User a ser adicionado ao grupo
 	 */
-	public void addMember(User user) throws IOException{
+	public void addMember(User user){
 		if(this.members.containsKey(user.getName()))
 			return;
 		this.members.put(user.getName(), user);
@@ -49,5 +49,9 @@ public class Group {
 	 */
 	public void removeMember(User user){
 		this.members.remove(user.getName());
+	}
+	
+	public String getOwner(){
+		return this.owner.getName();
 	}
 }
