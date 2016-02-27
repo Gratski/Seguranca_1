@@ -7,7 +7,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,51 +120,48 @@ public class GroupsProxy implements Proxy{
 	 * 		exists(groupName)
 	 */
 	public boolean addMember(String groupName, User member) throws IOException{
-		
 		if( !this.groups.get(groupName).addMember(member) )
 			return false;
+		
+		updateFile();
+		return true; 
+	}
+	
+	
+	/**
+	 * Actualiza o ficheiro de groups
+	 * @throws IOException
+	 */
+	private void updateFile() throws IOException{
 		
 		//persistencia em ficheiro
 		BufferedReader reader = createReader();
 		StringBuilder sb = new StringBuilder();
-		String line = null;
+		Collection<Group> list = this.groups.values();
+	
 		
-		while( (line = reader.readLine()) != null ){
+		for(Group g : list)
+		{
 			
-			//split
-			String[] lineSplit = line.split(" ");
-			if( lineSplit.length < 3 )
-				continue;
+			sb.append("data");
+			sb.append(" " + g.getOwner());
+			sb.append(" " + g.getName());
 			
-			sb.append(lineSplit[0]);
-			sb.append(" "+lineSplit[1]);
-			sb.append(" "+lineSplit[2]);
-			
-			//verifica se tem membros already
-			String[]members = new String[0];
-			if( lineSplit.length > 3 ){
-				members = lineSplit[3].split(",");
-			}
-			
-			//adiciona cada membro ao SB
-			for(int i = 0; i < members.length; i++)
+			Collection<User> members = g.getMembers().values();
+			int i = 0;
+			for( User m : members )
 			{
-				if(i== 0)
-					sb.append(" ");
-				
-				if(i == 0)
-					sb.append(members[i]);
+				//se eh o primeiro dos membros
+				if( i == 0 )
+					sb.append(" " + m.getName());
 				else
-					sb.append(","+members[i]);
+					sb.append(","+m.getName());
+				
+				i++;
 			}
 			
-			//se eh o group pretendido
-			if( lineSplit[2].equals(groupName))
-				//se ja tem membros
-				if( members.length >= 1 )
-					sb.append(","+member.getName());
-				else
-					sb.append(" " + member.getName());
+			sb.append("\n");
+			
 		}
 		
 		//reescreve ficheiro
@@ -171,12 +169,6 @@ public class GroupsProxy implements Proxy{
 		writer.write(sb.toString());
 		writer.close();
 		
-		//reabre canais de escrita da classe
-		this.file = new File("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
-		this.fw = new FileWriter(file, true);
-		this.bw = new BufferedWriter(this.fw);
-		
-		return true; 
 	}
 	
 	@Override

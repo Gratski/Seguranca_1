@@ -20,6 +20,10 @@ public class Group {
 		this.msgs = new ArrayList<>();
 	}
 	
+	public Map<String, User> getMembers(){
+		return this.members;
+	}
+	
 	/**
 	 * Adiciona um user ao grupo
 	 * @param user
