@@ -13,9 +13,13 @@ import proxies.UsersProxy;
 public class RequestHandler extends Thread{
 	
 	private Connection connection;
-
-	public RequestHandler(Socket clientSocket) throws IOException{
+	public volatile UsersProxy userProxy;
+	public volatile GroupsProxy groupsProxy;
+	
+	public RequestHandler(Socket clientSocket, UsersProxy userProxy, GroupsProxy groups) throws IOException{
 		this.connection = new Connection(clientSocket);
+		this.userProxy = userProxy;
+		this.groupsProxy = groups;
 		System.out.println("New Thread created!");
 	}
 	
@@ -45,9 +49,6 @@ public class RequestHandler extends Thread{
 		
 		//Tratamento de request
 		try{
-			
-			UsersProxy userProxy = UsersProxy.getInstance();
-			
 			//trata de request
 			parseRequest(clientRequest, userProxy);
 				
@@ -93,11 +94,15 @@ public class RequestHandler extends Thread{
 			break;
 		case "-a":
 			System.out.println("Adicionar membro a group");
-			reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
+			synchronized(groupsProxy){
+				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
+			}
 			break;
 		case "-d":
 			System.out.println("Remover membro de group");
-			reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
+			synchronized(groupsProxy){
+				reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
+			}
 			break;
 		default:
 			reply = new Reply();
@@ -134,9 +139,8 @@ public class RequestHandler extends Thread{
 		*/
 		
 		//verifica se group existe
-		GroupsProxy gProxy = GroupsProxy.getInstance();
 		System.out.println("Ver se group existe");
-		if( !gProxy.exists(groupName) )
+		if( !groupsProxy.exists(groupName) )
 		{
 			reply.setStatus(400);
 			reply.setMessage("Group inexistente");
@@ -145,14 +149,14 @@ public class RequestHandler extends Thread{
 		
 		System.out.println("Ver owner");
 		//verifica se user eh owner
-		if( !gProxy.isOwner(groupName, user.getName()) ){
+		if( !groupsProxy.isOwner(groupName, user.getName()) ){
 			reply.setStatus(401);
 			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
 			return reply;
 		}
 		System.out.println("Ver se eh membro");
 		//verifica se o member e realmente member do group
-		if(!gProxy.hasMember(groupName, member)){
+		if(!groupsProxy.hasMember(groupName, member)){
 			reply.setStatus(400);
 			reply.setMessage("O utilizador "+ member.getName() +" nao eh membro do group " + groupName + "");
 			return reply;
@@ -160,7 +164,7 @@ public class RequestHandler extends Thread{
 		
 		System.out.println("Vai remover");
 		//remove member do group
-		if(!gProxy.removeMember(groupName, member))
+		if(!groupsProxy.removeMember(groupName, member))
 		{
 			reply.setStatus(400);
 			reply.setMessage("Erro ao remover membro do group");
