@@ -53,8 +53,12 @@ public class GroupsProxy implements Proxy{
 			Group group = new Group(name, new User(owner));
 			
 			//adiciona membros ao group
-			for(int i = 3; i < lineSplit.length; i++)
-				group.addMember(new User(lineSplit[i]));
+			if(lineSplit.length > 3)
+			{
+				String[] members = lineSplit[3].split(",");
+				for(String member : members)
+					group.addMember(new User(member));
+			}	
 			
 			//adiciona aos groups
 			this.groups.put(name, group);
@@ -76,8 +80,12 @@ public class GroupsProxy implements Proxy{
 		this.groups.put(groupName, new Group(groupName, owner));
 		
 		//persistencia em ficheiro
-		BufferedWriter bw = createWriter();
-		bw.write("data " + owner.getName() + " " + groupName);
+		BufferedWriter bw = createWriter(true);
+		StringBuilder sb = new StringBuilder();
+		sb.append("data " + owner.getName() + " " + groupName);
+		sb.append("\n");
+		
+		bw.write(sb.toString());
 		bw.flush();
 		bw.close();
 	}
@@ -109,6 +117,20 @@ public class GroupsProxy implements Proxy{
 	}
 	
 	/**
+	 * Verifica se um determinado group tem um
+	 * determinado member
+	 * @param groupName
+	 * 		Nome do group a considerar
+	 * @param user
+	 * 		User a considerar
+	 * @return
+	 * 		true se eh membro, false caso contrario
+	 */
+	public boolean hasMember(String groupName, User user){
+		return this.groups.get(groupName).hasMember(user);
+	}
+	
+	/**
 	 * Adiciona um novo membro ao group
 	 * @param groupName
 	 * 		Nome do group ao qual o novo membro vai ser adicionado
@@ -125,6 +147,25 @@ public class GroupsProxy implements Proxy{
 		
 		updateFile();
 		return true; 
+	}
+	
+	/**
+	 * Remove um dado utilizador de um dado group
+	 * @param groupName
+	 * 		Nome do group a considerar
+	 * @param member
+	 * 		Member a ser retirado do grupo
+	 * @return
+	 * 		true se ok, false caso contrario
+	 * @throws IOException
+	 */
+	public boolean removeMember(String groupName, User member) throws IOException{
+		
+		if(!this.groups.get(groupName).removeMember(member))
+			return false;
+		
+		updateFile();
+		return true;
 	}
 	
 	
@@ -165,7 +206,7 @@ public class GroupsProxy implements Proxy{
 		}
 		
 		//reescreve ficheiro
-		BufferedWriter writer = createWriter();
+		BufferedWriter writer = createWriter(false);
 		writer.write(sb.toString());
 		writer.close();
 		
@@ -185,9 +226,13 @@ public class GroupsProxy implements Proxy{
 		FileReader reader = new FileReader(file);
 		return new BufferedReader(reader);
 	}
-	private BufferedWriter createWriter() throws IOException{
+	private BufferedWriter createWriter(boolean append) throws IOException{
 		File file = new File("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
-		FileWriter writer = new FileWriter(file);
+		FileWriter writer = null;
+		if(append)
+			writer = new FileWriter(file, true);
+		else
+			writer = new FileWriter(file);
 		return new BufferedWriter(writer);
 	}
 	

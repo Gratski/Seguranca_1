@@ -94,14 +94,77 @@ public class RequestHandler extends Thread{
 		case "-a":
 			System.out.println("Adicionar membro a group");
 			reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
-			//reply = new Reply();
-			//reply.setStatus(200);
+			break;
+		case "-d":
+			System.out.println("Remover membro de group");
+			reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
 			break;
 		default:
 			reply = new Reply();
 			reply.setStatus(400);
 			reply.setMessage("Comando invalido");
 			break;
+		}
+		
+		return reply;
+	}
+	
+	private Reply removeUserFromGroup(String groupName, User user, User member, UsersProxy uProxy) throws IOException{
+		
+		Reply reply = new Reply();
+		reply.setStatus(200);
+		
+		System.out.println("==========REMOVER MEMBRO DE GROUP===========");
+		
+		//authentica user
+		if(!authenticateUser(uProxy, user))
+		{
+			reply.setStatus(400);
+			reply.setMessage("User nao autenticado");
+			return reply;
+		}
+		
+		
+		//verifica se o user de contacto existe
+		/*if( !uProxy.exists(newMember) ){
+			reply.setStatus(400);
+			reply.setMessage("User nao existe");
+			return reply;
+		}
+		*/
+		
+		//verifica se group existe
+		GroupsProxy gProxy = GroupsProxy.getInstance();
+		System.out.println("Ver se group existe");
+		if( !gProxy.exists(groupName) )
+		{
+			reply.setStatus(400);
+			reply.setMessage("Group inexistente");
+			return reply;
+		}
+		
+		System.out.println("Ver owner");
+		//verifica se user eh owner
+		if( !gProxy.isOwner(groupName, user.getName()) ){
+			reply.setStatus(401);
+			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
+			return reply;
+		}
+		System.out.println("Ver se eh membro");
+		//verifica se o member e realmente member do group
+		if(!gProxy.hasMember(groupName, member)){
+			reply.setStatus(400);
+			reply.setMessage("O utilizador "+ member.getName() +" nao eh membro do group " + groupName + "");
+			return reply;
+		}
+		
+		System.out.println("Vai remover");
+		//remove member do group
+		if(!gProxy.removeMember(groupName, member))
+		{
+			reply.setStatus(400);
+			reply.setMessage("Erro ao remover membro do group");
+			return reply;
 		}
 		
 		return reply;
@@ -137,21 +200,20 @@ public class RequestHandler extends Thread{
 			return reply;
 		}
 		
-		System.out.println("USER EXISTE");
+		
 		//verifica se o user de contacto existe
-		if( !uProxy.exists(user) ){
+		/*if( !uProxy.exists(newMember) ){
 			reply.setStatus(400);
 			reply.setMessage("User nao existe");
 			return reply;
 		}
-		System.out.println("USER AUTENTICADO");
+		*/
+		
 		//verifica se group existe
 		GroupsProxy gProxy = GroupsProxy.getInstance();
-		System.out.println("OBTEVE INSTANCE DE GROUP");
+		
 		if( !gProxy.exists(groupName) )
 			gProxy.create(groupName, user);
-		
-		System.out.println("GROUP JA CRIADO OU EXISTE");
 		
 		//verifica se user eh owner
 		if( !gProxy.isOwner(groupName, user.getName()) ){
@@ -160,9 +222,9 @@ public class RequestHandler extends Thread{
 			return reply;
 		}
 		
-		System.out.println("USER DE REQUEST EH OWNER");
-		
 		//verificar se member existe em users
+		//AQUI POR FAZER DEVIDO A TESTES
+		//ASSIM NAO TEMOS QUE INSERIR SEMPRE PARA TESTAR ADICIONAR
 		
 		//adiciona newMember a group
 		if ( !gProxy.addMember(groupName, newMember) ){
@@ -170,8 +232,6 @@ public class RequestHandler extends Thread{
 			reply.setMessage("Erro ao adicionar novo membro a " + groupName);
 			return reply;
 		}
-		
-		System.out.println("MEMBRO ADICIONADO");
 		
 		return reply;
 	}

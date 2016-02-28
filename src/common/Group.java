@@ -45,6 +45,10 @@ public class Group {
 	 * 		true se existe, false caso contrario
 	 */
 	public boolean hasMember(User user){
+		System.out.println(user.getName() + "eh membro de " + this.name + "? " + this.members.containsKey(user.getName()));
+		System.out.println("JOAO eh membro de " + this.name + "? " + this.members.containsKey("JOAO"));
+		System.out.println("JOAO,JOSE eh membro de " + this.name + "? " + this.members.containsKey("JOAO,JOSE"));
+		System.out.println(this.name + "size eh " + this.members.size());
 		return this.members.containsKey(user.getName());
 	}
 	
@@ -53,8 +57,9 @@ public class Group {
 	 * @param user
 	 * 		User a ser adicionado
 	 */
-	public void removeMember(User user){
-		this.members.remove(user.getName());
+	public boolean removeMember(User user){
+		this.members.remove(user.getName());		
+		return !this.members.containsKey(user.getName());
 	}
 	
 	public String getOwner(){
