@@ -3,15 +3,13 @@ package proxies;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import builders.FileStreamBuilder;
 import common.Group;
 import common.User;
 import enums.Filenames;
@@ -37,7 +35,7 @@ public class GroupsProxy implements Proxy{
 
 	public void init() throws IOException{
 		
-		BufferedReader br = createReader();
+		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
 		
 		//reading users file
 		String line = null;
@@ -80,7 +78,7 @@ public class GroupsProxy implements Proxy{
 		this.groups.put(groupName, new Group(groupName, owner));
 		
 		//persistencia em ficheiro
-		BufferedWriter bw = createWriter(true);
+		BufferedWriter bw = FileStreamBuilder.makeWriter("DATABASE/GROUPS/"+Filenames.GROUPS.toString(),true);
 		StringBuilder sb = new StringBuilder();
 		sb.append("data " + owner.getName() + " " + groupName);
 		sb.append("\n");
@@ -176,7 +174,7 @@ public class GroupsProxy implements Proxy{
 	private void updateFile() throws IOException{
 		
 		//persistencia em ficheiro
-		BufferedReader reader = createReader();
+		BufferedReader reader = FileStreamBuilder.makeReader("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
 		StringBuilder sb = new StringBuilder();
 		Collection<Group> list = this.groups.values();
 	
@@ -206,7 +204,7 @@ public class GroupsProxy implements Proxy{
 		}
 		
 		//reescreve ficheiro
-		BufferedWriter writer = createWriter(false);
+		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/GROUPS/"+Filenames.GROUPS.toString(), false);
 		writer.write(sb.toString());
 		writer.close();
 		
@@ -216,24 +214,4 @@ public class GroupsProxy implements Proxy{
 	public void destroy() throws IOException {
 		
 	}
-	
-	
-	
-	
-	//////AUX
-	private BufferedReader createReader() throws FileNotFoundException{
-		File file = new File("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
-		FileReader reader = new FileReader(file);
-		return new BufferedReader(reader);
-	}
-	private BufferedWriter createWriter(boolean append) throws IOException{
-		File file = new File("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
-		FileWriter writer = null;
-		if(append)
-			writer = new FileWriter(file, true);
-		else
-			writer = new FileWriter(file);
-		return new BufferedWriter(writer);
-	}
-	
 }

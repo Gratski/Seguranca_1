@@ -18,6 +18,8 @@ public class RequestBuilder {
 		// init user
 		User user = UserBuilder.make(input);
 		
+		System.out.println("Building request");
+		
 		// verificar o tipo de input
 		Request request = null;
 		switch(flag){
@@ -75,19 +77,28 @@ public class RequestBuilder {
 			// 	
 			break;
 		case "-m":
+			System.out.println("ITS A MESSAGE");
 			try{
 				String to = input.get("contact");
 				String body = input.get("type");
+				
+				System.out.println("CONTACT NAME: " + to);
+				System.out.println("MESSAGE BODY: " + body);
+				
+				
 				request = new Request();
 				request.setUser(user);
 				request.setType(flag);
 				request.setMessage(new Message(user.getName(), to, body));
+				System.out.println("FILLED aLL");
 			}catch(ArrayIndexOutOfBoundsException e){
 				break;
 			}
 			break;
 		}
 		
+		System.out.println("FINAL REQUEST");
+		System.out.println("Request type: " + request.getType());
 		return request;
 		
 	}

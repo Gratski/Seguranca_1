@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
 
@@ -19,6 +20,7 @@ public class MyWhatsServer {
 		
 		GroupsProxy groups = GroupsProxy.getInstance();
 		UsersProxy users = UsersProxy.getInstance();
+		ConversationsProxy conversations = ConversationsProxy.getInstance();
 		
 		@SuppressWarnings("resource")
 		ServerSocket server = new ServerSocket(8080);
@@ -30,7 +32,7 @@ public class MyWhatsServer {
 			Socket clientSocket = server.accept();
 			System.out.println("Connection accepted!");
 			
-			RequestHandler requestHandler = new RequestHandler(clientSocket, users, groups);
+			RequestHandler requestHandler = new RequestHandler(clientSocket, users, groups, conversations);
 			requestHandler.run();
 		}
 

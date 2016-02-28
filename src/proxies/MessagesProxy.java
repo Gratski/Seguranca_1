@@ -98,4 +98,13 @@ public class MessagesProxy {
 		return false;
 	}
 	
+	
+	public ArrayList<Message> getMessages(String filename){
+		return null;
+	}
+	
+	public Message getLastMessage(String filename){
+		return null;
+	}
+	
 }

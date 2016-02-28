@@ -1,12 +1,17 @@
 package server;
 
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
+import builders.FileStreamBuilder;
+import common.Conversation;
 import common.Reply;
 import common.Request;
 import common.User;
 import helpers.Connection;
+import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
 
@@ -15,11 +20,13 @@ public class RequestHandler extends Thread{
 	private Connection connection;
 	public volatile UsersProxy userProxy;
 	public volatile GroupsProxy groupsProxy;
+	public volatile ConversationsProxy convProxy;
 	
-	public RequestHandler(Socket clientSocket, UsersProxy userProxy, GroupsProxy groups) throws IOException{
+	public RequestHandler(Socket clientSocket, UsersProxy userProxy, GroupsProxy groups, ConversationsProxy conv) throws IOException{
 		this.connection = new Connection(clientSocket);
 		this.userProxy = userProxy;
 		this.groupsProxy = groups;
+		this.convProxy = conv;
 		System.out.println("New Thread created!");
 	}
 	
@@ -87,6 +94,8 @@ public class RequestHandler extends Thread{
 		
 		Reply reply = null;
 		
+		System.out.println("REQUEST TYPE: " +req.getType() );
+		
 		switch(req.getType()){
 		case "-regUser":
 			System.out.println("Registar novo user");
@@ -102,6 +111,90 @@ public class RequestHandler extends Thread{
 			System.out.println("Remover membro de group");
 			synchronized(groupsProxy){
 				reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
+			}
+			break;
+		case "-m":
+			System.out.println("Enviar mensagem");
+			synchronized(groupsProxy){
+				
+				//se eh para group
+				if( groupsProxy.exists(req.getMessage().getTo())){
+					
+					File file = new File("DATABASE/CONVERSATIONS/GROUPS/" + req.getMessage().getTo());
+					if( !file.exists() ){
+						System.out.println("Criar novo file para mensagem");
+						file.createNewFile();
+					}else
+					{
+						System.out.println("File de mensagem ja existe");
+					}
+					
+					BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/CONVERSATIONS/GROUPS/" + req.getMessage().getTo(), true);
+					StringBuilder sb = new StringBuilder();
+					sb.append("data");
+					sb.append(" " + req.getMessage().getFrom());
+					sb.append(" -t");
+					sb.append(" " + req.getMessage().getBody());
+					sb.append("\n");
+					
+					writer.write(sb.toString());
+					writer.flush();
+					writer.close();
+					
+					reply = new Reply();
+					reply.setStatus(200);
+				}
+				//se eh private
+				else{
+					
+					System.out.println("Eh private");
+					
+					//verifica se user exist
+					if(!userProxy.exists(req.getUser()))
+					{
+						System.out.println("User inexistente");
+						reply = new Reply();
+						reply.setStatus(400);
+					}
+					else if( !userProxy.autheticate(req.getUser()) )
+					{
+						System.out.println("User nao autenticado");
+						reply = new Reply();
+						reply.setStatus(401);
+					}else if( !userProxy.exists(new User(req.getMessage().getTo())) ){
+						System.out.println("Contact inexistente");
+						reply = new Reply();
+						reply.setStatus(402);
+					}
+					//se estah tudo ok
+					else{
+						
+						Conversation c;
+						if( !this.convProxy.exists(new Conversation(req.getUser(), new User(req.getMessage().getTo()), "")))
+							c = this.convProxy.add(req.getMessage().getFrom(), req.getMessage().getTo());
+						else
+							c = this.convProxy.getConversation(req.getUser().getName(), req.getMessage().getTo());
+						
+						//abre canal de escrita
+						BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/CONVERSATIONS/PRIVATE/"+c.getFilename(), true);
+						//escreve
+						StringBuilder sb = new StringBuilder();
+						sb.append("data");
+						sb.append(" " + req.getMessage().getFrom());
+						sb.append(" -t");
+						sb.append(" " + req.getMessage().getBody());
+						sb.append("\n");
+						
+						writer.write(sb.toString());
+						writer.flush();
+						writer.close();
+						
+						reply = new Reply();
+						reply.setStatus(200);
+						
+					}
+				}
+				
 			}
 			break;
 		default:
