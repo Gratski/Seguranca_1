@@ -27,18 +27,14 @@ public class MyWhats {
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 			Connection connection = new Connection(new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
 			
-			System.out.println("FODACE!!");
-			System.out.println("REQUEST::::");
-			
 			Request request = RequestBuilder.make(parsedInput);
 			
 			//Envia request
-			if( request.getType().equals("-f") )
-			{
+			if ( request.getType().equals("-f") ) {
 				
-			}
-			else
+			} else
 				connection.getOutputStream().writeObject(request);
+
 			//Obtem reply
 			Reply reply = (Reply) connection.getInputStream().readObject();
 			

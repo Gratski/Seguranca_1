@@ -6,12 +6,12 @@ import java.io.Serializable;
 public class Request extends NetworkMessage implements Serializable{
 	
 	private Message message;
-	private User contact;
+	private String contact;
 	private File file;
 	private String group;
 
 	public Message getMessage() {
-		return message;
+		return this.message;
 	}
 
 	public void setMessage(Message message) {
@@ -24,11 +24,11 @@ public class Request extends NetworkMessage implements Serializable{
 		return this.file;
 	}
 
-	public User getContact() {
-		return contact;
+	public String getContact() {
+		return this.contact;
 	}
 
-	public void setContact(User contact) {
+	public void setContact(String contact) {
 		this.contact = contact;
 	}
 
@@ -39,7 +39,16 @@ public class Request extends NetworkMessage implements Serializable{
 	public void setGroup(String group) {
 		this.group = group;
 	}
-	
-	
+
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("=== REQUEST ===\n");
+		sb.append("User: " + this.getUser().toString() + "\n");
+		sb.append("Type: " + this.getType() + "\n");
+		sb.append("Message: " + this.getMessage() + "\n");
+		sb.append("Contact: " + this.getContact() + "\n");
+		sb.append("Group: " + this.getGroup() + "\n");
+		return sb.toString();
+	}
 	
 }

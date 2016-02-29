@@ -11,9 +11,9 @@ public class InputValidator {
 		
 		int i = 2;
 		if (input[2].equals("-p")){
-			if(!(input.length > 3) || !validPassword(input[3]))
+			if (!(input.length > 3) || !validPassword(input[3]))
 				return false;
-			if(input.length == 4)
+			if (input.length == 4)
 				return true;
 			i = 4;
 		}
@@ -25,7 +25,7 @@ public class InputValidator {
 	}
 	
 	public static Boolean validName(String name) {
-		return !name.contains(":");
+		return !name.contains(":") && !name.contains(",");
 	}
 	
 	public static Boolean validPassword(String password) {
@@ -34,7 +34,7 @@ public class InputValidator {
 	
 	public static Boolean validFlag(String flag) {
 		return (flag.equals("-a") || flag.equals("-d") || flag.equals("-r") 
-								  || flag.equals("-f") || flag.equals("-m"));
+								  || flag.equals("-f") || flag.equals("-m") || flag.equals("-regUser"));
 	}
 	
 	public static Boolean validAddress(String address) {

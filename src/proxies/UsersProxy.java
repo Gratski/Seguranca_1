@@ -38,12 +38,12 @@ public class UsersProxy implements Proxy{
 	 */
 	private void init() throws IOException{
 		
-		File file = new File("DATABASE/USERS/"+Filenames.USERS.toString());
-		if( !file.exists() ){
-			file.createNewFile();
-		}else{
-			System.out.println("Users file already exists");
-		}
+		File file = new File("DATABASE/" + Filenames.USERS.toString());
+		// if ( !file.exists() ){
+		// 	file.createNewFile();
+		// } else {
+		// 	System.out.println("Users file already exists");
+		// }
 		
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
@@ -65,7 +65,7 @@ public class UsersProxy implements Proxy{
 		br.close();
 		
 		//open writing streams
-		this.file = new File("DATABASE/USERS/"+Filenames.USERS.toString());
+		this.file = new File("DATABASE/" + Filenames.USERS.toString());
 		this.fw = new FileWriter(this.file, true);
 		this.bw = new BufferedWriter(this.fw);
 	}
