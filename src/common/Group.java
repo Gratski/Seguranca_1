@@ -29,12 +29,12 @@ public class Group {
 	 * @param user
 	 * 		User a ser adicionado ao grupo
 	 */
-	public boolean addMember(User user){
-		if(this.members.containsKey(user.getName()))
+	public boolean addMember(String user){
+		if(this.members.containsKey(user))
 			return false;
 		
-		this.members.put(user.getName(), user);
-		return this.members.containsKey(user.getName());
+		this.members.put(user, new User(user));
+		return this.members.containsKey(user);
 	}
 	
 	/**
@@ -44,12 +44,12 @@ public class Group {
 	 * @return
 	 * 		true se existe, false caso contrario
 	 */
-	public boolean hasMember(User user){
-		System.out.println(user.getName() + "eh membro de " + this.name + "? " + this.members.containsKey(user.getName()));
+	public boolean hasMember(String user){
+		System.out.println(user + "eh membro de " + this.name + "? " + this.members.containsKey(user));
 		System.out.println("JOAO eh membro de " + this.name + "? " + this.members.containsKey("JOAO"));
 		System.out.println("JOAO,JOSE eh membro de " + this.name + "? " + this.members.containsKey("JOAO,JOSE"));
 		System.out.println(this.name + "size eh " + this.members.size());
-		return this.members.containsKey(user.getName());
+		return this.members.containsKey(user);
 	}
 	
 	/**
@@ -57,9 +57,9 @@ public class Group {
 	 * @param user
 	 * 		User a ser adicionado
 	 */
-	public boolean removeMember(User user){
-		this.members.remove(user.getName());		
-		return !this.members.containsKey(user.getName());
+	public boolean removeMember(String user){
+		this.members.remove(user);
+		return !this.members.containsKey(user);
 	}
 	
 	public String getOwner(){

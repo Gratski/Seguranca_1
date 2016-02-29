@@ -25,7 +25,7 @@ public class InputValidator {
 	}
 	
 	public static Boolean validName(String name) {
-		return !name.contains(":");
+		return !name.contains(":") && !name.contains(",");
 	}
 	
 	public static Boolean validPassword(String password) {
@@ -34,7 +34,7 @@ public class InputValidator {
 	
 	public static Boolean validFlag(String flag) {
 		return (flag.equals("-a") || flag.equals("-d") || flag.equals("-r") 
-								  || flag.equals("-f") || flag.equals("-m"));
+								  || flag.equals("-f") || flag.equals("-m") || flag.equals("-regUser"));
 	}
 	
 	public static Boolean validAddress(String address) {

@@ -30,7 +30,15 @@ public class Message implements Serializable{
 	public Date getTimestamp() {
 		return timestamp;
 	}
-		
-	
-	
+
+	@Override
+	public String toString() {
+		final StringBuffer sb = new StringBuffer("Message{");
+		sb.append("from='").append(from).append('\'');
+		sb.append(", to='").append(to).append('\'');
+		sb.append(", body='").append(body).append('\'');
+		sb.append(", timestamp=").append(timestamp);
+		sb.append('}');
+		return sb.toString();
+	}
 }

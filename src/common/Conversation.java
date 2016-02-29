@@ -20,10 +20,9 @@ public class Conversation {
 	
 	@Override
 	public boolean equals(Object object){
-		if( object instanceof Conversation )
-		{
+		if ( object instanceof Conversation ) {
 			Conversation c = (Conversation) object;
-			return ( this.user1.getName().equals(c.getUser1().getName()) 
+			return ( this.user1.getName().equals(c.getUser1().getName())
 						&& this.user2.getName().equals(c.getUser2().getName()))
 					||
 					( this.user1.getName().equals(c.getUser2().getName())
@@ -31,7 +30,7 @@ public class Conversation {
 		}else
 			return false;
 	}
-	
+
 	public String getFilename(){
 		return this.filename;
 	}
@@ -41,12 +40,12 @@ public class Conversation {
 	}
 	
 	public ArrayList<Message> getMessages() throws IOException{
-		this.msgs = MessagesProxy.getInstance().getMessages(this.directory+"/"+this.filename);
+		this.msgs = MessagesProxy.getInstance().getMessages(this.directory + "/" + this.filename);
 		return this.msgs;
 	}
 	
 	public Message getLastMessage() throws IOException{
-		return MessagesProxy.getInstance().getLastMessage(this.directory+"/"+this.filename);
+		return MessagesProxy.getInstance().getLastMessage(this.directory + "/" + this.filename);
 	}
 	
 	public User getUser1(){

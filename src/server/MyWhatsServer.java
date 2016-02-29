@@ -28,6 +28,7 @@ public class MyWhatsServer {
 		
 		
 		while(true) {
+			System.out.println("===============================");
 			System.out.println("Waiting for connections...");
 			Socket clientSocket = server.accept();
 			System.out.println("Connection accepted!");

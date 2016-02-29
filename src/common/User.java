@@ -15,7 +15,7 @@ public class User implements Serializable{
 	public User(String name, String password){
 		this.name = name;
 
-		if( password == null )
+		if ( password == null )
 			this.askForPassword();
 		else
 			this.password = password;
@@ -41,8 +41,12 @@ public class User implements Serializable{
 		return this.password;
 	}
 
+	@Override
 	public String toString() {
-		return this.name + ":" + this.password;
+		final StringBuffer sb = new StringBuffer("User{");
+		sb.append("name='").append(name).append('\'');
+		sb.append(", password='").append(password).append('\'');
+		sb.append('}');
+		return sb.toString();
 	}
-
 }

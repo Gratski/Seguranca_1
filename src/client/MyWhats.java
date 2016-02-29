@@ -30,12 +30,11 @@ public class MyWhats {
 			Request request = RequestBuilder.make(parsedInput);
 			
 			//Envia request
-			if ( request.getType().equals("-f") )
-			{
+			if ( request.getType().equals("-f") ) {
 				
-			}
-			else
+			} else
 				connection.getOutputStream().writeObject(request);
+
 			//Obtem reply
 			Reply reply = (Reply) connection.getInputStream().readObject();
 			
