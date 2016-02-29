@@ -41,4 +41,8 @@ public class User implements Serializable{
 		return this.password;
 	}
 
+	public String toString() {
+		return this.name + ":" + this.password;
+	}
+
 }

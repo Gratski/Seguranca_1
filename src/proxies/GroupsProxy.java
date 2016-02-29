@@ -35,7 +35,7 @@ public class GroupsProxy implements Proxy{
 
 	public void init() throws IOException{
 		
-		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
+		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		
 		//reading users file
 		String line = null;
@@ -78,7 +78,7 @@ public class GroupsProxy implements Proxy{
 		this.groups.put(groupName, new Group(groupName, owner));
 		
 		//persistencia em ficheiro
-		BufferedWriter bw = FileStreamBuilder.makeWriter("DATABASE/GROUPS/"+Filenames.GROUPS.toString(),true);
+		BufferedWriter bw = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), true);
 		StringBuilder sb = new StringBuilder();
 		sb.append("data " + owner.getName() + " " + groupName);
 		sb.append("\n");
@@ -174,7 +174,7 @@ public class GroupsProxy implements Proxy{
 	private void updateFile() throws IOException{
 		
 		//persistencia em ficheiro
-		BufferedReader reader = FileStreamBuilder.makeReader("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
+		BufferedReader reader = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		StringBuilder sb = new StringBuilder();
 		Collection<Group> list = this.groups.values();
 	
@@ -204,7 +204,7 @@ public class GroupsProxy implements Proxy{
 		}
 		
 		//reescreve ficheiro
-		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/GROUPS/"+Filenames.GROUPS.toString(), false);
+		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), false);
 		writer.write(sb.toString());
 		writer.close();
 		

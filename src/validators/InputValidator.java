@@ -11,9 +11,9 @@ public class InputValidator {
 		
 		int i = 2;
 		if (input[2].equals("-p")){
-			if(!(input.length > 3) || !validPassword(input[3]))
+			if (!(input.length > 3) || !validPassword(input[3]))
 				return false;
-			if(input.length == 4)
+			if (input.length == 4)
 				return true;
 			i = 4;
 		}

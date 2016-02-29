@@ -281,7 +281,7 @@ public class RequestHandler extends Thread{
 	 * 		Reply em conformidade com a logica aplicacional
 	 * @throws IOException
 	 */
-	private Reply addUserToGroup(String groupName, User user, User newMember, UsersProxy uProxy) throws IOException{
+	private Reply addUserToGroup(String groupName, User user, String newMember, UsersProxy uProxy) throws IOException{
 		
 		Reply reply = new Reply();
 		reply.setStatus(200);
