@@ -31,6 +31,21 @@ public class Message implements Serializable{
 		return timestamp;
 	}
 
+	public String getDateString() {
+		Date now = getTimestamp();
+		StringBuilder sb = new StringBuilder();
+		sb.append(now.getDate());
+		sb.append("-");
+		sb.append(now.getMonth());
+		sb.append("-");
+		sb.append(now.getYear() + 1900);
+		sb.append(" ");
+		sb.append(now.getHours());
+		sb.append(":");
+		sb.append(now.getMinutes());
+		return sb.toString();
+	}
+
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("Message{");

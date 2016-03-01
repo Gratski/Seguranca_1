@@ -59,13 +59,13 @@ public class MessagesProxy {
 		BufferedReader bf = new BufferedReader(fr);
 		String line = null;
 		ArrayList<Message> messages = new ArrayList<>();
-		while((line = bf.readLine())!=null){
+		while ((line = bf.readLine())!=null) {
 			
-			String[]arr = line.split(" ");
-			if(arr.length < 3)
+			String[] arr = line.split(" ");
+			if (arr.length < 3)
 				continue;
 			
-			if(!this.isBetween(line, user.getName(), contact))
+			if (!this.isBetween(line, user.getName(), contact))
 				continue;
 			
 			Message msg = new Message(arr[1], arr[2], arr[5]);
@@ -75,17 +75,14 @@ public class MessagesProxy {
 	}
 	
 	public boolean addMessage(String from, String to, String flag, String body) throws IOException{
+
+		Message msg = new Message(from, to, body);
+		String msgToWrite = msg.getDateString() + " " + from + " " + to + " " + flag + " " + "-m " + "\"" + body + "\"";
 		
-		Date now = new Date();
-		String nowStr = now.getDate()+"/"+ now.getMonth() +"/"+now.getYear()
-						+"-"+now.getHours()+":"+now.getMinutes()+":"+now.getSeconds();
-		String msg = nowStr+" " + from + " " + to + " " +flag+ " " + " -m " + "\""+body+"\"";
-		
-		this.bw.write(msg);
+		this.bw.write(msgToWrite);
 		this.bw.flush();
 		
 		return true;
-		
 	}
 	
 	

@@ -60,7 +60,7 @@ public class ConversationsProxy implements Proxy {
 	public Conversation add(String from, String to) throws IOException{
 		
 		int id = this.conversations.size() + 1;
-		Conversation c = new Conversation(new User(from), new User(to), ""+id);
+		Conversation c = new Conversation(new User(from), new User(to), "" + id);
 		this.conversations.put(c, c);
 		
 		//save on file

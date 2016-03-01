@@ -55,11 +55,11 @@ public class RequestHandler extends Thread{
 		}
 		
 		//Tratamento de request
-		try{
+		try {
 			//trata de request
 			reply = parseRequest(clientRequest, this.connection, userProxy);
 				
-		}catch(Exception e){
+		} catch(Exception e) {
 			System.out.println("Erro ao registar users");
 			e.printStackTrace();
 		}
@@ -198,10 +198,11 @@ public class RequestHandler extends Thread{
 							c = this.convProxy.getConversation(req.getUser().getName(), req.getMessage().getTo());
 						
 						//abre canal de escrita
-						BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/CONVERSATIONS/PRIVATE/"+c.getFilename(), true);
+						BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/CONVERSATIONS/PRIVATE/" + c.getFilename(), true);
+
 						//escreve
 						StringBuilder sb = new StringBuilder();
-						sb.append("data");
+						sb.append(req.getMessage().getDateString());
 						sb.append(" " + req.getMessage().getFrom());
 						sb.append(" -t");
 						sb.append(" " + req.getMessage().getBody());

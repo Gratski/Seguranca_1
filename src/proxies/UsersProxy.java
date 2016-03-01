@@ -50,9 +50,9 @@ public class UsersProxy implements Proxy{
 		
 		//reading users file
 		String line = null;
-		while((line = br.readLine()) != null){
+		while ((line = br.readLine()) != null) {
 			String[] arr = line.split(":");
-			if(arr.length < 2)
+			if (arr.length < 2)
 				continue;
 			User u = new User(arr[0], arr[1]);
 			
@@ -107,15 +107,16 @@ public class UsersProxy implements Proxy{
 		sb.append(user.getName());
 		sb.append(":");
 		sb.append(user.getPassword());
-		try{
-			
+		sb.append("\n");
+
+		try {
 			//escreve em ficheiro de users
 			this.bw.write(sb.toString());
 			this.bw.flush();
 			this.users.put(user.getName(), user);
-			
-		}catch(Exception e){
-			return false;
+		} catch(Exception e) {
+			System.out.println("Erro ao escrever no ficheiro USERS");
+			System.out.println(e.fillInStackTrace());
 		}
 		
 		return this.users.containsKey(user.getName());
