@@ -35,7 +35,7 @@ public class GroupsProxy implements Proxy{
 
 	public void init() throws IOException{
 		
-		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
+		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		
 		//reading users file
 		String line = null;
@@ -55,7 +55,7 @@ public class GroupsProxy implements Proxy{
 			{
 				String[] members = lineSplit[3].split(",");
 				for(String member : members)
-					group.addMember(new User(member));
+					group.addMember(member);
 			}	
 			
 			//adiciona aos groups
@@ -78,7 +78,7 @@ public class GroupsProxy implements Proxy{
 		this.groups.put(groupName, new Group(groupName, owner));
 		
 		//persistencia em ficheiro
-		BufferedWriter bw = FileStreamBuilder.makeWriter("DATABASE/GROUPS/"+Filenames.GROUPS.toString(),true);
+		BufferedWriter bw = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), true);
 		StringBuilder sb = new StringBuilder();
 		sb.append("data " + owner.getName() + " " + groupName);
 		sb.append("\n");
@@ -124,7 +124,7 @@ public class GroupsProxy implements Proxy{
 	 * @return
 	 * 		true se eh membro, false caso contrario
 	 */
-	public boolean hasMember(String groupName, User user){
+	public boolean hasMember(String groupName, String user){
 		return this.groups.get(groupName).hasMember(user);
 	}
 	
@@ -139,7 +139,7 @@ public class GroupsProxy implements Proxy{
 	 * @require
 	 * 		exists(groupName)
 	 */
-	public boolean addMember(String groupName, User member) throws IOException{
+	public boolean addMember(String groupName, String member) throws IOException{
 		if( !this.groups.get(groupName).addMember(member) )
 			return false;
 		
@@ -157,7 +157,7 @@ public class GroupsProxy implements Proxy{
 	 * 		true se ok, false caso contrario
 	 * @throws IOException
 	 */
-	public boolean removeMember(String groupName, User member) throws IOException{
+	public boolean removeMember(String groupName, String member) throws IOException{
 		
 		if(!this.groups.get(groupName).removeMember(member))
 			return false;
@@ -174,13 +174,12 @@ public class GroupsProxy implements Proxy{
 	private void updateFile() throws IOException{
 		
 		//persistencia em ficheiro
-		BufferedReader reader = FileStreamBuilder.makeReader("DATABASE/GROUPS/"+Filenames.GROUPS.toString());
+		BufferedReader reader = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		StringBuilder sb = new StringBuilder();
 		Collection<Group> list = this.groups.values();
 	
 		
-		for(Group g : list)
-		{
+		for (Group g : list) {
 			
 			sb.append("data");
 			sb.append(" " + g.getOwner());
@@ -188,13 +187,12 @@ public class GroupsProxy implements Proxy{
 			
 			Collection<User> members = g.getMembers().values();
 			int i = 0;
-			for( User m : members )
-			{
+			for ( User m : members ) {
 				//se eh o primeiro dos membros
 				if( i == 0 )
 					sb.append(" " + m.getName());
 				else
-					sb.append(","+m.getName());
+					sb.append("," + m.getName());
 				
 				i++;
 			}
@@ -204,7 +202,7 @@ public class GroupsProxy implements Proxy{
 		}
 		
 		//reescreve ficheiro
-		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/GROUPS/"+Filenames.GROUPS.toString(), false);
+		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), false);
 		writer.write(sb.toString());
 		writer.close();
 		

@@ -26,9 +26,10 @@ public class MyWhatsServer {
 		ServerSocket server = new ServerSocket(8080);
 		server.setReuseAddress(true);
 		
-		System.out.println("Waiting for connections...");
 		
 		while(true) {
+			System.out.println("===============================");
+			System.out.println("Waiting for connections...");
 			Socket clientSocket = server.accept();
 			System.out.println("Connection accepted!");
 			
@@ -46,7 +47,7 @@ public class MyWhatsServer {
 		makeDatabaseUsers();
 		makeDatabaseGroups();
 		makeDatabaseConversations();
-		makeDatabaseMessages();
+		// makeDatabaseMessages();
 	}
 	private static void makeDatabaseConversations() {
 		try{
@@ -55,55 +56,58 @@ public class MyWhatsServer {
 				if(!file.mkdir()){
 					new Exception();
 				}
-		}catch(Exception e){
-			System.out.println("Erro ao criar estrutura de pastas inicial");
-			System.exit(-1);
-		}
-	}
-	private static void makeDatabaseMessages() {
-		try{
-			File file = new File("DATABASE/MESSAGES");
-			if(!file.isDirectory())
-				if(!file.mkdir()){
+
+			file = new File("DATABASE/CONVERSATIONS/PRIVATE");
+			if (!file.isDirectory())
+				if (!file.mkdir()){
 					new Exception();
 				}
 		}catch(Exception e){
+			System.out.println("Erro ao criar estrutura de pastas inicial para CONVERSATIONS");
+			System.exit(-1);
+		}
+	}
+
+	// Not in use probably
+	private static void makeDatabaseMessages() {
+		try{
+			File file = new File("DATABASE/MESSAGES");
+			if (!file.isDirectory())
+				if (!file.mkdir())
+					new Exception();
+		} catch (Exception e) {
 			System.out.println("Erro ao criar estrutura de pastas inicial");
 			System.exit(-1);
 		}
 	}
 	private static void makeDatabaseGroups() {
-		try{
+		try {
 			File file = new File("DATABASE/GROUPS");
-			if(!file.isDirectory())
-				if(!file.mkdir()){
-					new Exception();
-				}
-		}catch(Exception e){
-			System.out.println("Erro ao criar estrutura de pastas inicial");
+			file.createNewFile();
+				
+		} catch (Exception e) {
+			System.out.println("Erro ao criar ficheiro de GROUPS");
 			System.exit(-1);
 		}
 	}
 	private static void makeDatabaseUsers() {
-		try{
+		try {
 			File file = new File("DATABASE/USERS");
-			if(!file.isDirectory())
-				if(!file.mkdir()){
-					new Exception();
-				}
-		}catch(Exception e){
-			System.out.println("Erro ao criar estrutura de pastas inicial");
+			file.createNewFile();
+				
+		} catch (Exception e) {
+			System.out.println("Erro ao criar ficheiro de USERS");
 			System.exit(-1);
 		}
 	}
 	private static void makeDatabase() {
-		try{
+		try {
 			File file = new File("DATABASE");
 			if(!file.isDirectory())
 				if(!file.mkdir()){
 					new Exception();
 				}
-		}catch(Exception e){
+		} catch(Exception e) {
 			System.out.println("Erro ao criar estrutura de pastas inicial");
 			System.exit(-1);
 		}

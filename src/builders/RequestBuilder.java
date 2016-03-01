@@ -18,11 +18,9 @@ public class RequestBuilder {
 		// init user
 		User user = UserBuilder.make(input);
 		
-		System.out.println("Building request");
-		
 		// verificar o tipo de input
 		Request request = null;
-		switch(flag){
+		switch(flag) {
 		case "-regUser":
 			System.out.println("User eh nulo? "+ user == null);
 			request = new Request();
@@ -31,38 +29,40 @@ public class RequestBuilder {
 			break;
 		case "-a":
 			System.out.println("Adicionar user a group");
-			try{
+			try {
 				request = new Request();
 				request.setUser(user);
 				request.setType(flag);
 				request.setGroup(input.get("type"));
-				request.setContact(new User(input.get("contact")));
-			}catch(ArrayIndexOutOfBoundsException e){
+				request.setContact(input.get("contact"));
+			} catch (ArrayIndexOutOfBoundsException e) {
 				break;
 			}
 			break;
 		case "-d":
-			try{
+			try {
+
 				request = new Request();
 				request.setUser(user);
 				request.setType(flag);
 				request.setGroup(input.get("type"));
-				request.setContact(new User(input.get("contact")));
-			}catch(ArrayIndexOutOfBoundsException e){
+				request.setContact(input.get("contact"));
+			} catch (ArrayIndexOutOfBoundsException e) {
 				break;
 			}
 			break;
 		case "-f":
-			try{
+			try {
 				File file = new File(input.get("type"));
 				request = new Request();
 				request.setUser(user);
 				request.setType(flag);
-				request.setContact(new User(input.get("contact")));
+				request.setContact(input.get("contact"));
 				request.setFile(new NetworkFile(input.get("type")));
-			}catch(ArrayIndexOutOfBoundsException e){
+			} catch (ArrayIndexOutOfBoundsException e) {
+
 				break;
-			}catch(Exception e){
+			} catch(Exception e) {
 				System.out.println("Erro ao abrir ficheiro");
 				break;
 			}
@@ -78,27 +78,23 @@ public class RequestBuilder {
 			break;
 		case "-m":
 			System.out.println("ITS A MESSAGE");
-			try{
+			try {
 				String to = input.get("contact");
 				String body = input.get("type");
 				
-				System.out.println("CONTACT NAME: " + to);
-				System.out.println("MESSAGE BODY: " + body);
-				
-				
 				request = new Request();
 				request.setUser(user);
+				request.setContact(to);
 				request.setType(flag);
 				request.setMessage(new Message(user.getName(), to, body));
-				System.out.println("FILLED aLL");
-			}catch(ArrayIndexOutOfBoundsException e){
+			} catch (ArrayIndexOutOfBoundsException e) {
 				break;
 			}
 			break;
 		}
 		
 		System.out.println("FINAL REQUEST");
-		System.out.println("Request type: " + request.getType());
+		System.out.println(request.toString());
 		return request;
 		
 	}
