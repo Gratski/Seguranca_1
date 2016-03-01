@@ -72,10 +72,15 @@ public class InputValidator {
 			return parsedInput;
 		}
 		
+		//flag
+		parsedInput.put("flag", args[i++]);
 		
-		parsedInput.put("flag", args[i]);
-		parsedInput.put("field_1", args[i + 1]);
-		parsedInput.put("field_2", args[i + 2]);
+		//specification fields
+		//<flag> <field_1> <field_2>
+		if(args.length > i)
+			parsedInput.put("field_1", args[i++]);
+		if(args.length > i)
+			parsedInput.put("field_2", args[i]);
 
 		return parsedInput;
 	}

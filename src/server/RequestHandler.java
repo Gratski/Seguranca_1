@@ -216,6 +216,31 @@ public class RequestHandler extends Thread{
 				
 			}
 			break;
+		case "-r":
+			
+			switch(req.getSpecs())
+			{
+			//se eh para obter mensagens de uma conversa
+			case "single_contact":
+				System.out.println("SINGLE CONTACT");
+				break;
+			//se eh para fazer download
+			case "download":
+				System.out.println("DOWNLOAD FILE");
+				break;
+			//se eh para obter todas as mensagens de todos
+			case "all":
+				System.out.println("TODAS DE TODOS");
+				break;
+			default:
+				System.out.println("UNKNOWN");
+				break;
+			}
+			
+			reply = new Reply();
+			reply.setStatus(200);
+			
+			break;
 		default:
 			reply = new Reply();
 			reply.setStatus(400);

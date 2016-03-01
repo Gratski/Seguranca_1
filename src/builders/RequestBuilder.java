@@ -70,10 +70,19 @@ public class RequestBuilder {
 			request = new Request();
 			request.setUser(user);
 			request.setType(flag);
-			//se eh de um contact em especifico
-			// if( input.length == (pos + 2) )
-			// 	request.setContact(new User(input[++pos]));
-			// 	
+			request.setSpecification("all");
+			//se eh especifico para um contacto
+			if( input.containsKey("field_1") )
+			{
+				request.setSpecification("single_contact");
+				request.setContact(input.get("field_1"));
+				//se eh para fazer o download de um file
+				if( input.containsKey("field_2") ){
+					request.setSpecification("download");
+					request.setFile(new NetworkFile(input.get("field_2")));
+				}
+			}
+			
 			break;
 		case "-m":
 			System.out.println("ITS A MESSAGE");

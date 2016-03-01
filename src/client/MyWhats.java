@@ -66,7 +66,7 @@ public class MyWhats {
 	private static void sendRequest(Connection conn, Request req) throws IOException{
 		//send base request
 		conn.getOutputStream().writeObject(req);
-		System.out.println("FILENAME: " + req.getFile().getFullPath());
+		
 		//file type request handler
 		switch(req.getType()){
 		case "-f":	
