@@ -17,10 +17,12 @@ public class InputValidator {
 				return true;
 			i = 4;
 		}
-		
-		else if (!validFlag(input[i]))
+
+		if (!validFlag(input[i]))
 			return false;
-		
+		else if (!input[i].equals("-r") && input.length != (i + 3))
+			return false;
+
 		return true;
 	}
 	
@@ -62,20 +64,27 @@ public class InputValidator {
 			i = 4;
 		} else {
 			parsedInput.put("password", null);
+			parsedInput.put("passwordFlag", null);
 		}
 		
 		//se eh apenas para registar user
-		if( parsedInput.get("password") != null && args.length == 4 )
-		{
+		if ( parsedInput.get("password") != null && args.length == 4 ) {
 			System.out.println("É apenas para registar user");
 			parsedInput.put("flag", "-regUser");
 			return parsedInput;
 		}
-		
-		
+
 		parsedInput.put("flag", args[i]);
-		parsedInput.put("field_1", args[i + 1]);
-		parsedInput.put("field_2", args[i + 2]);
+
+		if ( !args[i].equals("-r") ) {
+			parsedInput.put("field_1", args[i + 1]);
+			parsedInput.put("field_2", args[i + 2]);
+		} else if (args.length == i + 1) {
+			parsedInput.put("field_1", args[i + 1]);
+		} else if (args.length == i + 2) {
+			parsedInput.put("field_1", args[i + 1]);
+			parsedInput.put("field_2", args[i + 2]);
+		}
 
 		return parsedInput;
 	}

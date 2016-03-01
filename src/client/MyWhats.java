@@ -19,7 +19,7 @@ public class MyWhats {
 		try{
 			
 			//input validation
-			if (!InputValidator.validInput(args)){
+			if (!InputValidator.validInput(args)) {
 				System.out.println("Parametros mal formed");
 				System.exit(-1);
 			}	
@@ -39,14 +39,20 @@ public class MyWhats {
 
 			Reply reply = (Reply) connection.getInputStream().readObject();
 			
-			//if error
-			if(reply.getStatus() != 200)
+			//Se erro
+			if (reply.hasError()) {
+				System.out.println("There was an error, Reply received:");
 				System.out.println(reply.getMessage());
-			
-			
+			} else {
+				// TODO Just for le debugging, erase in the end
+				System.out.println("Reply received:");
+				System.out.println(reply);
+			}
+
+			//Fecha connection
 			connection.destroy();
 			
-		}catch(Exception e){
+		} catch(Exception e) {
 			e.printStackTrace();
 			System.out.println("Erro ao criar socket");
 		}
@@ -66,17 +72,25 @@ public class MyWhats {
 	private static void sendRequest(Connection conn, Request req) throws IOException{
 		//send base request
 		conn.getOutputStream().writeObject(req);
-		System.out.println("FILENAME: " + req.getFile().getFullPath());
 		//file type request handler
 		switch(req.getType()){
-		case "-f":	
-				FilesHandler fHandler = new FilesHandler();
-				try{
-					System.out.println("Sending file...");
-					fHandler.send(conn, new File(req.getFile().getFullPath()));
-				}catch(Exception e){
-					e.printStackTrace();
-				}
+		case "-f":
+			System.out.println("FILENAME: " + req.getFile().getFullPath());
+			FilesHandler fHandler = new FilesHandler();
+			try{
+				System.out.println("Sending file...");
+				fHandler.send(conn, new File(req.getFile().getFullPath()));
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+			break;
+		case "-m":
+			try{
+				System.out.println("Sending message...");
+				conn.getOutputStream().writeObject(req);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 			break;
 		}
 		
