@@ -33,8 +33,8 @@ public class RequestBuilder {
 				request = new Request();
 				request.setUser(user);
 				request.setType(flag);
-				request.setGroup(input.get("type"));
-				request.setContact(input.get("contact"));
+				request.setGroup(input.get("field_2"));
+				request.setContact(input.get("field_1"));
 			} catch (ArrayIndexOutOfBoundsException e) {
 				break;
 			}
@@ -45,20 +45,19 @@ public class RequestBuilder {
 				request = new Request();
 				request.setUser(user);
 				request.setType(flag);
-				request.setGroup(input.get("type"));
-				request.setContact(input.get("contact"));
+				request.setGroup(input.get("field_2"));
+				request.setContact(input.get("field_1"));
 			} catch (ArrayIndexOutOfBoundsException e) {
 				break;
 			}
 			break;
 		case "-f":
 			try {
-				File file = new File(input.get("type"));
 				request = new Request();
 				request.setUser(user);
 				request.setType(flag);
-				request.setContact(input.get("contact"));
-				request.setFile(new NetworkFile(input.get("type")));
+				request.setContact(input.get("field_1"));
+				request.setFile(new NetworkFile(input.get("field_2")));
 			} catch (ArrayIndexOutOfBoundsException e) {
 
 				break;
@@ -79,8 +78,8 @@ public class RequestBuilder {
 		case "-m":
 			System.out.println("ITS A MESSAGE");
 			try {
-				String to = input.get("contact");
-				String body = input.get("type");
+				String to = input.get("field_1");
+				String body = input.get("field_2");
 				
 				request = new Request();
 				request.setUser(user);

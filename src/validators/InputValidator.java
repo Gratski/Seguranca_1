@@ -74,8 +74,8 @@ public class InputValidator {
 		
 		
 		parsedInput.put("flag", args[i]);
-		parsedInput.put("contact", args[i + 1]);
-		parsedInput.put("type", args[i + 2]);
+		parsedInput.put("field_1", args[i + 1]);
+		parsedInput.put("field_2", args[i + 2]);
 
 		return parsedInput;
 	}
