@@ -78,6 +78,16 @@ public class MyWhats {
 					e.printStackTrace();
 				}
 			break;
+		case "-r":
+			switch(req.getSpecs()){
+			case "download":
+				break;
+			case "all":
+				break;
+			case "single_contact":
+				break;
+			}
+			break;
 		}
 		
 		

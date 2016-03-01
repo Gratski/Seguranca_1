@@ -4,7 +4,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.logging.FileHandler;
 
 import builders.FileStreamBuilder;
 import common.Conversation;
@@ -227,6 +226,7 @@ public class RequestHandler extends Thread{
 			//se eh para fazer download
 			case "download":
 				System.out.println("DOWNLOAD FILE");
+				sendFile(conn, req);
 				break;
 			//se eh para obter todas as mensagens de todos
 			case "all":
@@ -249,6 +249,35 @@ public class RequestHandler extends Thread{
 		}
 		
 		return reply;
+	}
+	
+	
+	private void sendFile(Connection conn, Request req) throws IOException{
+		
+		String contact = req.getContact();
+		String filename = req.getFile().getFullPath();
+		
+		//get conversation between users folder
+		Conversation c = null;
+		if(c == null)
+		{
+			conn.getOutputStream().writeLong(-1);
+			conn.getOutputStream().flush();
+			return;
+		}
+		
+		File file = new File("CONVERSATIONS/"+contact+"/"+filename);
+		if(!file.exists()){
+			conn.getOutputStream().writeLong(-1);
+			conn.getOutputStream().flush();
+			return;
+		}
+		
+		FilesHandler fHandler = new FilesHandler();
+		
+		//fazer qualquer coisa com isto :P
+		boolean sent = fHandler.send(conn, file);
+		
 	}
 	
 	private Reply removeUserFromGroup(String groupName, User user, String member, UsersProxy uProxy) throws IOException{
