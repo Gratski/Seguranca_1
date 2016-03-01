@@ -7,8 +7,8 @@ public class Request extends NetworkMessage implements Serializable{
 	
 	private Message message;
 	private User contact;
-	private File file;
 	private String group;
+	private NetworkFile file;
 
 	public Message getMessage() {
 		return message;
@@ -17,10 +17,10 @@ public class Request extends NetworkMessage implements Serializable{
 	public void setMessage(Message message) {
 		this.message = message;
 	}
-	public void setFile(File f){
+	public void setFile(NetworkFile f){
 		this.file = f;
 	}
-	public File getFile(){
+	public NetworkFile getFile(){
 		return this.file;
 	}
 

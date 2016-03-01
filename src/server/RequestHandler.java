@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.logging.FileHandler;
 
 import builders.FileStreamBuilder;
 import common.Conversation;
@@ -11,6 +12,7 @@ import common.Reply;
 import common.Request;
 import common.User;
 import helpers.Connection;
+import helpers.FilesHandler;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
@@ -57,7 +59,7 @@ public class RequestHandler extends Thread{
 		//Tratamento de request
 		try{
 			//trata de request
-			parseRequest(clientRequest, userProxy);
+			parseRequest(clientRequest, this.connection, userProxy);
 				
 		}catch(Exception e){
 			System.out.println("Erro ao registar users");
@@ -90,7 +92,7 @@ public class RequestHandler extends Thread{
 	 * @return
 	 * 		Reply com a resposta devida para o client
 	 */
-	private Reply parseRequest(Request req, UsersProxy uProxy) throws IOException{
+	private Reply parseRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException{
 		
 		Reply reply = null;
 		
@@ -113,6 +115,23 @@ public class RequestHandler extends Thread{
 				reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
 			}
 			break;
+		case "-f":
+			System.out.println("RECEIVE FILE");
+			FilesHandler fHandler = new FilesHandler();
+			
+			String filename = req.getFile().getFile().getName();
+			
+			//get file
+			try {
+				System.out.println("Prepare to receive");
+				File file = fHandler.receive(conn, "SERVERFILES", filename);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+			reply = new Reply();
+			reply.setStatus(200);
+			break;
 		case "-m":
 			System.out.println("Enviar mensagem");
 			synchronized(groupsProxy){
@@ -120,10 +139,10 @@ public class RequestHandler extends Thread{
 				//se eh para group
 				if( groupsProxy.exists(req.getMessage().getTo())){
 					
-					File file = new File("DATABASE/CONVERSATIONS/GROUPS/" + req.getMessage().getTo());
-					if( !file.exists() ){
+					File f = new File("DATABASE/CONVERSATIONS/GROUPS/" + req.getMessage().getTo());
+					if( !f.exists() ){
 						System.out.println("Criar novo file para mensagem");
-						file.createNewFile();
+						f.createNewFile();
 					}else
 					{
 						System.out.println("File de mensagem ja existe");

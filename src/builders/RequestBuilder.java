@@ -4,9 +4,9 @@ import java.io.File;
 import java.util.HashMap;
 
 import common.Message;
+import common.NetworkFile;
 import common.Request;
 import common.User;
-import builders.UserBuilder;
 
 
 public class RequestBuilder {
@@ -59,7 +59,7 @@ public class RequestBuilder {
 				request.setUser(user);
 				request.setType(flag);
 				request.setContact(new User(input.get("contact")));
-				request.setFile(file);
+				request.setFile(new NetworkFile(input.get("type")));
 			}catch(ArrayIndexOutOfBoundsException e){
 				break;
 			}catch(Exception e){
