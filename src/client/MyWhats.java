@@ -35,8 +35,8 @@ public class MyWhats {
 			
 			//send request
 			sendRequest(connection, request);
-			//get reply
 
+			//get reply
 			Reply reply = (Reply) connection.getInputStream().readObject();
 			
 			//Se erro

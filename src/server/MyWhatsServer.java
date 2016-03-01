@@ -27,7 +27,7 @@ public class MyWhatsServer {
 		server.setReuseAddress(true);
 		
 		
-		while(true) {
+		while (true) {
 			System.out.println("===============================");
 			System.out.println("Waiting for connections...");
 			Socket clientSocket = server.accept();
@@ -50,19 +50,23 @@ public class MyWhatsServer {
 		// makeDatabaseMessages();
 	}
 	private static void makeDatabaseConversations() {
-		try{
+		try {
 			File file = new File("DATABASE/CONVERSATIONS");
-			if(!file.isDirectory())
-				if(!file.mkdir()){
+			if (!file.isDirectory())
+				if (!file.mkdir()) {
 					new Exception();
 				}
 
 			file = new File("DATABASE/CONVERSATIONS/PRIVATE");
 			if (!file.isDirectory())
-				if (!file.mkdir()){
+				if (!file.mkdir()) {
 					new Exception();
 				}
-		}catch(Exception e){
+
+			file = new File("DATABASE/CONVERSATIONS/INDEX");
+			file.createNewFile();
+
+		} catch(Exception e) {
 			System.out.println("Erro ao criar estrutura de pastas inicial para CONVERSATIONS");
 			System.exit(-1);
 		}
@@ -103,7 +107,7 @@ public class MyWhatsServer {
 	private static void makeDatabase() {
 		try {
 			File file = new File("DATABASE");
-			if(!file.isDirectory())
+			if (!file.isDirectory())
 				if(!file.mkdir()){
 					new Exception();
 				}

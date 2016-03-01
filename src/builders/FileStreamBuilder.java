@@ -17,7 +17,7 @@ public class FileStreamBuilder {
 	 * 		BufferedReader
 	 * @throws IOException
 	 */
-	public static BufferedReader makeReader(String filename) throws IOException{
+	public static BufferedReader makeReader(String filename) throws IOException {
 		File file = new File(filename);
 		FileReader reader = new FileReader(file);
 		return new BufferedReader(reader);
@@ -33,14 +33,9 @@ public class FileStreamBuilder {
 	 * 		BufferedWriter
 	 * @throws IOException
 	 */
-	public static BufferedWriter makeWriter(String filename, boolean append) throws IOException
-	{
+	public static BufferedWriter makeWriter(String filename, boolean append) throws IOException {
 		File file = new File(filename);
-		FileWriter writer;
-		if(append)
-			writer = new FileWriter(file, true);
-		else
-			writer = new FileWriter(file, false);
+		FileWriter writer = new FileWriter(file, append);
 		return new BufferedWriter(writer);
 	}
 	
