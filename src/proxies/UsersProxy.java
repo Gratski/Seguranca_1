@@ -100,13 +100,18 @@ public class UsersProxy implements Proxy{
 	 * @param user
 	 * 		User a ser inserido
 	 * @require
-	 * 		!exists(user)
+	 * 		!exists(user) && user != null
 	 */
 	public boolean insert(User user){
+		
+		if(this.users.containsKey(user.getName()))
+			return false;
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append(user.getName());
 		sb.append(":");
 		sb.append(user.getPassword());
+		sb.append("\n");
 		try{
 			
 			//escreve em ficheiro de users
@@ -119,6 +124,17 @@ public class UsersProxy implements Proxy{
 		}
 		
 		return this.users.containsKey(user.getName());
+	}
+	
+	/**
+	 * Finds a user by username
+	 * @param name
+	 * 		name of the user to be considered
+	 * @return
+	 * 		User if exists, null if doesnt
+	 */
+	public User find(String name){
+		return this.users.containsKey(name) ? this.users.get(name) : null;
 	}
 	
 	@Override
