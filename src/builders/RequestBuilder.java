@@ -29,27 +29,18 @@ public class RequestBuilder {
 			break;
 		case "-a":
 			System.out.println("Adicionar user a group");
-			try {
-				request = new Request();
-				request.setUser(user);
-				request.setType(flag);
-				request.setGroup(input.get("field_2"));
-				request.setContact(input.get("field_1"));
-			} catch (ArrayIndexOutOfBoundsException e) {
-				break;
-			}
+			request = new Request();
+			request.setUser(user);
+			request.setType(flag);
+			request.setContact(input.get("field_1"));
+			request.setGroup(input.get("field_2"));
 			break;
 		case "-d":
-			try {
-
-				request = new Request();
-				request.setUser(user);
-				request.setType(flag);
-				request.setGroup(input.get("field_2"));
-				request.setContact(input.get("field_1"));
-			} catch (ArrayIndexOutOfBoundsException e) {
-				break;
-			}
+			request = new Request();
+			request.setUser(user);
+			request.setType(flag);
+			request.setContact(input.get("field_1"));
+			request.setGroup(input.get("field_2"));
 			break;
 		case "-f":
 			try {
@@ -58,9 +49,6 @@ public class RequestBuilder {
 				request.setType(flag);
 				request.setContact(input.get("field_1"));
 				request.setFile(new NetworkFile(input.get("field_2")));
-			} catch (ArrayIndexOutOfBoundsException e) {
-
-				break;
 			} catch(Exception e) {
 				System.out.println("Erro ao abrir ficheiro");
 				break;
@@ -71,33 +59,27 @@ public class RequestBuilder {
 			request.setUser(user);
 			request.setType(flag);
 			request.setSpecification("all");
+
 			//se eh especifico para um contacto
-			if( input.containsKey("field_1") )
-			{
+			if ( input.containsKey("field_1") ) {
 				request.setSpecification("single_contact");
 				request.setContact(input.get("field_1"));
 				//se eh para fazer o download de um file
-				if( input.containsKey("field_2") ){
+				if ( input.containsKey("field_2") ) {
 					request.setSpecification("download");
 					request.setFile(new NetworkFile(input.get("field_2")));
 				}
 			}
-			
 			break;
 		case "-m":
-			System.out.println("ITS A MESSAGE");
-			try {
-				String to = input.get("field_1");
-				String body = input.get("field_2");
-				
-				request = new Request();
-				request.setUser(user);
-				request.setContact(to);
-				request.setType(flag);
-				request.setMessage(new Message(user.getName(), to, body));
-			} catch (ArrayIndexOutOfBoundsException e) {
-				break;
-			}
+			String to = input.get("field_1");
+			String body = input.get("field_2");
+
+			request = new Request();
+			request.setUser(user);
+			request.setContact(to);
+			request.setType(flag);
+			request.setMessage(new Message(user.getName(), to, body));
 			break;
 		}
 		

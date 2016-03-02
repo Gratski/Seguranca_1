@@ -34,8 +34,7 @@ public class RequestHandler extends Thread{
 	public void run() {
 		
 		Request clientRequest = null;
-		Reply reply = new Reply();
-		reply.setStatus(200);
+		Reply reply = null;
 		
 		//Obter request
 		try {
@@ -56,11 +55,11 @@ public class RequestHandler extends Thread{
 		}
 		
 		//Tratamento de request
-		try{
+		try {
 			//trata de request
-			parseRequest(clientRequest, this.connection, userProxy);
+			reply = parseRequest(clientRequest, this.connection, userProxy);
 				
-		}catch(Exception e){
+		} catch(Exception e) {
 			System.out.println("Erro ao registar users");
 			e.printStackTrace();
 		}
@@ -68,6 +67,7 @@ public class RequestHandler extends Thread{
 			
 		//ENVIA RESPOSTA
 		try {
+			System.out.println(reply);
 			this.connection.getOutputStream().writeObject(reply);
 			System.out.println("Replied!");
 		} catch (IOException e) {	
@@ -168,21 +168,25 @@ public class RequestHandler extends Thread{
 					System.out.println("Eh private");
 					
 					//verifica se user exist
-					if(!userProxy.exists(req.getUser()))
-					{
+					if (!userProxy.exists(req.getUser())) {
 						System.out.println("User inexistente");
 						reply = new Reply();
 						reply.setStatus(400);
-					}
-					else if( !userProxy.autheticate(req.getUser()) )
-					{
+						// TODO Eliminar setMessage depois, é suposto criar user
+						reply.setMessage("User inexistente");
+
+					} else if ( !userProxy.autheticate(req.getUser()) ) {
 						System.out.println("User nao autenticado");
 						reply = new Reply();
 						reply.setStatus(401);
-					}else if( !userProxy.exists(new User(req.getMessage().getTo())) ){
+						// TODO Eliminar setMessage depois, é suposto criar user
+						reply.setMessage("User user nao autenticado");
+
+					} else if ( !userProxy.exists(new User(req.getMessage().getTo())) ) {
 						System.out.println("Contact inexistente");
 						reply = new Reply();
 						reply.setStatus(402);
+						reply.setMessage("Contact inexistente");
 					}
 					//se estah tudo ok
 					else{
@@ -194,10 +198,11 @@ public class RequestHandler extends Thread{
 							c = this.convProxy.getConversation(req.getUser().getName(), req.getMessage().getTo());
 						
 						//abre canal de escrita
-						BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/CONVERSATIONS/PRIVATE/"+c.getFilename(), true);
+						BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/CONVERSATIONS/PRIVATE/" + c.getFilename(), true);
+
 						//escreve
 						StringBuilder sb = new StringBuilder();
-						sb.append("data");
+						sb.append(req.getMessage().getDateString());
 						sb.append(" " + req.getMessage().getFrom());
 						sb.append(" -t");
 						sb.append(" " + req.getMessage().getBody());
@@ -209,7 +214,7 @@ public class RequestHandler extends Thread{
 						
 						reply = new Reply();
 						reply.setStatus(200);
-						
+
 					}
 				}
 				
@@ -247,7 +252,7 @@ public class RequestHandler extends Thread{
 			reply.setMessage("Comando invalido");
 			break;
 		}
-		
+
 		return reply;
 	}
 	
