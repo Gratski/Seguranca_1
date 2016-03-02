@@ -1,7 +1,7 @@
 package common;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,10 +45,11 @@ public class Group {
 	 * 		true se existe, false caso contrario
 	 */
 	public boolean hasMember(String user){
-		System.out.println(user + "eh membro de " + this.name + "? " + this.members.containsKey(user));
-		System.out.println("JOAO eh membro de " + this.name + "? " + this.members.containsKey("JOAO"));
-		System.out.println("JOAO,JOSE eh membro de " + this.name + "? " + this.members.containsKey("JOAO,JOSE"));
-		System.out.println(this.name + "size eh " + this.members.size());
+		Collection<User> members = this.members.values();
+		User[] list = new User[members.size()];
+		members.toArray(list);
+		for(User u : list)
+			System.out.println("Member: " + u.getName());
 		return this.members.containsKey(user);
 	}
 	

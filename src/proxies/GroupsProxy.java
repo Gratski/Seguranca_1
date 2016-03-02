@@ -67,6 +67,18 @@ public class GroupsProxy implements Proxy{
 	}
 	
 	/**
+	 * Find a group by name if exists
+	 * @param groupName
+	 * 		GroupName to be searchedBy
+	 * @return
+	 * 		Group if exists, null if not
+	 * @throws IOException
+	 */
+	public Group find(String groupName) throws IOException{
+		return this.groups.containsKey(groupName) ? this.groups.get(groupName) : null;
+	} 
+	
+	/**
 	 * Adiciona um novo group a groups
 	 * @param groupName
 	 * 		Nome do novo group
@@ -142,6 +154,9 @@ public class GroupsProxy implements Proxy{
 	public boolean addMember(String groupName, String member) throws IOException{
 		if( !this.groups.get(groupName).addMember(member) )
 			return false;
+		//add to current members list
+		Group group = this.groups.get(groupName);
+		group.addMember(member);
 		
 		updateFile();
 		return true; 
