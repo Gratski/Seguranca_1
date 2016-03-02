@@ -5,8 +5,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import builders.FileStreamBuilder;
@@ -64,6 +66,19 @@ public class GroupsProxy implements Proxy{
 		}
 		
 		br.close();
+	}
+	
+	
+	public Map<String, Group> getGroupsWhereMember(String name){
+		Map<String, Group> list = new HashMap<>();
+		for(Group g : this.groups.values())
+		{
+			if(g.hasMember(name) || g.getOwner().equals(name))
+			{
+				list.put(g.getName(), g);
+			}
+		}
+		return list;
 	}
 	
 	/**

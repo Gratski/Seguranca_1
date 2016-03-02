@@ -1,7 +1,13 @@
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Map;
 
 import org.junit.Test;
 
+import common.Group;
 import common.User;
 import proxies.UsersProxy;
 
@@ -110,6 +116,16 @@ public class UserTests {
 			assertNull(proxy.find(errorName));
 		}catch(Exception e){
 			System.out.println("Find Invalid User by Name Exception!");
+		}
+	}
+	
+	@Test
+	public void getGroups(){
+		try{
+			User user = new User(name, password);
+			assertTrue(user.getGroups().containsKey("FCUL"));
+		}catch(Exception e){
+			
 		}
 	}
 	

@@ -1,12 +1,19 @@
 package common;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+
+import proxies.GroupsProxy;
 
 public class User implements Serializable{
 
 	private String name;
 	private String password;
+	private List<Group> groups;
 	
 	public User(String name) {
 		this.name = name;
@@ -32,6 +39,14 @@ public class User implements Serializable{
 			pwd = sc.nextLine();
 		}
 		this.password = pwd;
+	}
+	
+	public Map<String, Group> getGroups() throws IOException{
+		if(this.groups == null)
+			this.groups = new ArrayList<Group>();
+		
+		GroupsProxy proxy = GroupsProxy.getInstance();
+		return proxy.getGroupsWhereMember(this.name);
 	}
 	
 	public String getName(){
