@@ -43,8 +43,15 @@ public class InputValidator {
 		
 		String[] addressSplit = address.split(":");
 		String ip = addressSplit[0];
-		int port = Integer.parseInt(addressSplit[1]);
-		
+		int port = 0;
+		try {
+			port = Integer.parseInt(addressSplit[1]);
+		} catch(NumberFormatException e) {
+			return false;
+		} catch(NullPointerException e) {
+			return false;
+		}
+
 		return (port >= 0 && port <= 99999 && ip.matches("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"));
 	}
 
