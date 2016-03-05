@@ -5,7 +5,7 @@ import java.util.Date;
 
 public class Message implements Serializable{
 
-	private String from, to, body;
+	private String from, to, body, type;
 	private Date timestamp;
 	
 	public Message(String from, String to, String body){
@@ -26,11 +26,19 @@ public class Message implements Serializable{
 	public String getBody() {
 		return body;
 	}
+	
+	public String getType(){
+		return this.type;
+	}
 
 	public Date getTimestamp() {
 		return timestamp;
 	}
 
+	public void setType(String type){
+		this.type = type;
+	}
+	
 	public String getDateString() {
 		Date now = getTimestamp();
 		StringBuilder sb = new StringBuilder();
@@ -56,4 +64,6 @@ public class Message implements Serializable{
 		sb.append('}');
 		return sb.toString();
 	}
+	
+	
 }

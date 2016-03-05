@@ -169,6 +169,7 @@ public class RequestHandler extends Thread{
 			break;
 		case "-m":
 			System.out.println("Enviar mensagem");
+			req.getMessage().setType("-t");
 			synchronized(groupsProxy){
 				
 				System.out.println("==================");
@@ -178,9 +179,7 @@ public class RequestHandler extends Thread{
 				System.out.println("Body: " + req.getMessage().getBody());
 				System.out.println("==================");
 				
-				reply = executeSendMessage(req, uProxy);
-				
-				reply.setStatus(200);
+				reply = executeSendMessage(req, uProxy);				
 				
 			}
 			break;
@@ -229,7 +228,13 @@ public class RequestHandler extends Thread{
 		if( req.getUser().getGroups().containsKey(req.getMessage().getTo()) )
 		{
 			System.out.println("Message destination is a group!");
-			reply.setStatus(200);
+			boolean good = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
+			if(!good){
+				reply.setStatus(400);
+				reply.setMessage("Erro ao enviar mensagem");
+			}
+			else
+				reply.setStatus(200);
 		}
 		//se nao e para um group
 		else{
@@ -242,7 +247,7 @@ public class RequestHandler extends Thread{
 			}
 			
 			System.out.println("Now we are going to send it!");
-			ConversationsProxy.getInstance().insertMessage(req.getMessage());
+			ConversationsProxy.getInstance().insertPrivateMessage(req.getMessage());
 		}
 		return reply;
 	}

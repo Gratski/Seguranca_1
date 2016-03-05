@@ -86,6 +86,40 @@ public class ConversationsProxy implements Proxy {
 	}
 	
 	
+	public boolean insertGroupMessage(Message msg) throws IOException{
+		
+		//criar pasta de group
+		File file = new File("DATABASE/CONVERSATIONS/GROUP/"+msg.getTo());
+		if(!file.exists())
+			file.mkdirs();
+		
+		//criar files folder
+		File filesFolder = new File("DATABASE/CONVERSATIONS/GROUP/"+msg.getTo()+"/FILES");
+		if(!filesFolder.exists())
+			filesFolder.mkdirs();
+		
+		//criar file de msg
+		File msgFile = new File("DATABASE/CONVERSATIONS/GROUP/"+msg.getTo()+"/"+file.list().length+".msg");
+		if(msgFile.exists())
+			return false;
+		msgFile.createNewFile();
+		
+		//escrever mensagem
+		StringBuilder sb = new StringBuilder();
+		sb.append(msg.getFrom()+" ");
+		sb.append(msg.getType()+" ");
+		sb.append(msg.getBody()+"\n");
+		
+		FileWriter fw = new FileWriter(msgFile);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(sb.toString());
+		bw.flush();
+		bw.close();
+		
+		return true;
+		
+	}
+	
 	/**
 	 * Insere uma nova mensagem numa conversacao
 	 * nova ou existente
@@ -99,7 +133,7 @@ public class ConversationsProxy implements Proxy {
 	 * 		true se okay, caso contrario false
 	 * @throws IOException
 	 */
-	public boolean insertMessage(Message msg) throws IOException{
+	public boolean insertPrivateMessage(Message msg) throws IOException{
 		String folder = null;
 		
 		System.out.println("working...");
@@ -127,7 +161,7 @@ public class ConversationsProxy implements Proxy {
 		//escreve em file
 		StringBuilder sb = new StringBuilder();
 		sb.append(msg.getFrom()+" ");
-		sb.append("-t ");
+		sb.append(msg.getType()+" ");
 		sb.append(msg.getBody()+"\n");
 		
 		FileWriter fr = new FileWriter(file);
