@@ -1,12 +1,11 @@
 package validators;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import sun.jvm.hotspot.utilities.Assert;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by simon on 02/03/16.
