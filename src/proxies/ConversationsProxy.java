@@ -86,6 +86,14 @@ public class ConversationsProxy implements Proxy {
 	}
 	
 	
+	/**
+	 * Regista mensagem em pasta de group
+	 * @param msg
+	 * 		Mensagem a registar
+	 * @return
+	 * 		true se enviou, false caso contrario
+	 * @throws IOException
+	 */
 	public boolean insertGroupMessage(Message msg) throws IOException{
 		
 		//criar pasta de group
@@ -105,17 +113,7 @@ public class ConversationsProxy implements Proxy {
 		msgFile.createNewFile();
 		
 		//escrever mensagem
-		StringBuilder sb = new StringBuilder();
-		sb.append(msg.getFrom()+" ");
-		sb.append(msg.getType()+" ");
-		sb.append(msg.getBody()+"\n");
-		
-		FileWriter fw = new FileWriter(msgFile);
-		BufferedWriter bw = new BufferedWriter(fw);
-		bw.write(sb.toString());
-		bw.flush();
-		bw.close();
-		
+		writeOnFile(msgFile, msg);
 		return true;
 		
 	}
@@ -136,17 +134,9 @@ public class ConversationsProxy implements Proxy {
 	public boolean insertPrivateMessage(Message msg) throws IOException{
 		String folder = null;
 		
-		System.out.println("working...");
-		if(  (folder = this.getConversationID(msg.getFrom(), msg.getTo())) == null){
-			System.out.println("Conversacao inexistente");
-			if((folder = this.add(msg.getFrom(), msg.getTo()))==null){
-				System.out.println("erro ao criar conversacao");
+		if(  (folder = this.getConversationID(msg.getFrom(), msg.getTo())) == null)
+			if((folder = this.add(msg.getFrom(), msg.getTo()))==null)
 				return false;
-			}else
-				System.out.println("Conversacao criada com sucesso");
-		}
-		
-		System.out.println("Conversation directory is: " + folder);
 		
 		//verifica se a pasta de conversacao existe
 		File file = new File("DATABASE/CONVERSATIONS/PRIVATE/"+folder);
@@ -159,6 +149,13 @@ public class ConversationsProxy implements Proxy {
 			return false;
 		
 		//escreve em file
+		writeOnFile(file, msg);
+		return true;
+	}
+	
+	
+	private void writeOnFile(File file, Message msg) throws IOException{
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append(msg.getFrom()+" ");
 		sb.append(msg.getType()+" ");
@@ -170,8 +167,6 @@ public class ConversationsProxy implements Proxy {
 		bw.flush();
 		bw.close();
 		
-		
-		return true;
 	}
 	
 	/**

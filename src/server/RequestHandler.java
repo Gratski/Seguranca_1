@@ -152,35 +152,28 @@ public class RequestHandler extends Thread{
 			break;
 		case "-f":
 			System.out.println("RECEIVE FILE");
-			FilesHandler fHandler = new FilesHandler();
+			
 			
 			String filename = req.getFile().getFile().getName();
 			
 			//get file
-			try {
+			FilesHandler fHandler = new FilesHandler();
+			/*try {
 				System.out.println("Prepare to receive");
 				File file = fHandler.receive(conn, "SERVERFILES", filename);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+			*/
 			
 			reply = new Reply();
 			reply.setStatus(200);
 			break;
 		case "-m":
 			System.out.println("Enviar mensagem");
-			req.getMessage().setType("-t");
 			synchronized(groupsProxy){
-				
-				System.out.println("==================");
-				System.out.println("Message Details");
-				System.out.println("From: " + req.getMessage().getFrom());
-				System.out.println("To: " + req.getMessage().getTo());
-				System.out.println("Body: " + req.getMessage().getBody());
-				System.out.println("==================");
-				
+				req.getMessage().setType("-t");
 				reply = executeSendMessage(req, uProxy);				
-				
 			}
 			break;
 		case "-r":
