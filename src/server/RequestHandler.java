@@ -1,12 +1,11 @@
 package server;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
-import builders.FileStreamBuilder;
 import common.Conversation;
+import common.Message;
 import common.Reply;
 import common.Request;
 import common.User;
@@ -152,22 +151,14 @@ public class RequestHandler extends Thread{
 			break;
 		case "-f":
 			System.out.println("RECEIVE FILE");
-			
-			
-			String filename = req.getFile().getFile().getName();
-			
-			//get file
-			FilesHandler fHandler = new FilesHandler();
-			/*try {
-				System.out.println("Prepare to receive");
-				File file = fHandler.receive(conn, "SERVERFILES", filename);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			*/
-			
 			reply = new Reply();
-			reply.setStatus(200);
+			try{
+				reply = executeGetFile(req, conn);
+				reply.setStatus(200);
+			}catch(Exception e){
+				reply.setStatus(400);
+				reply.setMessage("Erro ao enviar ficheiro");
+			}
 			break;
 		case "-m":
 			System.out.println("Enviar mensagem");
@@ -214,6 +205,52 @@ public class RequestHandler extends Thread{
 	}
 	
 	
+	private Reply executeGetFile(Request req, Connection conn) throws Exception {
+		
+		System.out.println("UPLOAD ========================");
+		
+		//Obtem nome de ficheiro
+		String filename = req.getFile().getFile().getName();
+		System.out.println("Filename: "+filename);
+		
+		//formula message
+		Message msg = new Message(req.getUser().getName(), req.getContact(), filename);
+		msg.setType("-f");
+		req.setMessage(msg);
+		
+		//escreve message
+		Reply reply = executeSendMessage(req, UsersProxy.getInstance());
+		System.out.println("Sent!"); // fix this
+		if(reply.getStatus() != 200){
+			System.out.println("DIFERENTE DE 200...");
+			return reply;
+		}
+			
+		
+		//obtem ficheiro de upload
+		FilesHandler handler = new FilesHandler();
+		String path = null;
+		System.out.println("Checking if is group or private...");
+		//verifica se eh uma mensagem para um group
+		if( req.getUser().getGroups().containsKey(req.getContact()) )
+		{
+			System.out.println("Store in group: " + req.getContact());
+			path = "DATABASE/CONVERSATIONS/GROUP/"+req.getContact()+"/FILES";
+		}
+		//verifica se eh private
+		else{
+			path = "DATABASE/CONVERSATIONS/PRIVATE/";
+			path = path +""+ ConversationsProxy.getInstance().getConversationID(req.getUser().getName(), req.getContact());
+			path = path +"/FILES";
+			System.out.println("Store in Private: " + path);
+		}
+		
+		System.out.println("Writing file!");
+		handler.receive(conn, path , filename);
+		
+		return reply;
+	}
+
 	private Reply executeSendMessage(Request req, UsersProxy uProxy) throws IOException {
 		Reply reply = new Reply();
 		
@@ -241,6 +278,7 @@ public class RequestHandler extends Thread{
 			
 			System.out.println("Now we are going to send it!");
 			ConversationsProxy.getInstance().insertPrivateMessage(req.getMessage());
+			reply.setStatus(200);
 		}
 		return reply;
 	}

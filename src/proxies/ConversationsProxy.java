@@ -47,7 +47,7 @@ public class ConversationsProxy implements Proxy {
 	 * 		null caso contrario
 	 * @throws IOException
 	 */
-	private String getConversationID(String user1, String user2) throws IOException{
+	public String getConversationID(String user1, String user2) throws IOException{
 		
 		File f = new File("DATABASE/CONVERSATIONS/INDEX");
 		FileReader fr = new FileReader(f);
