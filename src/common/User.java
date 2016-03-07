@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 import proxies.GroupsProxy;
+import validators.InputValidator;
 
 public class User implements Serializable {
 
@@ -34,7 +35,7 @@ public class User implements Serializable {
 	private void askForPassword() {
 		Scanner sc = new Scanner(System.in);
 		String pwd = sc.nextLine();
-		while (pwd == null || pwd.length() < 5 || (pwd.split(" ")).length > 1) {
+		while (pwd == null || (pwd.split(" ")).length > 1 || !InputValidator.validPassword(pwd)) {
 			System.out.println("Insira uma palavra passe valida (5 chars min, sem espacos)");
 			pwd = sc.nextLine();
 		}

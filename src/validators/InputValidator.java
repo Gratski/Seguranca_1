@@ -34,7 +34,7 @@ public class InputValidator {
 	}
 	
 	public static Boolean validPassword(String password) {
-		return !password.contains(":") && password.length() > 3;
+		return !password.contains(":") && password.length() > 2;
 	}
 	
 	public static Boolean validFlag(String flag) {
@@ -62,7 +62,7 @@ public class InputValidator {
 	}
 
 	public static HashMap<String, String> parseInput(String[] args) {
-		HashMap<String, String> parsedInput = new HashMap<String, String>();
+		HashMap<String, String> parsedInput = new HashMap<>();
 		parsedInput.put("username", args[0]);
 
 		String[] addressSplit = args[1].split(":");

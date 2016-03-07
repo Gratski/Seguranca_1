@@ -45,7 +45,7 @@ public class InputValidatorTest {
 
     @Test
     public void testValidPassword() throws Exception {
-        assertFalse("Recognizes invalid passwords with length < 4", InputValidator.validPassword("bad"));
+        assertFalse("Recognizes invalid passwords with length < 3", InputValidator.validPassword("ba"));
         assertFalse("Recognizes invalid passwords with ':'", InputValidator.validPassword(":pass"));
         assertTrue("Accepts valid passwords", InputValidator.validPassword("normalpass"));
     }

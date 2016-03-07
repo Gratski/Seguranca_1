@@ -91,20 +91,17 @@ public class RequestHandler extends Thread{
 	 * 		Reply com a resposta devida para o client
 	 */
 	private Reply parseRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException {
-		
 		Reply reply = null;
-		
 		System.out.println("REQUEST TYPE: " +req.getType() );
 		
 		//se eh apenas para registo
-		if(req.getType().equals("-regUser")){
+		if (req.getType().equals("-regUser")) {
 			System.out.println("Registar novo user");
 			return insertNewUser(req.getUser(), uProxy);
 		}
 		
 		//valida user
-		if(!validateUser(req, uProxy))
-		{
+		if (!validateUser(req, uProxy)) {
 			reply = new Reply();
 			reply.setStatus(400);
 			reply.setMessage("User nao autenticado");
@@ -123,7 +120,7 @@ public class RequestHandler extends Thread{
 	private boolean validateUser(Request req, UsersProxy uProxy) {
 		boolean valid = false;
 		//se user existe
-		if( uProxy.exists(req.getUser()) )
+		if ( uProxy.exists(req.getUser()) )
 			valid = uProxy.autheticate(req.getUser());
 		//se user nao existe
 		else
@@ -136,7 +133,7 @@ public class RequestHandler extends Thread{
 		
 		Reply reply = new Reply();
 		
-		switch(req.getType()){
+		switch (req.getType()) {
 		case "-a":
 			System.out.println("Adicionar membro a group");
 			synchronized(groupsProxy){
