@@ -3,7 +3,7 @@ package common;
 import java.io.File;
 import java.io.Serializable;
 
-public class Request extends NetworkMessage implements Serializable{
+public class Request extends NetworkMessage implements Serializable {
 	
 	private Message message;
 	private String contact;

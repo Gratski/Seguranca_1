@@ -25,7 +25,7 @@ public class MessagesProxy {
 		this.init();
 	}
 	
-	public static MessagesProxy getInstance() throws IOException{
+	public static MessagesProxy getInstance() throws IOException {
 		if(instance == null)
 			instance = new MessagesProxy();
 		return instance;
@@ -35,7 +35,7 @@ public class MessagesProxy {
 	 * Inicializa os streams de messages
 	 * @throws IOException
 	 */
-	private void init() throws IOException{
+	private void init() throws IOException {
 		this.file = new File(Filenames.MESSAGES.toString());
 		if( !file.exists() )
 			file.createNewFile();
@@ -53,7 +53,7 @@ public class MessagesProxy {
 	 * 		lista de mensagens
 	 * @throws IOException
 	 */
-	public Message[] getMessages(User user, String contact) throws IOException{
+	public Message[] getMessages(User user, String contact) throws IOException {
 		File f = new File(Filenames.MESSAGES.toString());
 		FileReader fr = new FileReader(f);
 		BufferedReader bf = new BufferedReader(fr);
@@ -74,14 +74,11 @@ public class MessagesProxy {
 		return (Message[]) messages.toArray();
 	}
 	
-	public boolean addMessage(String from, String to, String flag, String body) throws IOException{
-
+	public boolean addMessage(String from, String to, String flag, String body) throws IOException {
 		Message msg = new Message(from, to, body);
 		String msgToWrite = msg.getDateString() + " " + from + " " + to + " " + flag + " " + "-m " + "\"" + body + "\"";
-		
 		this.bw.write(msgToWrite);
 		this.bw.flush();
-		
 		return true;
 	}
 	

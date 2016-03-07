@@ -12,7 +12,7 @@ import java.util.Map;
 import common.User;
 import enums.Filenames;
 
-public class UsersProxy implements Proxy{
+public class UsersProxy implements Proxy {
 
 	private static UsersProxy instance = null;
 	private File file;
@@ -20,13 +20,13 @@ public class UsersProxy implements Proxy{
 	private BufferedWriter bw;
 	private Map<String, User> users;
 	
-	private UsersProxy() throws IOException{
+	private UsersProxy() throws IOException {
 		this.users = new HashMap<>();
 		this.init();
 	} 
 	
-	public static UsersProxy getInstance() throws IOException{
-		if(instance == null)
+	public static UsersProxy getInstance() throws IOException {
+		if (instance == null)
 			instance = new UsersProxy();
 		return instance;
 	}
@@ -36,7 +36,7 @@ public class UsersProxy implements Proxy{
 	 * Abre streams de escrita em USERS
 	 * @throws IOException
 	 */
-	private void init() throws IOException{
+	private void init() throws IOException {
 		
 		File file = new File("DATABASE/" + Filenames.USERS.toString());
 		// if ( !file.exists() ){
@@ -90,7 +90,7 @@ public class UsersProxy implements Proxy{
 	 * @require
 	 * 		exists(user)
 	 */
-	public boolean autheticate(User user){
+	public boolean autheticate(User user) {
 		User register = this.users.get(user.getName());
 		return register.getPassword().equals(user.getPassword());
 	}
@@ -102,9 +102,8 @@ public class UsersProxy implements Proxy{
 	 * @require
 	 * 		!exists(user) && user != null
 	 */
-	public boolean insert(User user){
-		
-		if(this.users.containsKey(user.getName()))
+	public boolean insert(User user) {
+		if (this.users.containsKey(user.getName()))
 			return false;
 		
 		StringBuilder sb = new StringBuilder();
@@ -112,7 +111,7 @@ public class UsersProxy implements Proxy{
 		sb.append(":");
 		sb.append(user.getPassword());
 		sb.append("\n");
-		try{
+		try {
 			//escreve em ficheiro de users
 			this.bw.write(sb.toString());
 			this.bw.flush();
@@ -121,7 +120,6 @@ public class UsersProxy implements Proxy{
 			System.out.println("Erro ao escrever no ficheiro USERS");
 			System.out.println(e.fillInStackTrace());
 		}
-		
 		return this.users.containsKey(user.getName());
 	}
 	
@@ -141,5 +139,4 @@ public class UsersProxy implements Proxy{
 		this.fw.close();
 		this.bw.close();
 	}
-	
 }

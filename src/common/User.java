@@ -9,7 +9,7 @@ import java.util.Scanner;
 
 import proxies.GroupsProxy;
 
-public class User implements Serializable{
+public class User implements Serializable {
 
 	private String name;
 	private String password;
@@ -31,17 +31,17 @@ public class User implements Serializable{
 	/**
 	 * Pede ao utilizador uma nova palavra-passe
 	 */
-	private void askForPassword(){
+	private void askForPassword() {
 		Scanner sc = new Scanner(System.in);
 		String pwd = sc.nextLine();
-		while(pwd == null || pwd.length() < 5 || (pwd.split(" ")).length > 1){
+		while (pwd == null || pwd.length() < 5 || (pwd.split(" ")).length > 1) {
 			System.out.println("Insira uma palavra passe valida (5 chars min, sem espacos)");
 			pwd = sc.nextLine();
 		}
 		this.password = pwd;
 	}
 	
-	public Map<String, Group> getGroups() throws IOException{
+	public Map<String, Group> getGroups() throws IOException {
 		if(this.groups == null)
 			this.groups = new ArrayList<Group>();
 		

@@ -16,7 +16,7 @@ import common.Group;
 import common.User;
 import enums.Filenames;
 
-public class GroupsProxy implements Proxy{
+public class GroupsProxy implements Proxy {
 
 	private static GroupsProxy instance = null;
 	private File file;
@@ -24,26 +24,23 @@ public class GroupsProxy implements Proxy{
 	private BufferedWriter bw;
 	private Map<String, Group> groups;
 	
-	private GroupsProxy() throws IOException{
+	private GroupsProxy() throws IOException {
 		this.groups = new HashMap<>();
 		this.init();
 	}
 	
-	public static GroupsProxy getInstance() throws IOException{
-		if(instance == null)
+	public static GroupsProxy getInstance() throws IOException {
+		if (instance == null)
 			instance = new GroupsProxy();
 		return instance;
 	}
 
-	public void init() throws IOException{
-		
+	public void init() throws IOException {
 		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		
 		//reading users file
 		String line = null;
-		while((line = br.readLine()) != null){
-			
-			System.out.println("INSIDE WHILE");
+		while ((line = br.readLine()) != null) {
 			
 			//read group
 			String[] lineSplit = line.split(" ");
@@ -53,28 +50,21 @@ public class GroupsProxy implements Proxy{
 			Group group = new Group(name, new User(owner));
 			
 			//adiciona membros ao group
-			if(lineSplit.length > 3)
-			{
+			if (lineSplit.length > 3) {
 				String[] members = lineSplit[3].split(",");
-				for(String member : members)
+				for (String member : members)
 					group.addMember(member);
 			}	
-			
 			//adiciona aos groups
 			this.groups.put(name, group);
-			
 		}
-		
 		br.close();
 	}
-	
-	
-	public Map<String, Group> getGroupsWhereMember(String name){
+
+	public Map<String, Group> getGroupsWhereMember(String name) {
 		Map<String, Group> list = new HashMap<>();
-		for(Group g : this.groups.values())
-		{
-			if(g.hasMember(name) || g.getOwner().equals(name))
-			{
+		for (Group g : this.groups.values()) {
+			if (g.hasMember(name) || g.getOwner().equals(name)) {
 				list.put(g.getName(), g);
 			}
 		}
@@ -89,7 +79,7 @@ public class GroupsProxy implements Proxy{
 	 * 		Group if exists, null if not
 	 * @throws IOException
 	 */
-	public Group find(String groupName) throws IOException{
+	public Group find(String groupName) throws IOException {
 		return this.groups.containsKey(groupName) ? this.groups.get(groupName) : null;
 	} 
 	
@@ -100,8 +90,7 @@ public class GroupsProxy implements Proxy{
 	 * @param owner
 	 * 		Owner do novo group
 	 */
-	public void create(String groupName, User owner) throws IOException{
-		
+	public void create(String groupName, User owner) throws IOException {
 		this.groups.put(groupName, new Group(groupName, owner));
 		
 		//persistencia em ficheiro
@@ -126,7 +115,7 @@ public class GroupsProxy implements Proxy{
 	 * @require
 	 * 		exists(groupName)
 	 */
-	public boolean isOwner(String groupName, String username){
+	public boolean isOwner(String groupName, String username) {
 		return this.groups.get(groupName).getOwner().equals(username);
 	}
 	
@@ -166,8 +155,8 @@ public class GroupsProxy implements Proxy{
 	 * @require
 	 * 		exists(groupName)
 	 */
-	public boolean addMember(String groupName, String member) throws IOException{
-		if( !this.groups.get(groupName).addMember(member) )
+	public boolean addMember(String groupName, String member) throws IOException {
+		if ( !this.groups.get(groupName).addMember(member) )
 			return false;
 		//add to current members list
 		Group group = this.groups.get(groupName);
@@ -187,9 +176,8 @@ public class GroupsProxy implements Proxy{
 	 * 		true se ok, false caso contrario
 	 * @throws IOException
 	 */
-	public boolean removeMember(String groupName, String member) throws IOException{
-		
-		if(!this.groups.get(groupName).removeMember(member))
+	public boolean removeMember(String groupName, String member) throws IOException {
+		if (!this.groups.get(groupName).removeMember(member))
 			return false;
 		
 		updateFile();
@@ -201,16 +189,14 @@ public class GroupsProxy implements Proxy{
 	 * Actualiza o ficheiro de groups
 	 * @throws IOException
 	 */
-	private void updateFile() throws IOException{
+	private void updateFile() throws IOException {
 		
 		//persistencia em ficheiro
 		BufferedReader reader = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		StringBuilder sb = new StringBuilder();
 		Collection<Group> list = this.groups.values();
-	
-		
+
 		for (Group g : list) {
-			
 			sb.append("data");
 			sb.append(" " + g.getOwner());
 			sb.append(" " + g.getName());
@@ -219,7 +205,7 @@ public class GroupsProxy implements Proxy{
 			int i = 0;
 			for ( User m : members ) {
 				//se eh o primeiro dos membros
-				if( i == 0 )
+				if ( i == 0 )
 					sb.append(" " + m.getName());
 				else
 					sb.append("," + m.getName());
@@ -228,14 +214,11 @@ public class GroupsProxy implements Proxy{
 			}
 			
 			sb.append("\n");
-			
 		}
-		
 		//reescreve ficheiro
 		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), false);
 		writer.write(sb.toString());
 		writer.close();
-		
 	}
 	
 	@Override

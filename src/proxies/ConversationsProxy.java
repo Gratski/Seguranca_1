@@ -25,11 +25,11 @@ public class ConversationsProxy implements Proxy {
 	private Map<Conversation, Conversation> conversations;
 	private static ConversationsProxy instance = null;
 	
-	private ConversationsProxy() throws IOException{
+	private ConversationsProxy() throws IOException {
 		this.conversations = new HashMap<>();
 	}
 	
-	public static ConversationsProxy getInstance() throws IOException{
+	public static ConversationsProxy getInstance() throws IOException {
 		if( instance == null )
 			instance = new ConversationsProxy();
 		return instance;
@@ -47,7 +47,7 @@ public class ConversationsProxy implements Proxy {
 	 * 		null caso contrario
 	 * @throws IOException
 	 */
-	public String getConversationID(String user1, String user2) throws IOException{
+	public String getConversationID(String user1, String user2) throws IOException {
 		
 		File f = new File("DATABASE/CONVERSATIONS/INDEX");
 		FileReader fr = new FileReader(f);
@@ -55,36 +55,30 @@ public class ConversationsProxy implements Proxy {
 		String line = null;
 		String res = null;
 		
-		while((line = br.readLine())!= null){
-			
+		while ((line = br.readLine())!= null) {
 			String[]split = line.split(" ");
-			if(split.length <2)
+			if (split.length < 2)
 				continue;
 			
 			String u1 = split[0];
 			String u2 = split[1];
 			String dir = split[2];
 			
-			if( (user1.equals(u1) && user2.equals(u2) )
-					|| ( user2.equals(u1) && user1.equals(u2) ) )
-			{
+			if ( (user1.equals(u1) && user2.equals(u2))
+					|| (user2.equals(u1) && user1.equals(u2)) ) {
 				res = dir;
 				break;
 			}
-			
 		}
-		
 		return res;
 	}
 	
-	
-	private int getNextID() throws IOException{
+	private int getNextID() throws IOException {
 		File f = new File("DATABASE/CONVERSATIONS/PRIVATE");
-		if( f.list() != null )
+		if ( f.list() != null )
 			return f.list().length + 1;
 		return -1;
 	}
-	
 	
 	/**
 	 * Regista mensagem em pasta de group
@@ -94,79 +88,71 @@ public class ConversationsProxy implements Proxy {
 	 * 		true se enviou, false caso contrario
 	 * @throws IOException
 	 */
-	public boolean insertGroupMessage(Message msg) throws IOException{
+	public boolean insertGroupMessage(Message msg) throws IOException {
 		
 		//criar pasta de group
-		File file = new File("DATABASE/CONVERSATIONS/GROUP/"+msg.getTo());
-		if(!file.exists())
+		File file = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo());
+		if (!file.exists())
 			file.mkdirs();
 		
 		//criar files folder
-		File filesFolder = new File("DATABASE/CONVERSATIONS/GROUP/"+msg.getTo()+"/FILES");
-		if(!filesFolder.exists())
+		File filesFolder = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo() + "/FILES");
+		if (!filesFolder.exists())
 			filesFolder.mkdirs();
 		
 		//criar file de msg
-		File msgFile = new File("DATABASE/CONVERSATIONS/GROUP/"+msg.getTo()+"/"+file.list().length+".msg");
-		if(msgFile.exists())
+		File msgFile = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo() + "/" + file.list().length + ".msg");
+		if (msgFile.exists())
 			return false;
+
 		msgFile.createNewFile();
-		
 		//escrever mensagem
 		writeOnFile(msgFile, msg);
+
 		return true;
-		
 	}
 	
 	/**
 	 * Insere uma nova mensagem numa conversacao
 	 * nova ou existente
-	 * @param from
-	 * 		autor da mensagem
-	 * @param to
-	 * 		destinatario da mensagem
 	 * @param msg
 	 * 		mensagem em si
 	 * @return
 	 * 		true se okay, caso contrario false
 	 * @throws IOException
 	 */
-	public boolean insertPrivateMessage(Message msg) throws IOException{
+	public boolean insertPrivateMessage(Message msg) throws IOException {
 		String folder = null;
-		
-		if(  (folder = this.getConversationID(msg.getFrom(), msg.getTo())) == null)
-			if((folder = this.add(msg.getFrom(), msg.getTo()))==null)
+		if ( (folder = this.getConversationID(msg.getFrom(), msg.getTo())) == null)
+			if ((folder = this.add(msg.getFrom(), msg.getTo())) == null)
 				return false;
 		
 		//verifica se a pasta de conversacao existe
-		File file = new File("DATABASE/CONVERSATIONS/PRIVATE/"+folder);
-		if(!file.exists())
+		File file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder);
+		if (!file.exists())
 			return false;
 		
 		//cria file de mensagem
-		file = new File("DATABASE/CONVERSATIONS/PRIVATE/"+folder+"/"+file.list().length+".msg");
-		if(!file.createNewFile())
+		file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder + "/" + file.list().length + ".msg");
+		if (!file.createNewFile())
 			return false;
 		
 		//escreve em file
 		writeOnFile(file, msg);
 		return true;
 	}
-	
-	
-	private void writeOnFile(File file, Message msg) throws IOException{
-		
+
+	private void writeOnFile(File file, Message msg) throws IOException {
 		StringBuilder sb = new StringBuilder();
-		sb.append(msg.getFrom()+" ");
-		sb.append(msg.getType()+" ");
-		sb.append(msg.getBody()+"\n");
+		sb.append(msg.getFrom() + " ");
+		sb.append(msg.getType() + " ");
+		sb.append(msg.getBody() + "\n");
 		
 		FileWriter fr = new FileWriter(file);
 		BufferedWriter bw = new BufferedWriter(fr);
 		bw.write(sb.toString());
 		bw.flush();
 		bw.close();
-		
 	}
 	
 	/**
@@ -184,19 +170,18 @@ public class ConversationsProxy implements Proxy {
 		return false;
 	}
 	
-	
 	//add a new conversation to index conversations file
-	private String add(String from, String to) throws IOException{
+	private String add(String from, String to) throws IOException {
 		
 		int id = getNextID();
-		File f = new File("DATABASE/CONVERSATIONS/PRIVATE/"+id);
+		File f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id);
 		f.mkdirs();
-		if( !f.exists() )
+		if ( !f.exists() )
 			return null;
 		
-		f = new File("DATABASE/CONVERSATIONS/PRIVATE/"+id+"/FILES");
+		f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id + "/FILES");
 		f.mkdirs();
-		if(!f.exists())
+		if (!f.exists())
 			return null;
 		
 		//save on file
@@ -211,21 +196,17 @@ public class ConversationsProxy implements Proxy {
 		writer.flush();
 		writer.close();
 		
-		return ""+id;
-		
+		return "" + id;
 	}
-	
 	
 	public Conversation getConversation(String u1, String u2){
 		Conversation c = new Conversation(new User(u1), new User(u2), "");
 		return this.conversations.get(c);
 	}
 	
-	
 	@Override
 	public void destroy() throws IOException {
 		// TODO Auto-generated method stub
 		
 	}
-
 }

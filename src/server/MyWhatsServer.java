@@ -74,7 +74,7 @@ public class MyWhatsServer {
 
 	// Not in use probably
 	private static void makeDatabaseMessages() {
-		try{
+		try {
 			File file = new File("DATABASE/MESSAGES");
 			if (!file.isDirectory())
 				if (!file.mkdir())

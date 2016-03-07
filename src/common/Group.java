@@ -13,7 +13,7 @@ public class Group {
 	private Map<String, User> members;
 	private List<Message> msgs;
 	
-	public Group(String name, User owner){
+	public Group(String name, User owner) {
 		this.name = name;
 		this.owner = owner;
 		this.members = new HashMap<>();
@@ -29,8 +29,8 @@ public class Group {
 	 * @param user
 	 * 		User a ser adicionado ao grupo
 	 */
-	public boolean addMember(String user){
-		if(this.members.containsKey(user))
+	public boolean addMember(String user) {
+		if (this.members.containsKey(user))
 			return false;
 		
 		this.members.put(user, new User(user));
@@ -44,7 +44,7 @@ public class Group {
 	 * @return
 	 * 		true se existe, false caso contrario
 	 */
-	public boolean hasMember(String user){
+	public boolean hasMember(String user) {
 		Collection<User> members = this.members.values();
 		User[] list = new User[members.size()];
 		members.toArray(list);
@@ -58,7 +58,7 @@ public class Group {
 	 * @param user
 	 * 		User a ser adicionado
 	 */
-	public boolean removeMember(String user){
+	public boolean removeMember(String user) {
 		this.members.remove(user);
 		return !this.members.containsKey(user);
 	}
@@ -66,7 +66,6 @@ public class Group {
 	public String getOwner(){
 		return this.owner.getName();
 	}
-	
 	
 	public String getName(){
 		return this.name;

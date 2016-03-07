@@ -22,7 +22,7 @@ public class RequestHandler extends Thread{
 	public volatile GroupsProxy groupsProxy;
 	public volatile ConversationsProxy convProxy;
 	
-	public RequestHandler(Socket clientSocket, UsersProxy userProxy, GroupsProxy groups, ConversationsProxy conv) throws IOException{
+	public RequestHandler(Socket clientSocket, UsersProxy userProxy, GroupsProxy groups, ConversationsProxy conv) throws IOException {
 		this.connection = new Connection(clientSocket);
 		this.userProxy = userProxy;
 		this.groupsProxy = groups;
@@ -90,7 +90,7 @@ public class RequestHandler extends Thread{
 	 * @return
 	 * 		Reply com a resposta devida para o client
 	 */
-	private Reply parseRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException{
+	private Reply parseRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException {
 		
 		Reply reply = null;
 		
@@ -120,7 +120,7 @@ public class RequestHandler extends Thread{
 	
 	//valida user de request
 	//se nao existe user => cria novo user
-	private boolean validateUser(Request req, UsersProxy uProxy){
+	private boolean validateUser(Request req, UsersProxy uProxy) {
 		boolean valid = false;
 		//se user existe
 		if( uProxy.exists(req.getUser()) )
@@ -132,7 +132,7 @@ public class RequestHandler extends Thread{
 		return valid;
 	}
 	
-	private Reply executeRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException{
+	private Reply executeRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException {
 		
 		Reply reply = new Reply();
 		
@@ -232,16 +232,15 @@ public class RequestHandler extends Thread{
 		String path = null;
 		System.out.println("Checking if is group or private...");
 		//verifica se eh uma mensagem para um group
-		if( req.getUser().getGroups().containsKey(req.getContact()) )
-		{
+		if ( req.getUser().getGroups().containsKey(req.getContact()) ) {
 			System.out.println("Store in group: " + req.getContact());
 			path = "DATABASE/CONVERSATIONS/GROUP/"+req.getContact()+"/FILES";
 		}
 		//verifica se eh private
 		else{
 			path = "DATABASE/CONVERSATIONS/PRIVATE/";
-			path = path +""+ ConversationsProxy.getInstance().getConversationID(req.getUser().getName(), req.getContact());
-			path = path +"/FILES";
+			path = path + "" + ConversationsProxy.getInstance().getConversationID(req.getUser().getName(), req.getContact());
+			path = path + "/FILES";
 			System.out.println("Store in Private: " + path);
 		}
 		
@@ -255,22 +254,20 @@ public class RequestHandler extends Thread{
 		Reply reply = new Reply();
 		
 		//verifica se eh uma mensagem para um group
-		if( req.getUser().getGroups().containsKey(req.getMessage().getTo()) )
-		{
+		if ( req.getUser().getGroups().containsKey(req.getMessage().getTo()) ) {
 			System.out.println("Message destination is a group!");
 			boolean good = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
-			if(!good){
+			if (!good) {
 				reply.setStatus(400);
 				reply.setMessage("Erro ao enviar mensagem");
-			}
-			else
+			} else
 				reply.setStatus(200);
 		}
 		//se nao e para um group
-		else{
+		else {
 			System.out.println("Message is for a private user!");
 			//verifica se destinatario existe
-			if(!uProxy.exists( new User(req.getMessage().getTo()))){
+			if (!uProxy.exists( new User(req.getMessage().getTo()))) {
 				reply.setStatus(400);
 				reply.setMessage("Destinatario inexistente");
 				return reply;
@@ -283,22 +280,21 @@ public class RequestHandler extends Thread{
 		return reply;
 	}
 
-	private void sendFile(Connection conn, Request req) throws IOException{
+	private void sendFile(Connection conn, Request req) throws IOException {
 		
 		String contact = req.getContact();
 		String filename = req.getFile().getFullPath();
 		
 		//get conversation between users folder
 		Conversation c = null;
-		if(c == null)
-		{
+		if (c == null) {
 			conn.getOutputStream().writeLong(-1);
 			conn.getOutputStream().flush();
 			return;
 		}
 		
-		File file = new File("CONVERSATIONS/"+contact+"/"+filename);
-		if(!file.exists()){
+		File file = new File("CONVERSATIONS/" + contact + "/" + filename);
+		if (!file.exists()) {
 			conn.getOutputStream().writeLong(-1);
 			conn.getOutputStream().flush();
 			return;
@@ -311,7 +307,7 @@ public class RequestHandler extends Thread{
 		
 	}
 	
-	private Reply removeUserFromGroup(String groupName, User user, String member, UsersProxy uProxy) throws IOException{
+	private Reply removeUserFromGroup(String groupName, User user, String member, UsersProxy uProxy) throws IOException {
 		
 		Reply reply = new Reply();
 		reply.setStatus(200);
@@ -375,11 +371,10 @@ public class RequestHandler extends Thread{
 	 * 		Reply em conformidade com a logica aplicacional
 	 * @throws IOException
 	 */
-	private Reply addUserToGroup(String groupName, User user, String newMember, UsersProxy uProxy) throws IOException{
+	private Reply addUserToGroup(String groupName, User user, String newMember, UsersProxy uProxy) throws IOException {
 		
 		Reply reply = new Reply();
 		reply.setStatus(200);
-		
 		
 		System.out.println("==========ADICIONAR MEMBRO A GROUP===========");
 		//verifica se o user de contacto existe
@@ -393,11 +388,11 @@ public class RequestHandler extends Thread{
 		//verifica se group existe
 		GroupsProxy gProxy = GroupsProxy.getInstance();
 		
-		if( !gProxy.exists(groupName) )
+		if ( !gProxy.exists(groupName) )
 			gProxy.create(groupName, user);
 		
 		//verifica se user eh owner
-		if( !gProxy.isOwner(groupName, user.getName()) ){
+		if ( !gProxy.isOwner(groupName, user.getName()) ) {
 			reply.setStatus(401);
 			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
 			return reply;
@@ -408,7 +403,7 @@ public class RequestHandler extends Thread{
 		//ASSIM NAO TEMOS QUE INSERIR SEMPRE PARA TESTAR ADICIONAR
 		
 		//adiciona newMember a group
-		if ( !gProxy.addMember(groupName, newMember) ){
+		if ( !gProxy.addMember(groupName, newMember) ) {
 			reply.setStatus(402);
 			reply.setMessage("Erro ao adicionar novo membro a " + groupName);
 			return reply;
@@ -430,11 +425,10 @@ public class RequestHandler extends Thread{
 	 */
 	private Reply insertNewUser(User user, UsersProxy proxy) {
 		Reply reply = new Reply();
-		if(proxy.exists(user) || !proxy.insert(user)){
+		if (proxy.exists(user) || !proxy.insert(user)) {
 			reply.setStatus(404);
 			reply.setMessage("Erro ao adicionar novo utilizador");
-		}
-		else
+		} else
 			reply.setStatus(200);
 			
 		return reply;

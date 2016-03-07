@@ -14,23 +14,20 @@ public class FilesHandler {
 	
 	public FilesHandler(){}
 	
-	public boolean sendReceive(Connection conn, String filename){
+	public boolean sendReceive(Connection conn, String filename) {
 		this.connection = conn;
 		this.filename = filename;
-		
 		return true;
 	}
 	
-	public boolean receiveSend(Connection conn, String filename){
+	public boolean receiveSend(Connection conn, String filename) {
 		this.connection = conn;
 		this.filename = filename;
-		
 		return true;
 	}
 	
 	
-	public boolean send(Connection conn, File file) throws IOException{
-		
+	public boolean send(Connection conn, File file) throws IOException {
 		byte[] byteArr;
 		
 		FileInputStream fs = new FileInputStream(file);
@@ -45,10 +42,9 @@ public class FilesHandler {
 		long fileSize = file.length();
 		long totalSent = 0;
 		
-		while(totalSent < fileSize){
-			
+		while (totalSent < fileSize) {
 			int byteNum = 0;
-			if( (totalSent + CHUNK) <= fileSize )
+			if ( (totalSent + CHUNK) <= fileSize )
 				byteNum = CHUNK;
 			else
 				byteNum = (int) ( fileSize - totalSent );
@@ -56,6 +52,7 @@ public class FilesHandler {
 			System.out.println("ByteNum: " + byteNum);
 			byteArr = new byte[byteNum];
 			int toSend = fs.read(byteArr,(int) 0, byteNum);
+
 			System.out.println("Sent now: " + toSend);
 			conn.getOutputStream().write(byteArr, 0, toSend);
 			conn.getOutputStream().flush();
@@ -66,14 +63,13 @@ public class FilesHandler {
 		return totalSent == fileSize;
 	}
 	
-	public File receive(Connection conn, String dir, String filename) throws Exception{
-		
+	public File receive(Connection conn, String dir, String filename) throws Exception {
 		byte[] byteArr = new byte[CHUNK];
-		
+
 		//receiving filename
-		File file = new File(dir+ "/" + filename);
+		File file = new File(dir + "/" + filename);
 		file.getParentFile().mkdirs();
-		FileOutputStream out = new FileOutputStream(dir +"/"+filename);
+		FileOutputStream out = new FileOutputStream(dir + "/" + filename);
 		
 		//receiving filesize
 		System.out.println("Waiting for filesize");
@@ -82,10 +78,9 @@ public class FilesHandler {
 		
 		System.out.println("Receiving file with size : " + fileSize);
 		//receiving file itself
-		while(totalRead < fileSize)
-		{
+		while (totalRead < fileSize) {
 			int cur = conn.getInputStream().read(byteArr);
-			if(cur == -1)
+			if (cur == -1)
 				continue;
 			
 			out.write(byteArr, 0, cur);
@@ -95,8 +90,6 @@ public class FilesHandler {
 		
 		System.out.println("Total Received: " + totalRead);
 		out.close();
-		
 		return totalRead == fileSize ? file : null;
 	}
-	
 }

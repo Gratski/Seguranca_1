@@ -13,7 +13,7 @@ public class UserBuilder {
 	 * @param  input represents the input given in the command line
 	 * @return       the new User
 	 */
-	public static User make(HashMap<String, String> input){
+	public static User make(HashMap<String, String> input) {
 		String password = input.get("password");
 		
 		// se não passou a password em args

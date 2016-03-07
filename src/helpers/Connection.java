@@ -11,7 +11,7 @@ public class Connection {
 	private ObjectOutputStream output;
 	private ObjectInputStream input;
 	
-	public Connection(Socket socket) throws IOException{
+	public Connection(Socket socket) throws IOException {
 		this.socket = socket;
 		this.output = new ObjectOutputStream(socket.getOutputStream());
 		this.input = new ObjectInputStream(socket.getInputStream());
@@ -21,7 +21,7 @@ public class Connection {
 	 * Closes an existing connection
 	 * @throws IOException
 	 */
-	public void destroy() throws IOException{
+	public void destroy() throws IOException {
 		this.output.close();
 		this.input.close();
 		this.socket.close();
@@ -36,5 +36,4 @@ public class Connection {
 	public boolean isConnected(){
 		return this.socket.isConnected();
 	}
-	
 }

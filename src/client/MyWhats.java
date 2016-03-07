@@ -14,9 +14,9 @@ import validators.InputValidator;
 
 public class MyWhats {
 
-	public static void main(String[]args){
-		
-		try{
+	public static void main(String[] args) {
+
+		try {
 			
 			//input validation
 			if (!InputValidator.validInput(args)) {
@@ -74,27 +74,27 @@ public class MyWhats {
 		conn.getOutputStream().writeObject(req);
 
 		//file type request handler
-		switch(req.getType()){
+		switch (req.getType()) {
 		case "-f":
 			System.out.println("FILENAME: " + req.getFile().getFullPath());
 			FilesHandler fHandler = new FilesHandler();
-			try{
+			try {
 				System.out.println("Sending file...");
 				fHandler.send(conn, new File(req.getFile().getFullPath()));
-			}catch(Exception e){
+			} catch(Exception e) {
 				e.printStackTrace();
 			}
 			break;
 		case "-m":
-			try{
+			try {
 				System.out.println("Sending message...");
 				conn.getOutputStream().writeObject(req);
-			}catch(Exception e){
+			} catch(Exception e) {
 				e.printStackTrace();
 			}
 			break;
 		case "-r":
-			switch(req.getSpecs()){
+			switch (req.getSpecs()) {
 			case "download":
 				break;
 			case "all":
@@ -104,8 +104,5 @@ public class MyWhats {
 			}
 			break;
 		}
-		
-		
 	}
-	
 }

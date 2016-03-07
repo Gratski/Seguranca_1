@@ -2,7 +2,7 @@ package common;
 
 import java.io.Serializable;
 
-public class NetworkMessage implements Serializable{
+public class NetworkMessage implements Serializable {
 
 	private String type;
 	private String specification;

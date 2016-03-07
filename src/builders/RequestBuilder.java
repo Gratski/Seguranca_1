@@ -11,7 +11,7 @@ import common.User;
 
 public class RequestBuilder {
 	
-	public static Request make(HashMap<String, String> input){
+	public static Request make(HashMap<String, String> input) {
 		
 		String flag = input.get("flag");
 		

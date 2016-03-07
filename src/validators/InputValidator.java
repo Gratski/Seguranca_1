@@ -2,15 +2,14 @@ package validators;
 
 import java.util.HashMap;
 
-
 public class InputValidator {
 
-	public static Boolean validInput(String[] input){
+	public static Boolean validInput(String[] input) {
 		if (input.length < 3 || !validName(input[0]) || !validAddress(input[1]))
 			return false;
 		
 		int i = 2;
-		if (input[2].equals("-p")){
+		if (input[2].equals("-p")) {
 			if (!(input.length > 3) || !validPassword(input[3]))
 				return false;
 			if (input.length == 4)
@@ -52,7 +51,7 @@ public class InputValidator {
 			return false;
 		}
 
-		return (port >= 0 && port <= 99999 && ip.matches("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"));
+		return (port >= 1024 && port <= 65535 && ip.matches("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"));
 	}
 
 	public static HashMap<String, String> parseInput(String[] args) {
@@ -80,17 +79,15 @@ public class InputValidator {
 			parsedInput.put("flag", "-regUser");
 			return parsedInput;
 		}
-
 		//flag
 		parsedInput.put("flag", args[i++]);
 		
 		//specification fields
 		//<flag> <field_1> <field_2>
-		if(args.length > i)
+		if (args.length > i)
 			parsedInput.put("field_1", args[i++]);
-		if(args.length > i)
+		if (args.length > i)
 			parsedInput.put("field_2", args[i]);
-
 
 		return parsedInput;
 	}

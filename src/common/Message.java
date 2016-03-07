@@ -3,12 +3,12 @@ package common;
 import java.io.Serializable;
 import java.util.Date;
 
-public class Message implements Serializable{
+public class Message implements Serializable {
 
 	private String from, to, body, type;
 	private Date timestamp;
 	
-	public Message(String from, String to, String body){
+	public Message(String from, String to, String body) {
 		this.from = from;
 		this.to = to;
 		this.body = body;
