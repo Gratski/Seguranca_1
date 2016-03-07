@@ -15,9 +15,7 @@ import validators.InputValidator;
 public class MyWhats {
 
 	public static void main(String[] args) {
-
 		try {
-			
 			//input validation
 			if (!InputValidator.validInput(args)) {
 				System.out.println("Parametros mal formed");

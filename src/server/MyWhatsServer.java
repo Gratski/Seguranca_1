@@ -8,25 +8,29 @@ import java.net.Socket;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
-
-
+import validators.InputValidator;
 
 public class MyWhatsServer {
 	
 	public static void main(String[] args) throws NumberFormatException, IOException {
-		
+
+		if (!InputValidator.validServerInput(args)) {
+			System.out.println("Parametros mal formed");
+			System.exit(-1);
+		}
+
 		//init fs
 		prepareFileStructure();
-		
+
 		GroupsProxy groups = GroupsProxy.getInstance();
 		UsersProxy users = UsersProxy.getInstance();
 		ConversationsProxy conversations = ConversationsProxy.getInstance();
-		
+
 		@SuppressWarnings("resource")
-		ServerSocket server = new ServerSocket(8080);
+		int port = Integer.parseInt(args[0]);
+		ServerSocket server = new ServerSocket(port);
 		server.setReuseAddress(true);
-		
-		
+
 		while (true) {
 			System.out.println("===============================");
 			System.out.println("Waiting for connections...");
@@ -36,19 +40,19 @@ public class MyWhatsServer {
 			RequestHandler requestHandler = new RequestHandler(clientSocket, users, groups, conversations);
 			requestHandler.run();
 		}
-
 	}
 
 	//Metodos utilizados para garantir a existencia
 	//de todos os directorios necessarios para
 	//a execucao do programa
-	private static void prepareFileStructure(){
+	private static void prepareFileStructure() {
 		makeDatabase();
 		makeDatabaseUsers();
 		makeDatabaseGroups();
 		makeDatabaseConversations();
 		// makeDatabaseMessages();
 	}
+
 	private static void makeDatabaseConversations() {
 		try {
 			File file = new File("DATABASE/CONVERSATIONS");

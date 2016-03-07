@@ -29,6 +29,7 @@ public class InputValidatorTest {
         assertFalse("Recognizes invalid input with few arguments", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -m joao")));
         assertFalse("Recognizes invalid input with more arguments than suposed", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -m joao \"asdasd\" mais argumentos")));
         assertFalse("Recognizes invalid input for flag -regUser", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -regUser")));
+        assertFalse("Recognizes invalid input with no arguments", InputValidator.validInput(null));
         assertTrue("Recognizes valid input (-r)", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -r")));
         assertTrue("Recognizes valid input (-m) without password", InputValidator.validInput(split("simao 127.0.0.1:8080 -m ricardo \"lala\"")));
         assertTrue("Recognizes valid input (-m)", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -m ricardo \"lala\"")));
@@ -68,6 +69,21 @@ public class InputValidatorTest {
         assertFalse("Recognizes invalid ip", InputValidator.validAddress("327.0.0.1:12345"));
         assertFalse("Recognizes invalid ip", InputValidator.validAddress("123.0.256.1:12345"));
         assertTrue("Recognizes valid port and ip", InputValidator.validAddress("127.0.0.1:12345"));
+    }
+
+    @Test
+    public void testValidPort() throws Exception {
+        assertFalse("Recognizes invalid port", InputValidator.validPort("17935682"));
+        assertTrue("Recognizes valid input", InputValidator.validPort("12345"));
+    }
+
+    @Test
+    public void testServerInput() throws Exception {
+        assertFalse("Recognizes invalid input with letters", InputValidator.validServerInput(split("asd")));
+        assertFalse("Recognizes invalid input with no argumetns", InputValidator.validServerInput(null));
+        assertFalse("Recognizes invalid input with multiple arguments", InputValidator.validServerInput(split("multiplos argumentos")));
+        assertFalse("Recognizes invalid input with invalid port", InputValidator.validServerInput(split("123123123")));
+        assertTrue("Recognizes valid input", InputValidator.validServerInput(split("12345")));
     }
 
     public String[] split(String s) {

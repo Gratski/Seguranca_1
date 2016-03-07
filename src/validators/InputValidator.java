@@ -5,7 +5,7 @@ import java.util.HashMap;
 public class InputValidator {
 
 	public static Boolean validInput(String[] input) {
-		if (input.length < 3 || !validName(input[0]) || !validAddress(input[1]))
+		if (input == null || input.length < 3 || !validName(input[0]) || !validAddress(input[1]))
 			return false;
 		
 		int i = 2;
@@ -24,7 +24,11 @@ public class InputValidator {
 
 		return true;
 	}
-	
+
+	public static Boolean validServerInput(String[] input) {
+		return  (input != null && input.length == 1 && validPort(input[0]));
+	}
+
 	public static Boolean validName(String name) {
 		return !name.contains(":") && !name.contains(",");
 	}
@@ -37,21 +41,24 @@ public class InputValidator {
 		return (flag.equals("-a") || flag.equals("-d") || flag.equals("-r") 
 								  || flag.equals("-f") || flag.equals("-m") || flag.equals("-regUser"));
 	}
-	
-	public static Boolean validAddress(String address) {
-		
-		String[] addressSplit = address.split(":");
-		String ip = addressSplit[0];
-		int port = 0;
+
+	private static Boolean validIp(String ip) {
+		return ip.matches("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
+	}
+
+	public static Boolean validPort(String port) {
+		int portInt;
 		try {
-			port = Integer.parseInt(addressSplit[1]);
-		} catch(NumberFormatException e) {
-			return false;
-		} catch(NullPointerException e) {
+			portInt= Integer.parseInt(port);
+		} catch(Exception e) {
 			return false;
 		}
-
-		return (port >= 1024 && port <= 65535 && ip.matches("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$"));
+		return (portInt >= 1024 && portInt <= 65535);
+	}
+	
+	public static Boolean validAddress(String address) {
+		String[] addressSplit = address.split(":");
+		return (validPort(addressSplit[1]) && validIp(addressSplit[0]));
 	}
 
 	public static HashMap<String, String> parseInput(String[] args) {
