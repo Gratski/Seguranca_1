@@ -15,6 +15,16 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.message = null;
 	}
 
+	public Reply(int status, String message) {
+		this.conversations = null;
+		this.status = status;
+		this.message = message;
+	}
+
+	public Reply(int status) {
+		new Reply(status, null);
+	}
+
 	public void setConversations(List<Conversation> conversations) {
 		this.conversations = conversations;
 	}
@@ -30,6 +40,7 @@ public class Reply extends NetworkMessage implements Serializable {
 	public String getMessage(){
 		return this.message;
 	}
+
 	public int getStatus(){
 		return this.status;
 	}

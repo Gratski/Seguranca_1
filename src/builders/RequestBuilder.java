@@ -12,12 +12,9 @@ import common.User;
 public class RequestBuilder {
 	
 	public static Request make(HashMap<String, String> input) {
-		
 		String flag = input.get("flag");
-		
-		// init user
 		User user = UserBuilder.make(input);
-		
+
 		// verificar o tipo de input
 		Request request = null;
 		switch(flag) {

@@ -105,7 +105,8 @@ public class UsersProxy implements Proxy {
 	public boolean insert(User user) {
 		if (this.users.containsKey(user.getName()))
 			return false;
-		
+
+		System.out.println("Registo de novo User: " + user.toString());
 		StringBuilder sb = new StringBuilder();
 		sb.append(user.getName());
 		sb.append(":");

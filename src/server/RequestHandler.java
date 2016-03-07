@@ -31,26 +31,18 @@ public class RequestHandler extends Thread{
 	}
 	
 	public void run() {
-		
 		Request clientRequest = null;
 		Reply reply = null;
 		
 		//Obter request
 		try {
-			
-			System.out.println("receiving request");
 			clientRequest = (Request) this.connection.getInputStream().readObject();
-			
 		} catch (ClassNotFoundException e2) {
-			
 			this.interrupt();
 			e2.printStackTrace();
-			
 		} catch (IOException e2) {
-			
 			this.interrupt();
 			e2.printStackTrace();
-			
 		}
 		
 		//Tratamento de request
@@ -62,8 +54,7 @@ public class RequestHandler extends Thread{
 			System.out.println("Erro ao registar users");
 			e.printStackTrace();
 		}
-		
-			
+
 		//ENVIA RESPOSTA
 		try {
 			System.out.println(reply);
@@ -91,83 +82,55 @@ public class RequestHandler extends Thread{
 	 * 		Reply com a resposta devida para o client
 	 */
 	private Reply parseRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException {
-		Reply reply = null;
-		System.out.println("REQUEST TYPE: " +req.getType() );
-		
+		System.out.println("REQUEST RECEIVED: " + req.toString());
+
 		//se eh apenas para registo
 		if (req.getType().equals("-regUser")) {
-			System.out.println("Registar novo user");
 			return insertNewUser(req.getUser(), uProxy);
 		}
-		
 		//valida user
-		if (!validateUser(req, uProxy)) {
-			reply = new Reply();
-			reply.setStatus(400);
-			reply.setMessage("User nao autenticado");
-			return reply;
-		}
-		System.out.println("Request is valid");
-		System.out.println("Executing request");
-		//executa o request
-		reply = executeRequest(req, conn, uProxy);
+		if (!validateUser(req.getUser(), uProxy))
+			return new Reply(400, "User nao autenticado");
 
-		return reply;
-	}
-	
-	//valida user de request
-	//se nao existe user => cria novo user
-	private boolean validateUser(Request req, UsersProxy uProxy) {
-		boolean valid = false;
-		//se user existe
-		if ( uProxy.exists(req.getUser()) )
-			valid = uProxy.autheticate(req.getUser());
-		//se user nao existe
-		else
-			valid = uProxy.insert(req.getUser());
-		
-		return valid;
+		//executa o request
+		return executeRequest(req, conn, uProxy);
 	}
 	
 	private Reply executeRequest(Request req, Connection conn, UsersProxy uProxy) throws IOException {
-		
+		System.out.println("Executing request");
 		Reply reply = new Reply();
-		
 		switch (req.getType()) {
 		case "-a":
 			System.out.println("Adicionar membro a group");
-			synchronized(groupsProxy){
+			synchronized(groupsProxy) {
 				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
 			}
 			break;
 		case "-d":
 			System.out.println("Remover membro de group");
-			synchronized(groupsProxy){
+			synchronized(groupsProxy) {
 				reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact(), uProxy);
 			}
 			break;
 		case "-f":
-			System.out.println("RECEIVE FILE");
-			reply = new Reply();
-			try{
+			System.out.println("Receber ficheiro");
+			try {
 				reply = executeGetFile(req, conn);
 				reply.setStatus(200);
-			}catch(Exception e){
+			} catch(Exception e) {
 				reply.setStatus(400);
 				reply.setMessage("Erro ao enviar ficheiro");
 			}
 			break;
 		case "-m":
 			System.out.println("Enviar mensagem");
-			synchronized(groupsProxy){
+			synchronized(groupsProxy) {
 				req.getMessage().setType("-t");
 				reply = executeSendMessage(req, uProxy);				
 			}
 			break;
 		case "-r":
-			
-			switch(req.getSpecs())
-			{
+			switch (req.getSpecs()) {
 			//se eh para obter mensagens de uma conversa
 			case "single_contact":
 				System.out.println("SINGLE CONTACT");
@@ -185,25 +148,18 @@ public class RequestHandler extends Thread{
 				System.out.println("UNKNOWN");
 				break;
 			}
-			
-			reply = new Reply();
 			reply.setStatus(200);
-			
 			break;
 		default:
-			reply = new Reply();
 			reply.setStatus(400);
 			reply.setMessage("Comando invalido");
 			break;
 		}
-		
-		
 		return reply;
 	}
 	
 	
 	private Reply executeGetFile(Request req, Connection conn) throws Exception {
-		
 		System.out.println("UPLOAD ========================");
 		
 		//Obtem nome de ficheiro
@@ -222,8 +178,7 @@ public class RequestHandler extends Thread{
 			System.out.println("DIFERENTE DE 200...");
 			return reply;
 		}
-			
-		
+
 		//obtem ficheiro de upload
 		FilesHandler handler = new FilesHandler();
 		String path = null;
@@ -243,7 +198,6 @@ public class RequestHandler extends Thread{
 		
 		System.out.println("Writing file!");
 		handler.receive(conn, path , filename);
-		
 		return reply;
 	}
 
@@ -253,8 +207,8 @@ public class RequestHandler extends Thread{
 		//verifica se eh uma mensagem para um group
 		if ( req.getUser().getGroups().containsKey(req.getMessage().getTo()) ) {
 			System.out.println("Message destination is a group!");
-			boolean good = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
-			if (!good) {
+			boolean inserted = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
+			if (!inserted) {
 				reply.setStatus(400);
 				reply.setMessage("Erro ao enviar mensagem");
 			} else
@@ -278,7 +232,6 @@ public class RequestHandler extends Thread{
 	}
 
 	private void sendFile(Connection conn, Request req) throws IOException {
-		
 		String contact = req.getContact();
 		String filename = req.getFile().getFullPath();
 		
@@ -289,28 +242,21 @@ public class RequestHandler extends Thread{
 			conn.getOutputStream().flush();
 			return;
 		}
-		
 		File file = new File("CONVERSATIONS/" + contact + "/" + filename);
 		if (!file.exists()) {
 			conn.getOutputStream().writeLong(-1);
 			conn.getOutputStream().flush();
 			return;
 		}
-		
 		FilesHandler fHandler = new FilesHandler();
 		
 		//fazer qualquer coisa com isto :P
 		boolean sent = fHandler.send(conn, file);
-		
 	}
 	
 	private Reply removeUserFromGroup(String groupName, User user, String member, UsersProxy uProxy) throws IOException {
-		
-		Reply reply = new Reply();
-		reply.setStatus(200);
-		
+		Reply reply = new Reply(200);
 		System.out.println("==========REMOVER MEMBRO DE GROUP===========");
-		
 		
 		//verifica se o user de contacto existe
 		/*if( !uProxy.exists(newMember) ){
@@ -350,7 +296,6 @@ public class RequestHandler extends Thread{
 			reply.setMessage("Erro ao remover membro do group");
 			return reply;
 		}
-		
 		return reply;
 	}
 	
@@ -369,10 +314,7 @@ public class RequestHandler extends Thread{
 	 * @throws IOException
 	 */
 	private Reply addUserToGroup(String groupName, User user, String newMember, UsersProxy uProxy) throws IOException {
-		
-		Reply reply = new Reply();
-		reply.setStatus(200);
-		
+		Reply reply = new Reply(200);
 		System.out.println("==========ADICIONAR MEMBRO A GROUP===========");
 		//verifica se o user de contacto existe
 		/*if( !uProxy.exists(newMember) ){
@@ -405,11 +347,8 @@ public class RequestHandler extends Thread{
 			reply.setMessage("Erro ao adicionar novo membro a " + groupName);
 			return reply;
 		}
-		
 		return reply;
 	}
-	
-	
 	
 	/**
 	 * Adiciona um novo utilizador
@@ -421,13 +360,23 @@ public class RequestHandler extends Thread{
 	 * 		reply a ser enviada ao user
 	 */
 	private Reply insertNewUser(User user, UsersProxy proxy) {
-		Reply reply = new Reply();
-		if (proxy.exists(user) || !proxy.insert(user)) {
-			reply.setStatus(404);
-			reply.setMessage("Erro ao adicionar novo utilizador");
-		} else
-			reply.setStatus(200);
-			
-		return reply;
+		if (proxy.exists(user) || !proxy.insert(user))
+			return new Reply(404, "Erro ao adicionar novo utilizador");
+		else
+			return new Reply(200);
+	}
+
+	//valida user de request
+	//se nao existe user => cria novo user
+	private boolean validateUser(User user, UsersProxy uProxy) {
+		boolean valid = false;
+		//se user existe
+		if ( uProxy.exists(user) )
+			valid = uProxy.autheticate(user);
+			//se user nao existe
+		else
+			valid = uProxy.insert(user);
+
+		return valid;
 	}
 }
