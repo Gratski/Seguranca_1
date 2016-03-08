@@ -35,7 +35,7 @@ public class MyWhats {
 			sendRequest(connection, request);
 
 			//get reply
-			Reply reply = (Reply) connection.getInputStream().readObject();
+			Reply reply = receiveReply(connection);
 			
 			//Se erro
 			if (reply.hasError()) {
@@ -52,7 +52,7 @@ public class MyWhats {
 			
 		} catch(Exception e) {
 			e.printStackTrace();
-			System.out.println("Erro ao criar socket");
+			System.out.println("Aplicação terminada. Estabelecer nova ligacao.");
 		}
 		
 	}
@@ -67,7 +67,7 @@ public class MyWhats {
 	 * @require
 	 * 		conn != null && req != null && conn.getOutputStream != null
 	 */
-	private static void sendRequest(Connection conn, Request req) throws IOException{
+	public static void sendRequest(Connection conn, Request req) throws IOException{
 		//send base request
 		conn.getOutputStream().writeObject(req);
 
@@ -101,6 +101,25 @@ public class MyWhats {
 				break;
 			}
 			break;
+		}
+	}
+	
+	/**
+	 * Recebe um objecto Reply do servidor
+	 * @param conn
+	 * 		Connection considerada na ligacao
+	 * @return
+	 * 		Reply com resposta
+	 * @throws Exception
+	 */
+	public static Reply receiveReply(Connection conn){
+		try{
+			return (Reply) conn.getInputStream().readObject();
+		}catch(IOException e){
+			return new Reply(400, "");
+		} catch (ClassNotFoundException e) {
+			//e.printStackTrace();
+			return new Reply(400, "");
 		}
 	}
 }

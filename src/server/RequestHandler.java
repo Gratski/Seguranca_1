@@ -56,7 +56,7 @@ public class RequestHandler extends Thread{
 		}
 
 		//ENVIA RESPOSTA
-		try {
+		try {			
 			System.out.println(reply);
 			this.connection.getOutputStream().writeObject(reply);
 			System.out.println("Replied!");
@@ -102,6 +102,7 @@ public class RequestHandler extends Thread{
 			System.out.println("Adicionar membro a group");
 			synchronized(groupsProxy) {
 				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), this.userProxy);
+				System.out.println("RSP DE SAIDA: " + reply.getStatus());
 			}
 			break;
 		case "-d":
@@ -114,7 +115,6 @@ public class RequestHandler extends Thread{
 			System.out.println("Receber ficheiro");
 			try {
 				reply = executeGetFile(req);
-				reply.setStatus(200);
 			} catch(Exception e) {
 				reply.setStatus(400);
 				reply.setMessage("Erro ao enviar ficheiro");
@@ -202,8 +202,14 @@ public class RequestHandler extends Thread{
 	private Reply executeSendMessage(Request req) throws IOException {
 		Reply reply = new Reply();
 		
+		//verifica se o user de destino nao eh o proprio autor
+		if(req.getUser().getName().equals(req.getMessage().getTo())){
+			reply.setStatus(400);
+			reply.setMessage("with yourself..? o.O");
+		}
+		
 		//verifica se eh uma mensagem para um group
-		if ( req.getUser().getGroups().containsKey(req.getMessage().getTo()) ) {
+		else if ( req.getUser().getGroups().containsKey(req.getMessage().getTo()) ) {
 			System.out.println("Message destination is a group!");
 			boolean inserted = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
 			if (!inserted) {
@@ -296,66 +302,32 @@ public class RequestHandler extends Thread{
 		return reply;
 	}
 	
-	/**
-	 * Adiciona um novo membro a um group
-	 * @param groupName
-	 * 		nomo do group a ser considerado
-	 * @param user
-	 * 		User autor do request
-	 * @param newMember
-	 * 		User novo membro do group groupName
-	 * @param uProxy
-	 * 		Proxy de Utilizadores a ser utilizado
-	 * @return
-	 * 		Reply em conformidade com a logica aplicacional
-	 * @throws IOException
-	 */
 	private Reply addUserToGroup(String groupName, User user, String newMember, UsersProxy uProxy) throws IOException {
-		Reply reply = new Reply(200);
 		System.out.println("==========ADICIONAR MEMBRO A GROUP===========");
+
 		//verifica se o user de contacto existe
-		/*if( !uProxy.exists(newMember) ){
-			reply.setStatus(400);
-			reply.setMessage("User nao existe");
-			return reply;
-		}
-		*/
+		if( !uProxy.exists(new User(newMember)) )
+			return new Reply(400, "O user "+ newMember +" nao existe");
 		
-		//verifica se group existe
+		
+		//group nao existe => cria novo
 		GroupsProxy gProxy = GroupsProxy.getInstance();
-		
 		if ( !gProxy.exists(groupName) )
 			gProxy.create(groupName, user);
 		
-		//verifica se user eh owner
-		if ( !gProxy.isOwner(groupName, user.getName()) ) {
-			reply.setStatus(401);
-			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
-			return reply;
-		}
 		
-		//verificar se member existe em users
-		//AQUI POR FAZER DEVIDO A TESTES
-		//ASSIM NAO TEMOS QUE INSERIR SEMPRE PARA TESTAR ADICIONAR
+		//verifica se user eh owner
+		if ( !gProxy.isOwner(groupName, user.getName()) )
+			return new Reply(400, "User " + user.getName() + " is not the owner of group " + groupName);
+		
 		
 		//adiciona newMember a group
-		if ( !gProxy.addMember(groupName, newMember) ) {
-			reply.setStatus(402);
-			reply.setMessage("Erro ao adicionar novo membro a " + groupName);
-			return reply;
-		}
-		return reply;
+		if ( !gProxy.addMember(groupName, newMember) )
+			return new Reply(400, "O utilizador " + newMember + " ja e membro do grupo " + groupName);
+		
+		return new Reply(200);
 	}
 	
-	/**
-	 * Adiciona um novo utilizador
-	 * @param user
-	 * 		User a ser adicionado
-	 * @param proxy
-	 * 		UsersProxy a ser utilizado
-	 * @return
-	 * 		reply a ser enviada ao user
-	 */
 	private Reply insertNewUser(User user, UsersProxy proxy) {
 		if (proxy.exists(user) || !proxy.insert(user))
 			return new Reply(404, "Erro ao adicionar novo utilizador");

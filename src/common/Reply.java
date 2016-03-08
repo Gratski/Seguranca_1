@@ -22,7 +22,9 @@ public class Reply extends NetworkMessage implements Serializable {
 	}
 
 	public Reply(int status) {
-		new Reply(status, null);
+		this.status = status;
+		this.message = null;
+		this.conversations = null;
 	}
 
 	public void setConversations(List<Conversation> conversations) {
