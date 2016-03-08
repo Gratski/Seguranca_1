@@ -45,12 +45,11 @@ public class Group {
 	 * 		true se existe, false caso contrario
 	 */
 	public boolean hasMember(String user) {
-		Collection<User> members = this.members.values();
-		User[] list = new User[members.size()];
-		members.toArray(list);
-		for(User u : list)
-			System.out.println("Member: " + u.getName());
 		return this.members.containsKey(user);
+	}
+
+	public boolean hasMemberOrOwner(String user) {
+		return (hasMember(user) || this.owner.getName().equals(user));
 	}
 	
 	/**

@@ -42,17 +42,10 @@ public class User implements Serializable {
 		this.password = pwd;
 	}
 	
-	public Map<String, Group> getGroups() throws IOException {
-		if(this.groups == null)
-			this.groups = new ArrayList<Group>();
-		
-		GroupsProxy proxy = GroupsProxy.getInstance();
-		return proxy.getGroupsWhereMember(this.name);
-	}
-	
 	public String getName(){
 		return this.name;
 	}
+
 	public String getPassword(){
 		return this.password;
 	}
