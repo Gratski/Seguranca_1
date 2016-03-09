@@ -4,11 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 
-import common.Conversation;
-import common.Message;
-import common.Reply;
-import common.Request;
-import common.User;
+import common.*;
 import helpers.Connection;
 import helpers.FilesHandler;
 import proxies.ConversationsProxy;
@@ -37,6 +33,7 @@ public class RequestHandler extends Thread{
 		//Obter request
 		try {
 			clientRequest = (Request) this.connection.getInputStream().readObject();
+			System.out.println("REQUEST RECEIVED: " + clientRequest.toString());
 		} catch (ClassNotFoundException e2) {
 			this.interrupt();
 			e2.printStackTrace();
@@ -50,7 +47,7 @@ public class RequestHandler extends Thread{
 			//trata de request
 			reply = parseRequest(clientRequest);
 				
-		} catch(Exception e) {
+		} catch (Exception e) {
 			System.out.println("Erro ao registar users");
 			e.printStackTrace();
 		}
@@ -80,8 +77,6 @@ public class RequestHandler extends Thread{
 	 * 		Reply com a resposta devida para o client
 	 */
 	private Reply parseRequest(Request req) throws IOException {
-		System.out.println("REQUEST RECEIVED: " + req.toString());
-
 		//se eh apenas para registo
 		if (req.getType().equals("-regUser")) {
 			return insertNewUser(req.getUser(), this.userProxy);
@@ -171,8 +166,8 @@ public class RequestHandler extends Thread{
 		
 		//escreve message
 		Reply reply = executeSendMessage(req);
-		System.out.println("Sent!"); // fix this
-		if(reply.getStatus() != 200){
+		System.out.println("Sent!"); // fix thisrequehan
+		if (reply.getStatus() != 200) {
 			System.out.println("DIFERENTE DE 200...");
 			return reply;
 		}
@@ -182,14 +177,16 @@ public class RequestHandler extends Thread{
 		String path = null;
 		System.out.println("Checking if is group or private...");
 		//verifica se eh uma mensagem para um group
-		if ( req.getUser().getGroups().containsKey(req.getContact()) ) {
+
+		Group group = GroupsProxy.getInstance().find(req.getContact());
+		if ( group != null && group.hasMemberOrOwner(req.getUser().getName()) ) {
 			System.out.println("Store in group: " + req.getContact());
 			path = "DATABASE/CONVERSATIONS/GROUP/" + req.getContact() + "/FILES";
 		}
 		//verifica se eh private
 		else{
 			path = "DATABASE/CONVERSATIONS/PRIVATE/";
-			path = path + "" + ConversationsProxy.getInstance().getConversationID(req.getUser().getName(), req.getContact());
+			path = path + ConversationsProxy.getInstance().getConversationID(req.getUser().getName(), req.getContact());
 			path = path + "/FILES";
 			System.out.println("Store in Private: " + path);
 		}
@@ -201,15 +198,14 @@ public class RequestHandler extends Thread{
 
 	private Reply executeSendMessage(Request req) throws IOException {
 		Reply reply = new Reply();
-		
+		Group group = GroupsProxy.getInstance().find(req.getMessage().getTo());
+
 		//verifica se o user de destino nao eh o proprio autor
-		if(req.getUser().getName().equals(req.getMessage().getTo())){
+		if (req.getUser().getName().equals(req.getMessage().getTo())) {
 			reply.setStatus(400);
 			reply.setMessage("with yourself..? o.O");
 		}
-		
-		//verifica se eh uma mensagem para um group
-		else if ( req.getUser().getGroups().containsKey(req.getMessage().getTo()) ) {
+		else if ( group != null && group.hasMemberOrOwner(req.getUser().getName()) ) {
 			System.out.println("Message destination is a group!");
 			boolean inserted = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
 			if (!inserted) {
@@ -262,37 +258,24 @@ public class RequestHandler extends Thread{
 		Reply reply = new Reply(200);
 		System.out.println("==========REMOVER MEMBRO DE GROUP===========");
 		
-		//verifica se o user de contacto existe
-		/*if( !uProxy.exists(newMember) ){
-			reply.setStatus(400);
-			reply.setMessage("User nao existe");
-			return reply;
-		}
-		*/
-		
 		//verifica se group existe
-		System.out.println("Ver se group existe");
-		if ( !groupsProxy.exists(groupName) ) {
+		if (!groupsProxy.exists(groupName)) {
 			reply.setStatus(400);
 			reply.setMessage("Group inexistente");
 			return reply;
 		}
-		
-		System.out.println("Ver owner");
 		//verifica se user eh owner
-		if ( !groupsProxy.isOwner(groupName, user.getName()) ) {
+		if (!groupsProxy.isOwner(groupName, user.getName())) {
 			reply.setStatus(401);
 			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
 			return reply;
 		}
-		System.out.println("Ver se eh membro");
 		//verifica se o member e realmente member do group
 		if (!groupsProxy.hasMember(groupName, member)) {
 			reply.setStatus(400);
-			reply.setMessage("O utilizador "+ member +" nao eh membro do group " + groupName);
+			reply.setMessage("O utilizador " + member + " nao eh membro do group " + groupName);
 			return reply;
 		}
-		System.out.println("Vai remover");
 		//remove member do group
 		if (!groupsProxy.removeMember(groupName, member)) {
 			reply.setStatus(400);
@@ -319,7 +302,6 @@ public class RequestHandler extends Thread{
 		//verifica se user eh owner
 		if ( !gProxy.isOwner(groupName, user.getName()) )
 			return new Reply(400, "User " + user.getName() + " is not the owner of group " + groupName);
-		
 		
 		//adiciona newMember a group
 		if ( !gProxy.addMember(groupName, newMember) )

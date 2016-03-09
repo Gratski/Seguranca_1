@@ -44,14 +44,13 @@ public class GroupsProxy implements Proxy {
 			
 			//read group
 			String[] lineSplit = line.split(" ");
-			String dateStr = lineSplit[0];
-			String owner = lineSplit[1];
-			String name = lineSplit[2];
+			String owner = lineSplit[0];
+			String name = lineSplit[1];
 			Group group = new Group(name, new User(owner));
 			
 			//adiciona membros ao group
-			if (lineSplit.length > 3) {
-				String[] members = lineSplit[3].split(",");
+			if (lineSplit.length > 2) {
+				String[] members = lineSplit[2].split(",");
 				for (String member : members)
 					group.addMember(member);
 			}	
@@ -96,7 +95,7 @@ public class GroupsProxy implements Proxy {
 		//persistencia em ficheiro
 		BufferedWriter bw = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), true);
 		StringBuilder sb = new StringBuilder();
-		sb.append("data " + owner.getName() + " " + groupName);
+		sb.append(owner.getName() + " " + groupName);
 		sb.append("\n");
 		
 		bw.write(sb.toString());
@@ -158,9 +157,6 @@ public class GroupsProxy implements Proxy {
 	public boolean addMember(String groupName, String member) throws IOException {
 		if ( !this.groups.get(groupName).addMember(member) )
 			return false;
-		//add to current members list
-		Group group = this.groups.get(groupName);
-		group.addMember(member);
 		
 		updateFile();
 		return true; 
@@ -190,15 +186,12 @@ public class GroupsProxy implements Proxy {
 	 * @throws IOException
 	 */
 	private void updateFile() throws IOException {
-		
 		//persistencia em ficheiro
-		BufferedReader reader = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		StringBuilder sb = new StringBuilder();
 		Collection<Group> list = this.groups.values();
 
 		for (Group g : list) {
-			sb.append("data");
-			sb.append(" " + g.getOwner());
+			sb.append(g.getOwner());
 			sb.append(" " + g.getName());
 			
 			Collection<User> members = g.getMembers().values();
@@ -212,7 +205,6 @@ public class GroupsProxy implements Proxy {
 				
 				i++;
 			}
-			
 			sb.append("\n");
 		}
 		//reescreve ficheiro

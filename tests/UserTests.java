@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import common.Group;
 import common.User;
+import proxies.GroupsProxy;
 import proxies.UsersProxy;
 
 public class UserTests {
@@ -122,8 +123,8 @@ public class UserTests {
 	@Test
 	public void getGroups(){
 		try{
-			User user = new User(name, password);
-			assertTrue(user.getGroups().containsKey("FCUL"));
+			GroupsProxy proxy = GroupsProxy.getInstance();
+			assertTrue(proxy.find("FCUL").hasMemberOrOwner(name));
 		}catch(Exception e){
 			
 		}
