@@ -8,7 +8,7 @@ grant codeBase "file:${user.home}${/}git${/}Seguranca_1${/}bin${/}*"{
   permission java.lang.RuntimePermission "stopThread";
   permission java.lang.RuntimePermission "exitVM.*";
 
-  //File
+  //Files
   permission java.io.FilePermission "DATABASE", "read, write";
   permission java.io.FilePermission "DATABASE/USERS", "read, write";
   permission java.io.FilePermission "DATABASE/GROUPS", "read, write";

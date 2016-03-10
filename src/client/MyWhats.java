@@ -25,30 +25,38 @@ public class MyWhats {
 			//parse input
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 			
-			//estabelece ligacao
-			Connection connection = new Connection(new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
 			
-			//create request obj
-			Request request = RequestBuilder.make(parsedInput);
 			
-			//send request
-			sendRequest(connection, request);
+			for(int i = 0; i < 100; i++)
+			{
+				System.out.println("====================================");
+				System.out.println("Request number " + i);
+				//estabelece ligacao
+				Connection connection = new Connection(new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
+			
+				//create request obj
+				Request request = RequestBuilder.make(parsedInput);
+				
+				//send request
+				sendRequest(connection, request);
 
-			//get reply
-			Reply reply = receiveReply(connection);
-			
-			//Se erro
-			if (reply.hasError()) {
-				System.out.println("There was an error, Reply received:");
-				System.out.println(reply.getMessage());
-			} else {
-				// TODO Just for le debugging, erase in the end
-				System.out.println("Reply received:");
-				System.out.println(reply);
+				//get reply
+				Reply reply = receiveReply(connection);
+				
+				//Se erro
+				if (reply.hasError()) {
+					System.out.println("There was an error, Reply received:");
+					System.out.println(reply.getMessage());
+				} else {
+					// TODO Just for le debugging, erase in the end
+					System.out.println("Reply received:");
+					System.out.println(reply);
+				}
+
+				//Fecha connection
+				connection.destroy();
 			}
-
-			//Fecha connection
-			connection.destroy();
+			
 			
 		} catch(Exception e) {
 			e.printStackTrace();

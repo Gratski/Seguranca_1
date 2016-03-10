@@ -1,9 +1,10 @@
 package server;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import helpers.DatabaseBuilder;
 import proxies.ConversationsProxy;
@@ -36,14 +37,15 @@ public class MyWhatsServer {
 		ServerSocket server = new ServerSocket(port);
 		server.setReuseAddress(true);
 
+		ExecutorService executor = Executors.newFixedThreadPool(2);
+		
 		while (true) {
 			System.out.println("===============================");
 			System.out.println("Waiting for connections...");
 			Socket clientSocket = server.accept();
 			System.out.println("Connection accepted!");
-			
 			RequestHandler requestHandler = new RequestHandler(clientSocket, users, groups, conversations);
-			requestHandler.run();
+			executor.execute(requestHandler);
 		}
 	}
 	
