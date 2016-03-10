@@ -6,7 +6,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import builders.FileStreamBuilder;
@@ -22,13 +24,8 @@ import common.User;
  */
 public class ConversationsProxy implements Proxy {
 
-	private Map<Conversation, Conversation> conversations;
 	private static ConversationsProxy instance = null;
-	
-	private ConversationsProxy() throws IOException {
-		this.conversations = new HashMap<>();
-	}
-	
+
 	public static ConversationsProxy getInstance() throws IOException {
 		if( instance == null )
 			instance = new ConversationsProxy();
@@ -55,8 +52,8 @@ public class ConversationsProxy implements Proxy {
 		String line = null;
 		String res = null;
 		
-		while ((line = br.readLine())!= null) {
-			String[]split = line.split(" ");
+		while ((line = br.readLine()) != null) {
+			String[] split = line.split(" ");
 			if (split.length < 2)
 				continue;
 			
@@ -71,6 +68,90 @@ public class ConversationsProxy implements Proxy {
 			}
 		}
 		return res;
+	}
+
+	public ArrayList<Conversation> getConversationsFrom(String user) throws IOException {
+
+		ArrayList<Conversation> list = new ArrayList<>();
+		File f = new File("DATABASE/CONVERSATIONS/INDEX");
+		FileReader fr = new FileReader(f);
+		BufferedReader br = new BufferedReader(fr);
+		String line = null;
+
+		while ((line = br.readLine()) != null) {
+			String[] split = line.split(" ");
+			if (split.length < 2)
+				continue;
+
+			String u1 = split[0];
+			String u2 = split[1];
+			String dir = split[2];
+
+			if ( user.equals(u1) || user.equals(u2) )
+				list.add(new Conversation(new User(u1), new User(u2), dir));
+		}
+		return list;
+	}
+
+	public List<Conversation> getLastMessageFromAll(User user) throws IOException {
+
+		// Ir buscar conversations com privates
+		ArrayList<Conversation> conversations = getConversationsFrom(user.getName());
+
+		//  Ir buscar groups ao groupProxy com getGroupsWhereMember
+		// Para cada group criar uma conversation de grupo e juntar as de privates
+		// Iterar as conversations para ir buscar a lastMessage (em novo metodo, como em baixo)
+
+		if (conversations == null)
+			return null;
+
+		for (Conversation id : conversations) {
+			int lastMessage;
+			File f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id);
+			if ( f.list() != null )
+				lastMessage = f.list().length - 1;
+			else
+				return null;
+
+			File f2 = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id + "/" + lastMessage + ".msg");
+
+			FileReader fr = new FileReader(f2);
+			BufferedReader br = new BufferedReader(fr);
+			String line = null;
+
+			if ((line = br.readLine()) != null) {
+				String[] split = line.split(" ");
+				if (split.length < 2)
+					continue;
+
+				String timeInMilliseconds = split[0];
+				String from = split[1];
+				String type = split[2];
+
+				split = line.split(type);
+				String messageBody = split[1];
+
+				Message message = new Message(from, user.getName(), messageBody);
+				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
+				Conversation convo = new Conversation(user, new User(from));
+				if (convo.addMessage(message))
+					conversations.add(convo);
+
+			} else {
+				br.close();
+				fr.close();
+				return null;
+			}
+
+			br.close();
+			fr.close();
+		}
+		return conversations;
+	}
+
+	public Conversation getConversationBetween(String user1, String user2) throws IOException {
+		getConversationID(user1, user2);
+		return null;
 	}
 	
 	private int getNextID() throws IOException {
@@ -144,6 +225,7 @@ public class ConversationsProxy implements Proxy {
 
 	private void writeOnFile(File file, Message msg) throws IOException {
 		StringBuilder sb = new StringBuilder();
+		sb.append(msg.getTimeInMiliseconds() + " ");
 		sb.append(msg.getFrom() + " ");
 		sb.append(msg.getType() + " ");
 		sb.append(msg.getBody() + "\n");
@@ -197,11 +279,6 @@ public class ConversationsProxy implements Proxy {
 		writer.close();
 		
 		return "" + id;
-	}
-	
-	public Conversation getConversation(String u1, String u2){
-		Conversation c = new Conversation(new User(u1), new User(u2), "");
-		return this.conversations.get(c);
 	}
 	
 	@Override

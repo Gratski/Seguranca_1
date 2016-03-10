@@ -17,9 +17,11 @@ public class Request extends NetworkMessage implements Serializable {
 	public void setMessage(Message message) {
 		this.message = message;
 	}
+
 	public void setFile(NetworkFile f){
 		this.file = f;
 	}
+
 	public NetworkFile getFile(){
 		return this.file;
 	}

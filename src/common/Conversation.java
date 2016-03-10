@@ -2,6 +2,7 @@ package common;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 import proxies.MessagesProxy;
 
@@ -9,26 +10,42 @@ public class Conversation {
 
 	private String directory;
 	private String filename;
-	private ArrayList<Message> msgs;
-	private User user1, user2;
-	
+	private List<Message> msgs;
+	private Group group;
+	private List<User> users;
+
+
 	public Conversation(User u1, User u2, String filename) {
 		this.filename = filename;
-		this.user1 = u1;
-		this.user2 = u2;
+		this.users = new ArrayList<>();
+		this.users.add(u1);
+		this.users.add(u2);
+		this.group = null;
+	}
+
+	public Conversation(User u1, User u2) {
+		this.filename = null;
+		this.users = new ArrayList<>();
+		this.users.add(u1);
+		this.users.add(u2);
+		this.group = null;
 	}
 	
-	@Override
-	public boolean equals(Object object) {
-		if ( object instanceof Conversation ) {
-			Conversation c = (Conversation) object;
-			return ( this.user1.getName().equals(c.getUser1().getName())
-						&& this.user2.getName().equals(c.getUser2().getName()))
-					||
-					( this.user1.getName().equals(c.getUser2().getName())
-						&& this.user2.getName().equals(c.getUser1().getName()) );
-		} else
-			return false;
+//	@Override
+//	public boolean equals(Object object) {
+//		if ( object instanceof Conversation ) {
+//			Conversation c = (Conversation) object;
+//			return ( this.user1.getName().equals(c.getUser1().getName())
+//						&& this.user2.getName().equals(c.getUser2().getName()))
+//					||
+//					( this.user1.getName().equals(c.getUser2().getName())
+//						&& this.user2.getName().equals(c.getUser1().getName()) );
+//		} else
+//			return false;
+//	}
+
+	public boolean addMessage(Message msg) {
+		return this.msgs.add(msg);
 	}
 
 	public String getFilename(){
@@ -39,22 +56,22 @@ public class Conversation {
 		return this.directory;
 	}
 	
-	public ArrayList<Message> getMessages() throws IOException {
-		this.msgs = MessagesProxy.getInstance().getMessages(this.directory + "/" + this.filename);
-		return this.msgs;
-	}
+//	public ArrayList<Message> getMessages() throws IOException {
+//		this.msgs = MessagesProxy.getInstance().getMessages(this.directory + "/" + this.filename);
+//		return this.msgs;
+//	}
 	
 	public Message getLastMessage() throws IOException {
 		return MessagesProxy.getInstance().getLastMessage(this.directory + "/" + this.filename);
 	}
 	
-	public User getUser1(){
-		return this.user1;
-	}
-	
-	public User getUser2(){
-		return this.user2;
-	}
-	
-	
+//	public User getUser1(){
+//		return this.user1;
+//	}
+//
+//	public User getUser2(){
+//		return this.user2;
+//	}
+
+
 }

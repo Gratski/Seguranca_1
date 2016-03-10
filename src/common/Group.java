@@ -11,13 +11,11 @@ public class Group {
 	private String name;
 	private User owner;
 	private Map<String, User> members;
-	private List<Message> msgs;
 	
 	public Group(String name, User owner) {
 		this.name = name;
 		this.owner = owner;
 		this.members = new HashMap<>();
-		this.msgs = new ArrayList<>();
 	}
 	
 	public Map<String, User> getMembers(){

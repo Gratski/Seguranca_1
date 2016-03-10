@@ -3,6 +3,8 @@ package server;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 import common.*;
 import helpers.Connection;
@@ -119,6 +121,7 @@ public class RequestHandler extends Thread{
 			System.out.println("Enviar mensagem");
 			synchronized(groupsProxy) {
 				req.getMessage().setType("-t");
+				req.getMessage().setTimestampNow();
 				reply = executeSendMessage(req);
 			}
 			break;
@@ -127,6 +130,7 @@ public class RequestHandler extends Thread{
 			//se eh para obter mensagens de uma conversa
 			case "single_contact":
 				System.out.println("SINGLE CONTACT");
+				reply = getConversation(req);
 				break;
 			//se eh para fazer download
 			case "download":
@@ -136,6 +140,7 @@ public class RequestHandler extends Thread{
 			//se eh para obter todas as mensagens de todos
 			case "all":
 				System.out.println("TODAS DE TODOS");
+				reply = getLastMessageFromConversations(req);
 				break;
 			default:
 				System.out.println("UNKNOWN");
@@ -150,8 +155,34 @@ public class RequestHandler extends Thread{
 		}
 		return reply;
 	}
-	
-	
+
+	private Reply getLastMessageFromConversations(Request req) throws IOException {
+		Reply reply = new Reply();
+		List<Conversation> conversations = ConversationsProxy.getInstance().getLastMessageFromAll(req.getUser());
+		if (conversations == null) {
+			reply.setStatus(400);
+			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
+		} else {
+			reply.setStatus(200);
+			reply.setConversations(conversations);
+		}
+		return reply;
+	}
+
+	private Reply getConversation(Request req) throws IOException {
+		Reply reply = new Reply();
+		Conversation conversation = ConversationsProxy.getInstance().getConversationBetween(req.getUser().getName(), req.getContact());
+		if (conversation == null) {
+			reply.setStatus(400);
+			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
+		} else {
+			reply.setStatus(200);
+			reply.addConversation(conversation);
+		}
+		return reply;
+	}
+
+
 	private Reply executeGetFile(Request req) throws Exception {
 		System.out.println("UPLOAD ========================");
 		

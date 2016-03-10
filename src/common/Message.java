@@ -12,7 +12,7 @@ public class Message implements Serializable {
 		this.from = from;
 		this.to = to;
 		this.body = body;
-		this.timestamp = new Date();
+		this.timestamp = null;
 	}
 
 	public String getFrom() {
@@ -31,26 +31,38 @@ public class Message implements Serializable {
 		return this.type;
 	}
 
+	public void setType(String type){
+		this.type = type;
+	}
+
+	public void setTimestampNow(){
+		this.timestamp = new Date();
+	}
+
 	public Date getTimestamp() {
 		return timestamp;
 	}
 
-	public void setType(String type){
-		this.type = type;
+	public long getTimeInMiliseconds() {
+		return this.timestamp.getTime();
 	}
-	
-	public String getDateString() {
-		Date now = getTimestamp();
+
+	public void setTimeInMilliseconds(long milliseconds) {
+		this.timestamp.setTime(milliseconds);
+	}
+
+	public String getHumanDateString() {
+		Date date = this.timestamp;
 		StringBuilder sb = new StringBuilder();
-		sb.append(now.getDate());
+		sb.append(date.getDate() + " ");
 		sb.append("-");
-		sb.append(now.getMonth());
+		sb.append(date.getMonth());
 		sb.append("-");
-		sb.append(now.getYear() + 1900);
+		sb.append(date.getYear() + 1900);
 		sb.append(" ");
-		sb.append(now.getHours());
+		sb.append(date.getHours());
 		sb.append(":");
-		sb.append(now.getMinutes());
+		sb.append(date.getMinutes());
 		return sb.toString();
 	}
 

@@ -32,6 +32,17 @@ public class GroupsTests {
 			System.out.println("Insert Group Exception!");
 		}
 	}
+
+//	@Test
+//	public void getGroupsWhereMember(){
+//		try{
+//
+//		} catch(Exception e) {
+//			System.out.println("Insert Group Exception!");
+//		}
+//	}
+
+
 	
 	@Test
 	public void isValidOwner(){

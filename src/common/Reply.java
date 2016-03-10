@@ -1,6 +1,7 @@
 package common;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Reply extends NetworkMessage implements Serializable {
@@ -29,6 +30,12 @@ public class Reply extends NetworkMessage implements Serializable {
 
 	public void setConversations(List<Conversation> conversations) {
 		this.conversations = conversations;
+	}
+
+	public void addConversation(Conversation conversation) {
+		List<Conversation> list = new ArrayList<>();
+		list.add(conversation);
+		this.conversations = list;
 	}
 
 	public void setStatus(int status) {

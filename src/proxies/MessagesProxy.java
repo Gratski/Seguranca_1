@@ -76,7 +76,7 @@ public class MessagesProxy {
 	
 	public boolean addMessage(String from, String to, String flag, String body) throws IOException {
 		Message msg = new Message(from, to, body);
-		String msgToWrite = msg.getDateString() + " " + from + " " + to + " " + flag + " " + "-m " + "\"" + body + "\"";
+		String msgToWrite = msg.getTimeInMiliseconds() + " " + from + " " + to + " " + flag + " " + "-m " + "\"" + body + "\"";
 		this.bw.write(msgToWrite);
 		this.bw.flush();
 		return true;
