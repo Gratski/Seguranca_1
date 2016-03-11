@@ -60,11 +60,11 @@ public class GroupsProxy implements Proxy {
 		br.close();
 	}
 
-	public Map<String, Group> getGroupsWhereMember(String name) {
-		Map<String, Group> list = new HashMap<>();
+	public ArrayList<Group> getGroupsWhereMember(String name) {
+		ArrayList<Group> list = new ArrayList<>();
 		for (Group g : this.groups.values()) {
 			if (g.hasMember(name) || g.getOwner().equals(name)) {
-				list.put(g.getName(), g);
+				list.add(g);
 			}
 		}
 		return list;

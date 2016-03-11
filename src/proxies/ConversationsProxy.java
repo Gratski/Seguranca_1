@@ -13,6 +13,7 @@ import java.util.Map;
 
 import builders.FileStreamBuilder;
 import common.Conversation;
+import common.Group;
 import common.Message;
 import common.User;
 
@@ -94,59 +95,68 @@ public class ConversationsProxy implements Proxy {
 	}
 
 	public List<Conversation> getLastMessageFromAll(User user) throws IOException {
-
 		// Ir buscar conversations com privates
 		ArrayList<Conversation> conversations = getConversationsFrom(user.getName());
-
-		//  Ir buscar groups ao groupProxy com getGroupsWhereMember
-		// Para cada group criar uma conversation de grupo e juntar as de privates
-		// Iterar as conversations para ir buscar a lastMessage (em novo metodo, como em baixo)
-
 		if (conversations == null)
 			return null;
 
-		for (Conversation id : conversations) {
-			int lastMessage;
-			File f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id);
-			if ( f.list() != null )
-				lastMessage = f.list().length - 1;
-			else
-				return null;
+		//  Ir buscar groups ao groupProxy
+		ArrayList<Group> groups = GroupsProxy.getInstance().getGroupsWhereMember(user.getName());
 
-			File f2 = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id + "/" + lastMessage + ".msg");
-
-			FileReader fr = new FileReader(f2);
-			BufferedReader br = new BufferedReader(fr);
-			String line = null;
-
-			if ((line = br.readLine()) != null) {
-				String[] split = line.split(" ");
-				if (split.length < 2)
-					continue;
-
-				String timeInMilliseconds = split[0];
-				String from = split[1];
-				String type = split[2];
-
-				split = line.split(type);
-				String messageBody = split[1];
-
-				Message message = new Message(from, user.getName(), messageBody);
-				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
-				Conversation convo = new Conversation(user, new User(from));
-				if (convo.addMessage(message))
-					conversations.add(convo);
-
-			} else {
-				br.close();
-				fr.close();
-				return null;
-			}
-
-			br.close();
-			fr.close();
+		// Para cada group criar uma conversation de grupo e juntar as de privates
+		for (Group group : groups) {
+			conversations.add(new Conversation(group));
+		}
+		// Iterar as conversations para ir buscar a lastMessage (em novo metodo, como em baixo)
+		for (Conversation conversation : conversations) {
+			conversation.addMessage(getLastMessage(conversation));
 		}
 		return conversations;
+	}
+
+	private Message getLastMessage(Conversation conversation) throws IOException {
+		String folder = conversation.getGroup() == null ? "PRIVATE" : "GROUP";
+		String id = conversation.getGroup() == null ? conversation.getFilename() : conversation.getGroup().getName();
+
+		String lastMessage = null;
+		File f = new File("DATABASE/CONVERSATIONS/" + folder + "/" + id);
+		try {
+			if ( f.listFiles().length > 1)
+				lastMessage = f.list().length - 1 + ".msg";
+		} catch (Exception e) {
+			System.out.println("Erro ao tentar f.list()");
+			return null;
+		}
+
+		File f2 = new File("DATABASE/CONVERSATIONS/" + folder + "/" + id + "/" + lastMessage);
+
+		FileReader fr = new FileReader(f2);
+		BufferedReader br = new BufferedReader(fr);
+		String line;
+		Message message = null;
+
+		if ((line = br.readLine()) != null) {
+
+			String[] split = line.split(" ");
+			String timeInMilliseconds = split[0];
+			String from = split[1];
+			String type = split[2];
+
+			split = line.split(type);
+			String messageBody = split[1];
+
+			message = new Message(from, messageBody);
+			message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
+
+		} else {
+			br.close();
+			fr.close();
+			return null;
+		}
+
+		br.close();
+		fr.close();
+		return message;
 	}
 
 	public Conversation getConversationBetween(String user1, String user2) throws IOException {

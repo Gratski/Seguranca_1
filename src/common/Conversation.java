@@ -23,12 +23,23 @@ public class Conversation {
 		this.group = null;
 	}
 
+	public Group getGroup() {
+		return this.group;
+	}
+
 	public Conversation(User u1, User u2) {
 		this.filename = null;
 		this.users = new ArrayList<>();
 		this.users.add(u1);
 		this.users.add(u2);
+
 		this.group = null;
+	}
+
+	public Conversation(Group group) {
+		this.filename = null;
+		this.group = group;
+		this.users = new ArrayList<>(group.getMembers());
 	}
 	
 //	@Override

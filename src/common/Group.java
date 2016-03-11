@@ -18,8 +18,8 @@ public class Group {
 		this.members = new HashMap<>();
 	}
 	
-	public Map<String, User> getMembers(){
-		return this.members;
+	public Collection<User> getMembers(){
+		return this.members.values();
 	}
 	
 	/**
