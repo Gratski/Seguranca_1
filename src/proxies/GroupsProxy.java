@@ -59,15 +59,9 @@ public class GroupsProxy implements Proxy {
 		}
 		br.close();
 	}
-
+	
 	public Map<String, Group> getGroupsWhereMember(String name) {
-		Map<String, Group> list = new HashMap<>();
-		for (Group g : this.groups.values()) {
-			if (g.hasMember(name) || g.getOwner().equals(name)) {
-				list.put(g.getName(), g);
-			}
-		}
-		return list;
+		return this.groups;
 	}
 	
 	/**
@@ -194,7 +188,7 @@ public class GroupsProxy implements Proxy {
 			sb.append(g.getOwner());
 			sb.append(" " + g.getName());
 			
-			Collection<User> members = g.getMembers().values();
+			Collection<User> members = g.getMembers();
 			int i = 0;
 			for ( User m : members ) {
 				//se eh o primeiro dos membros

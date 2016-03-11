@@ -15,6 +15,13 @@ public class Message implements Serializable {
 		this.timestamp = null;
 	}
 
+	public Message(String from, String body) {
+		this.from = from;
+		this.to = null;
+		this.body = body;
+		this.timestamp = null;
+	}
+
 	public String getFrom() {
 		return from;
 	}
