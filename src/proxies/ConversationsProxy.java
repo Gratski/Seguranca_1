@@ -94,7 +94,7 @@ public class ConversationsProxy extends Proxy {
 		return list;
 	}
 
-	public List<Conversation> getLastMessageFromAll(User user) throws IOException {
+	public ArrayList<Conversation> getLastMessageFromAll(User user) throws IOException {
 		// Ir buscar conversations com privates
 		ArrayList<Conversation> conversations = getConversationsFrom(user.getName());
 		if (conversations == null)
@@ -159,12 +159,13 @@ public class ConversationsProxy extends Proxy {
 		return message;
 	}
 
-	public Conversation getConversationBetween(String user1, String contact) throws IOException {
+	public Conversation getConversationBetween(String user, String contact) throws IOException {
 
 		Group group = GroupsProxy.getInstance().find(contact);
 
 		// Substituir pelo novo metodo!
-		String path = getConversationID(user1, contact);
+		String path = userHasConversationWith(user, contact);
+		System.out.println("Im here! Path is: " + path);
 		File f = new File(path);
 		int messagesNum = 0;
 		try {
@@ -177,13 +178,13 @@ public class ConversationsProxy extends Proxy {
 
 		Conversation conversation;
 		if ( group == null) {
-			conversation = new Conversation(new User(user1), new User(contact));
+			conversation = new Conversation(new User(user), new User(contact));
 		} else {
 			conversation = new Conversation(group);
 		}
 
 		for (int i = 1; i <= messagesNum; i++) {
-			File f2 = new File(path + i);
+			File f2 = new File(path + "/" + i + ".msg");
 			FileReader fr = new FileReader(f2);
 			BufferedReader br = new BufferedReader(fr);
 			String line;
@@ -237,24 +238,21 @@ public class ConversationsProxy extends Proxy {
 		return res;
 	}
 	
-	public String userHasConversationWith(User user, String with) throws IOException{
+	public String userHasConversationWith(String user, String with) throws IOException{
 		String path = null;
-		//get groups
 		GroupsProxy gProxy = GroupsProxy.getInstance();
-		Map<String, Group> groups = gProxy.getGroupsWhereMember(user.getName());
+		Map<String, Group> groups = gProxy.getGroupsWhereMember(user);
 		
 		//se eh-group
-		if( groups.containsKey(with) )
-		{
-			path = "DATABASE/CONVERSATIONS/GROUPS/"+with;
+		if ( groups.containsKey(with) ) {
+			path = "DATABASE/CONVERSATIONS/GROUPS/" + with;
 		}
 		//se eh private
-		else{
-			String dir = getConversationID(user.getName(), with);
-			if(dir != null)
-				path = "DATABASE/CONVERSATIONS/PRIVATE/"+dir;
+		else {
+			String dir = getConversationID(user, with);
+			if (dir != null)
+				path = "DATABASE/CONVERSATIONS/PRIVATE/" + dir;
 		}
-		
 		return path;
 	}
 	

@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Reply extends NetworkMessage implements Serializable {
 	
-	private List<Conversation> conversations;
+	private ArrayList<Conversation> conversations;
 	private int status;
 	private String message;
 
@@ -28,12 +28,16 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.conversations = null;
 	}
 
-	public void setConversations(List<Conversation> conversations) {
+	public ArrayList<Conversation> getConversations() {
+		return this.conversations;
+	}
+
+	public void setConversations(ArrayList<Conversation> conversations) {
 		this.conversations = conversations;
 	}
 
 	public void addConversation(Conversation conversation) {
-		List<Conversation> list = new ArrayList<>();
+		ArrayList<Conversation> list = new ArrayList<>();
 		list.add(conversation);
 		this.conversations = list;
 	}

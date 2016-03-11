@@ -1,5 +1,6 @@
 *.class
 *.db
+*.swp
 .DS_Store
 /bin/
 /DATABASE/

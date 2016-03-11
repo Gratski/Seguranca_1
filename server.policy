@@ -1,5 +1,5 @@
-grant codeBase "file:${user.home}${/}git${/}Seguranca_1${/}bin${/}*"{
-  
+grant codeBase "file:${/}bin${/}*" {
+
   //Socket
   permission java.net.SocketPermission "127.0.0.1:8080", "listen, resolve";
   permission java.net.SocketPermission "127.0.0.1:*", "accept, connect, resolve";
@@ -12,10 +12,10 @@ grant codeBase "file:${user.home}${/}git${/}Seguranca_1${/}bin${/}*"{
   permission java.io.FilePermission "DATABASE", "read, write";
   permission java.io.FilePermission "DATABASE/USERS", "read, write";
   permission java.io.FilePermission "DATABASE/GROUPS", "read, write";
-  
+
   permission java.io.FilePermission "DATABASE/CONVERSATIONS", "read, write";
   permission java.io.FilePermission "DATABASE/CONVERSATIONS/INDEX", "read, write";
-  
+
   permission java.io.FilePermission "DATABASE/CONVERSATIONS/PRIVATE", "read, write";
   permission java.io.FilePermission "DATABASE/CONVERSATIONS/PRIVATE/-", "read, write";
 

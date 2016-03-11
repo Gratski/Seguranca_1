@@ -3,9 +3,13 @@ package client;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import builders.RequestBuilder;
+import domain.Conversation;
+import domain.Message;
 import domain.Reply;
 import domain.Request;
 import helpers.Connection;
@@ -134,12 +138,41 @@ public class MyWhats {
 				}
 				break;
 			case "all":
+				System.out.println("Tratar reply de Single Contact");
+
 				break;
 			case "single_contact":
+				System.out.println("Tratar reply de Single Contact");
+				Reply reply = null;
+				try {
+					reply = (Reply) conn.getInputStream().readObject();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+				if (!reply.hasError()) {
+					ArrayList<Conversation> conversations = reply.getConversations();
+					if (conversations != null && conversations.size() == 1) {
+						ArrayList<Message> messages = conversations.get(0).getMsgs();
+						Collections.sort(messages);
+						for (Message message : messages) {
+							printMessage(req.getUser().getName(), message);
+						}
+					}
+				} else {
+					System.out.println("Reply had an error..");
+					break;
+				}
+
 				break;
 			}
 			break;
 		}
+	}
+
+	private static void printMessage(String name, Message message) {
+		String personInPerspective = (name.equals(message.getFrom()) ? "me" : message.getFrom());
+		System.out.println(personInPerspective + ": " + message.getBody());
+		System.out.println(message.getHumanDateString());
 	}
 
 	/**

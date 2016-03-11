@@ -164,7 +164,7 @@ public class RequestHandler extends Thread {
 
 	private Reply getLastMessageFromConversations(Request req) throws IOException {
 		Reply reply = new Reply();
-		List<Conversation> conversations = ConversationsProxy.getInstance().getLastMessageFromAll(req.getUser());
+		ArrayList<Conversation> conversations = ConversationsProxy.getInstance().getLastMessageFromAll(req.getUser());
 		if (conversations == null) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
@@ -273,7 +273,7 @@ public class RequestHandler extends Thread {
 		String filename = req.getFile().getFullPath();
 
 		ConversationsProxy cProxy = ConversationsProxy.getInstance();
-		String path = cProxy.userHasConversationWith(req.getUser(), req.getContact());
+		String path = cProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
 
 		boolean ok = false;
 		File file = null;

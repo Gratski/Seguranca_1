@@ -9,6 +9,7 @@ public class Request extends NetworkMessage implements Serializable {
 	private String contact;
 	private String group;
 	private NetworkFile file;
+	private String specification;
 
 	public Message getMessage() {
 		return this.message;
@@ -40,6 +41,14 @@ public class Request extends NetworkMessage implements Serializable {
 
 	public void setGroup(String group) {
 		this.group = group;
+	}
+
+	public void setSpecification(String spec){
+		this.specification = spec;
+	}
+
+	public String getSpecs(){
+		return this.specification;
 	}
 
 	public String toString() {

@@ -1,9 +1,10 @@
 package domain;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Date;
 
-public class Message implements Serializable {
+public class Message implements Serializable, Comparable {
 
 	private String from, to, body, type;
 	private Date timestamp;
@@ -55,13 +56,14 @@ public class Message implements Serializable {
 	}
 
 	public void setTimeInMilliseconds(long milliseconds) {
+		this.timestamp = new Date();
 		this.timestamp.setTime(milliseconds);
 	}
 
 	public String getHumanDateString() {
 		Date date = this.timestamp;
 		StringBuilder sb = new StringBuilder();
-		sb.append(date.getDate() + " ");
+		sb.append(date.getDate());
 		sb.append("-");
 		sb.append(date.getMonth());
 		sb.append("-");
@@ -98,6 +100,13 @@ public class Message implements Serializable {
 		sb.append(this.getBody() + "\n");
 		return sb.toString();
 	}
-	
-	
+
+
+	@Override
+	public int compareTo(Object o) {
+		if (o == null)
+			return -1;
+		Message other = (Message) o;
+		return this.timestamp.compareTo(other.getTimestamp());
+	}
 }
