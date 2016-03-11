@@ -9,7 +9,6 @@ import proxies.MessagesProxy;
 
 public class Conversation implements Serializable {
 
-	private String directory;
 	private String filename;
 	private ArrayList<Message> msgs;
 	private Group group;
@@ -52,18 +51,17 @@ public class Conversation implements Serializable {
 		return this.filename;
 	}
 	
-	public String getDirectory(){
-		return this.directory;
+	public ArrayList<Message> getMessages() {
+		return this.msgs;
 	}
 
-	public ArrayList<Message> getMsgs() {
-		return this.msgs;
+	public ArrayList<User> getUsers() {
+		return users;
 	}
 
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("Conversation{");
-		sb.append("directory='").append(directory).append('\'');
 		sb.append(", filename='").append(filename).append('\'');
 		sb.append(", msgs=").append(msgs);
 		sb.append(", group=").append(group);
@@ -72,11 +70,7 @@ public class Conversation implements Serializable {
 		return sb.toString();
 	}
 
-	//	public ArrayList<Message> getMessages() throws IOException {
-//		this.msgs = MessagesProxy.getInstance().getMessages(this.directory + "/" + this.filename);
-//		return this.msgs;
-//	}
-	
+
 //	public Message getLastMessage() throws IOException {
 //		return MessagesProxy.getInstance().getLastMessage(this.directory + "/" + this.filename);
 //	}

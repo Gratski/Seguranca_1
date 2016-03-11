@@ -245,7 +245,7 @@ public class ConversationsProxy extends Proxy {
 		
 		//se eh-group
 		if ( groups.containsKey(with) ) {
-			path = "DATABASE/CONVERSATIONS/GROUPS/" + with;
+			path = "DATABASE/CONVERSATIONS/GROUP/" + with;
 		}
 		//se eh private
 		else {

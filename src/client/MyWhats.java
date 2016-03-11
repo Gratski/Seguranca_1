@@ -8,10 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import builders.RequestBuilder;
-import domain.Conversation;
-import domain.Message;
-import domain.Reply;
-import domain.Request;
+import domain.*;
 import helpers.Connection;
 import helpers.FilesHandler;
 import validators.InputValidator;
@@ -138,21 +135,54 @@ public class MyWhats {
 				}
 				break;
 			case "all":
-				System.out.println("Tratar reply de Single Contact");
-
-				break;
-			case "single_contact":
-				System.out.println("Tratar reply de Single Contact");
+				System.out.println("Tratar reply de All Contacts");
 				Reply reply = null;
 				try {
 					reply = (Reply) conn.getInputStream().readObject();
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
-				if (!reply.hasError()) {
+				if (reply != null && !reply.hasError()) {
+					ArrayList<Conversation> conversations = reply.getConversations();
+					if (conversations != null) {
+						for (Conversation conversation : conversations) {
+							if (conversation.getGroup() != null)
+								System.out.println("Contact: " + conversation.getGroup().getName());
+							else {
+								ArrayList<User> users = conversation.getUsers();
+								String finalContact = null;
+								for (User user : users) {
+									if (user.getName().equals(req.getUser().getName()))
+										continue;
+									finalContact = user.getName();
+								}
+								System.out.println("Contact: " + finalContact);
+							}
+							ArrayList<Message> messages = conversation.getMessages();
+							if (messages != null && messages.size() == 1) {
+								printMessage(req.getUser().getName(), messages.get(0));
+							} else {
+
+							}
+						}
+					}
+				} else {
+					System.out.println("Reply had an error..");
+					break;
+				}
+				break;
+			case "single_contact":
+				System.out.println("Tratar reply de Single Contact");
+				reply = null;
+				try {
+					reply = (Reply) conn.getInputStream().readObject();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+				if (reply != null && !reply.hasError()) {
 					ArrayList<Conversation> conversations = reply.getConversations();
 					if (conversations != null && conversations.size() == 1) {
-						ArrayList<Message> messages = conversations.get(0).getMsgs();
+						ArrayList<Message> messages = conversations.get(0).getMessages();
 						Collections.sort(messages);
 						for (Message message : messages) {
 							printMessage(req.getUser().getName(), message);
