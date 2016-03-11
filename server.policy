@@ -1,3 +1,25 @@
-grant {
-	permission java.security.AllPermission;
+grant codeBase "file:${user.home}${/}git${/}Seguranca_1${/}bin${/}*"{
+  
+  //Socket
+  permission java.net.SocketPermission "127.0.0.1:8080", "listen, resolve";
+  permission java.net.SocketPermission "127.0.0.1:*", "accept, connect, resolve";
+
+  //Runtime
+  permission java.lang.RuntimePermission "stopThread";
+  permission java.lang.RuntimePermission "exitVM.*";
+
+  //Files
+  permission java.io.FilePermission "DATABASE", "read, write";
+  permission java.io.FilePermission "DATABASE/USERS", "read, write";
+  permission java.io.FilePermission "DATABASE/GROUPS", "read, write";
+  
+  permission java.io.FilePermission "DATABASE/CONVERSATIONS", "read, write";
+  permission java.io.FilePermission "DATABASE/CONVERSATIONS/INDEX", "read, write";
+  
+  permission java.io.FilePermission "DATABASE/CONVERSATIONS/PRIVATE", "read, write";
+  permission java.io.FilePermission "DATABASE/CONVERSATIONS/PRIVATE/-", "read, write";
+
+  permission java.io.FilePermission "DATABASE/CONVERSATIONS/GROUP", "read, write";
+  permission java.io.FilePermission "DATABASE/CONVERSATIONS/GROUP/-", "read, write";
+
 };
