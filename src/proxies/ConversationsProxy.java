@@ -214,13 +214,13 @@ public class ConversationsProxy implements Proxy {
 		//se eh-group
 		if( groups.containsKey(with) )
 		{
-			path = "CONVERSATIONS/GROUPS/"+with;
+			path = "DATABASE/CONVERSATIONS/GROUPS/"+with;
 		}
 		//se eh private
 		else{
 			String dir = getConversationID(user.getName(), with);
 			if(dir != null)
-				path = "CONVERSATIONS/PRIVATE/"+dir;
+				path = "DATABASE/CONVERSATIONS/PRIVATE/"+dir;
 		}
 		
 		return path;

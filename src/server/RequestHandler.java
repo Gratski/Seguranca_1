@@ -112,7 +112,10 @@ public class RequestHandler extends Thread {
 		case "-f":
 			System.out.println("Receber ficheiro");
 			try {
-				reply = executeGetFile(req);
+				if(!executeGetFile(req))
+					reply = new Reply(400, "Erro ao enviar ficheiro");
+				else
+					reply = new Reply(200);
 			} catch (Exception e) {
 				reply.setStatus(400);
 				reply.setMessage("Erro ao enviar ficheiro");
@@ -186,7 +189,7 @@ public class RequestHandler extends Thread {
 		return reply;
 	}
 
-	private Reply executeGetFile(Request req) throws Exception {
+	private boolean executeGetFile(Request req) throws Exception {
 		System.out.println("UPLOAD ========================");
 
 		// Obtem nome de ficheiro
@@ -201,10 +204,11 @@ public class RequestHandler extends Thread {
 
 		// escreve message
 		Reply reply = executeSendMessage(req);
+		this.connection.getOutputStream().writeObject(reply);
 		System.out.println("Sent!"); // fix thisrequehan
 		if (reply.getStatus() != 200) {
 			System.out.println("DIFERENTE DE 200...");
-			return reply;
+			return false;
 		}
 
 		// obtem ficheiro de upload
@@ -227,8 +231,7 @@ public class RequestHandler extends Thread {
 		}
 
 		System.out.println("Writing file!");
-		handler.receive(this.connection, path, filename);
-		return reply;
+		return handler.receive(this.connection, path, filename) != null;
 	}
 
 	private Reply executeSendMessage(Request req) throws IOException {
@@ -284,8 +287,11 @@ public class RequestHandler extends Thread {
 		this.connection.getOutputStream().writeObject(reply);
 		this.connection.getOutputStream().flush();
 
-		if (!ok)
+		if (!ok){
+			System.out.println("file nao existe");
+			System.out.println("path eh:");
 			return false;
+		}
 
 		// devolve o resultado do envio do file
 		System.out.println("authenticated, vai enviar>>>");
