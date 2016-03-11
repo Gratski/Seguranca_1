@@ -30,19 +30,6 @@ public class Conversation {
 		this.users.add(u2);
 		this.group = null;
 	}
-	
-//	@Override
-//	public boolean equals(Object object) {
-//		if ( object instanceof Conversation ) {
-//			Conversation c = (Conversation) object;
-//			return ( this.user1.getName().equals(c.getUser1().getName())
-//						&& this.user2.getName().equals(c.getUser2().getName()))
-//					||
-//					( this.user1.getName().equals(c.getUser2().getName())
-//						&& this.user2.getName().equals(c.getUser1().getName()) );
-//		} else
-//			return false;
-//	}
 
 	public boolean addMessage(Message msg) {
 		return this.msgs.add(msg);

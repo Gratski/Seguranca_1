@@ -7,12 +7,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import builders.FileStreamBuilder;
 import common.Conversation;
+import common.Group;
 import common.Message;
 import common.User;
 
@@ -193,6 +193,29 @@ public class ConversationsProxy implements Proxy {
 		return true;
 	}
 	
+	public String userHasConversationWith(User user, String with) throws IOException{
+		
+		String path = null;
+		
+		//get groups
+		GroupsProxy gProxy = GroupsProxy.getInstance();
+		Map<String, Group> groups = gProxy.getGroupsWhereMember(user.getName());
+		
+		//se eh-group
+		if( groups.containsKey(with) )
+		{
+			path = "CONVERSATIONS/GROUPS/"+with;
+		}
+		//se eh private
+		else{
+			String dir = getConversationID(user.getName(), with);
+			if(dir != null)
+				path = "CONVERSATIONS/PRIVATE/"+dir;
+		}
+		
+		return path;
+	}
+	
 	/**
 	 * Insere uma nova mensagem numa conversacao
 	 * nova ou existente
@@ -208,18 +231,21 @@ public class ConversationsProxy implements Proxy {
 			if ((folder = this.add(msg.getFrom(), msg.getTo())) == null)
 				return false;
 		
+		System.out.println("here 1");
+		System.out.println("conversations folder is: " + folder);
 		//verifica se a pasta de conversacao existe
 		File file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder);
 		if (!file.exists())
 			return false;
-		
+		System.out.println("here 2");
 		//cria file de mensagem
 		file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder + "/" + file.list().length + ".msg");
 		if (!file.createNewFile())
 			return false;
-		
+		System.out.println("here 3 exists: " + file.exists());
 		//escreve em file
 		writeOnFile(file, msg);
+		System.out.println("here 4");
 		return true;
 	}
 
