@@ -159,9 +159,56 @@ public class ConversationsProxy extends Proxy {
 		return message;
 	}
 
-	public Conversation getConversationBetween(String user1, String user2) throws IOException {
-		getConversationID(user1, user2);
-		return null;
+	public Conversation getConversationBetween(String user1, String contact) throws IOException {
+
+		Group group = GroupsProxy.getInstance().find(contact);
+
+		// Substituir pelo novo metodo!
+		String path = getConversationID(user1, contact);
+		File f = new File(path);
+		int messagesNum = 0;
+		try {
+			if ( f.listFiles().length > 1)
+				messagesNum = f.list().length - 1;
+		} catch (Exception e) {
+			System.out.println("Erro ao tentar f.list()");
+			return null;
+		}
+
+		Conversation conversation;
+		if ( group == null) {
+			conversation = new Conversation(new User(user1), new User(contact));
+		} else {
+			conversation = new Conversation(group);
+		}
+
+		for (int i = 1; i <= messagesNum; i++) {
+			File f2 = new File(path + i);
+			FileReader fr = new FileReader(f2);
+			BufferedReader br = new BufferedReader(fr);
+			String line;
+			Message message;
+
+			if ((line = br.readLine()) != null) {
+				String[] split = line.split(" ");
+				String timeInMilliseconds = split[0];
+				String from = split[1];
+				String type = split[2];
+
+				split = line.split(type);
+				String messageBody = split[1];
+
+				message = new Message(from, messageBody);
+				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
+				conversation.addMessage(message);
+
+			} else {
+				br.close();
+				fr.close();
+				return null;
+			}
+		}
+		return conversation;
 	}
 	
 	private int getNextID() throws IOException {
@@ -191,9 +238,7 @@ public class ConversationsProxy extends Proxy {
 	}
 	
 	public String userHasConversationWith(User user, String with) throws IOException{
-		
 		String path = null;
-		
 		//get groups
 		GroupsProxy gProxy = GroupsProxy.getInstance();
 		Map<String, Group> groups = gProxy.getGroupsWhereMember(user.getName());
