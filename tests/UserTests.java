@@ -7,8 +7,8 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import common.Group;
-import common.User;
+import domain.Group;
+import domain.User;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
 

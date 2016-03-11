@@ -1,4 +1,4 @@
-package server;
+package handlers;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import common.*;
+import domain.*;
 import helpers.Connection;
 import helpers.FilesHandler;
 import proxies.ConversationsProxy;

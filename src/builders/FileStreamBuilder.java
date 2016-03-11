@@ -35,6 +35,8 @@ public class FileStreamBuilder {
 	 */
 	public static BufferedWriter makeWriter(String filename, boolean append) throws IOException {
 		File file = new File(filename);
+		if(!file.exists())
+			file.createNewFile();
 		FileWriter writer = new FileWriter(file, append);
 		return new BufferedWriter(writer);
 	}

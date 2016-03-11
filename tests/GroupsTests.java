@@ -2,8 +2,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import common.Group;
-import common.User;
+import domain.Group;
+import domain.User;
 import proxies.GroupsProxy;
 
 public class GroupsTests {

@@ -6,6 +6,7 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import handlers.RequestHandler;
 import helpers.DatabaseBuilder;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;

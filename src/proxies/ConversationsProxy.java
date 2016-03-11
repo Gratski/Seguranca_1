@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Map;
 
 import builders.FileStreamBuilder;
-import common.Conversation;
-import common.Group;
-import common.Message;
-import common.User;
+import domain.Conversation;
+import domain.Group;
+import domain.Message;
+import domain.User;
 
 /**
  * Esta classe representa o responsavel pelo acesso e manutencao
@@ -23,7 +23,7 @@ import common.User;
  * @author JoaoRodrigues & SimãoNeves
  *
  */
-public class ConversationsProxy implements Proxy {
+public class ConversationsProxy extends Proxy {
 
 	private static ConversationsProxy instance = null;
 
@@ -183,24 +183,11 @@ public class ConversationsProxy implements Proxy {
 		
 		//criar pasta de group
 		File file = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo());
-		if (!file.exists())
-			file.mkdirs();
-		
-		//criar files folder
-		File filesFolder = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo() + "/FILES");
-		if (!filesFolder.exists())
-			filesFolder.mkdirs();
-		
-		//criar file de msg
-		File msgFile = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo() + "/" + file.list().length + ".msg");
-		if (msgFile.exists())
-			return false;
-
-		msgFile.createNewFile();
-		//escrever mensagem
-		writeOnFile(msgFile, msg);
-
-		return true;
+		boolean res = MessagesProxy.getInstance().persist(
+				"DATABASE/CONVERSATIONS/GROUP/" + msg.getTo(), 
+				""+file.list().length, 
+				msg);
+		return res;
 	}
 	
 	public String userHasConversationWith(User user, String with) throws IOException{
@@ -243,35 +230,19 @@ public class ConversationsProxy implements Proxy {
 		
 		System.out.println("here 1");
 		System.out.println("conversations folder is: " + folder);
+		
 		//verifica se a pasta de conversacao existe
 		File file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder);
 		if (!file.exists())
 			return false;
-		System.out.println("here 2");
+		
 		//cria file de mensagem
-		file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder + "/" + file.list().length + ".msg");
-		if (!file.createNewFile())
-			return false;
-		System.out.println("here 3 exists: " + file.exists());
-		//escreve em file
-		writeOnFile(file, msg);
-		System.out.println("here 4");
-		return true;
+		boolean res = MessagesProxy.getInstance().persist("DATABASE/CONVERSATIONS/PRIVATE/" + folder, ""+file.list().length, msg);
+		System.out.println("Store result: " + res);
+		return res;
 	}
 
-	private void writeOnFile(File file, Message msg) throws IOException {
-		StringBuilder sb = new StringBuilder();
-		sb.append(msg.getTimeInMiliseconds() + " ");
-		sb.append(msg.getFrom() + " ");
-		sb.append(msg.getType() + " ");
-		sb.append(msg.getBody() + "\n");
-		
-		FileWriter fr = new FileWriter(file);
-		BufferedWriter bw = new BufferedWriter(fr);
-		bw.write(sb.toString());
-		bw.flush();
-		bw.close();
-	}
+	
 	
 	/**
 	 * Insere um ficheiro na conversa entre dois users
@@ -292,12 +263,7 @@ public class ConversationsProxy implements Proxy {
 	private String add(String from, String to) throws IOException {
 		
 		int id = getNextID();
-		File f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id);
-		f.mkdirs();
-		if ( !f.exists() )
-			return null;
-		
-		f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id + "/FILES");
+		File f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id + "/FILES");
 		f.mkdirs();
 		if (!f.exists())
 			return null;
@@ -316,10 +282,5 @@ public class ConversationsProxy implements Proxy {
 		
 		return "" + id;
 	}
-	
-	@Override
-	public void destroy() throws IOException {
-		// TODO Auto-generated method stub
-		
-	}
+
 }

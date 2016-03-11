@@ -3,8 +3,8 @@ package builders;
 import java.util.HashMap;
 import java.util.Scanner;
 
+import domain.User;
 import validators.InputValidator;
-import common.User;
 
 public class UserBuilder {
 

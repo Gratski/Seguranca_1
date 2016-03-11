@@ -6,9 +6,9 @@ import java.net.Socket;
 import org.junit.Test;
 
 import client.MyWhats;
-import common.Message;
-import common.Request;
-import common.User;
+import domain.Message;
+import domain.Request;
+import domain.User;
 import helpers.Connection;
 
 public class MessagesTests {

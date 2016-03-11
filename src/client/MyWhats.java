@@ -6,8 +6,8 @@ import java.net.Socket;
 import java.util.HashMap;
 
 import builders.RequestBuilder;
-import common.Reply;
-import common.Request;
+import domain.Reply;
+import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
 import validators.InputValidator;

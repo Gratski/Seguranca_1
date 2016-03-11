@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 import builders.FileStreamBuilder;
-import common.Group;
-import common.User;
+import domain.Group;
+import domain.User;
 import enums.Filenames;
 
-public class GroupsProxy implements Proxy {
+public class GroupsProxy extends Proxy {
 
 	private static GroupsProxy instance = null;
 	private File file;
@@ -95,6 +95,11 @@ public class GroupsProxy implements Proxy {
 		bw.write(sb.toString());
 		bw.flush();
 		bw.close();
+		
+		//cria estrutura de pastas necessaria
+		File filesFolder = new File("DATABASE/CONVERSATIONS/GROUP/" + groupName + "/FILES");
+		if (!filesFolder.exists())
+			filesFolder.mkdirs();
 	}
 	
 	/**
@@ -207,8 +212,4 @@ public class GroupsProxy implements Proxy {
 		writer.close();
 	}
 	
-	@Override
-	public void destroy() throws IOException {
-		
-	}
 }

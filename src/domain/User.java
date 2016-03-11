@@ -1,4 +1,4 @@
-package common;
+package domain;
 
 import java.io.IOException;
 import java.io.Serializable;

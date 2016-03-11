@@ -1,4 +1,4 @@
-package common;
+package domain;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -81,6 +81,21 @@ public class Message implements Serializable {
 		sb.append(", body='").append(body).append('\'');
 		sb.append(", timestamp=").append(timestamp);
 		sb.append('}');
+		return sb.toString();
+	}
+	
+	/**
+	 * Este metodo retorna o formato em que
+	 * uma mensagem eh guardada
+	 * @return
+	 * 		String com o formato a persistir
+	 */
+	public String toStoreFormat(){
+		StringBuilder sb = new StringBuilder();
+		sb.append(this.getTimeInMiliseconds() + " ");
+		sb.append(this.getFrom() + " ");
+		sb.append(this.getType() + " ");
+		sb.append(this.getBody() + "\n");
 		return sb.toString();
 	}
 	

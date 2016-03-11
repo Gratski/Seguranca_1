@@ -3,10 +3,10 @@ package builders;
 import java.io.File;
 import java.util.HashMap;
 
-import common.Message;
-import common.NetworkFile;
-import common.Request;
-import common.User;
+import domain.Message;
+import domain.NetworkFile;
+import domain.Request;
+import domain.User;
 
 
 public class RequestBuilder {

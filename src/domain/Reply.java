@@ -1,4 +1,4 @@
-package common;
+package domain;
 
 import java.io.Serializable;
 import java.util.ArrayList;

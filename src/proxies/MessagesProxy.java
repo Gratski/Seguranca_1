@@ -9,20 +9,20 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 
-import common.Message;
-import common.User;
+import domain.Message;
+import domain.User;
 import enums.Filenames;
 
 public class MessagesProxy {
 
 	private static MessagesProxy instance = null;
+	private static final String ext = ".msg";
 	private File file;
 	private FileWriter fw;
 	private BufferedWriter bw;
 	
 	
 	private MessagesProxy() throws IOException{
-		this.init();
 	}
 	
 	public static MessagesProxy getInstance() throws IOException {
@@ -32,64 +32,36 @@ public class MessagesProxy {
 	}
 	
 	/**
-	 * Inicializa os streams de messages
-	 * @throws IOException
-	 */
-	private void init() throws IOException {
-		this.file = new File(Filenames.MESSAGES.toString());
-		if( !file.exists() )
-			file.createNewFile();
-		this.fw = new FileWriter(this.file, true);
-		this.bw = new BufferedWriter(this.fw);
-	}
-	
-	/**
-	 * Get messages between to contacts
-	 * @param user
-	 * 		user a fazer o request
-	 * @param contact
-	 * 		contact with
+	 * Regista uma mensagem
+	 * @param path
+	 * 		Path onde a mensagem vai ser registada
+	 * @param fname
+	 * 		Nome de ficheiro de mensagem
+	 * @param msg
+	 * 		Mensagem a ser registada
 	 * @return
-	 * 		lista de mensagens
-	 * @throws IOException
+	 * 		true se registou, false caso contrario
 	 */
-	public Message[] getMessages(User user, String contact) throws IOException {
-		File f = new File(Filenames.MESSAGES.toString());
-		FileReader fr = new FileReader(f);
-		BufferedReader bf = new BufferedReader(fr);
-		String line = null;
-		ArrayList<Message> messages = new ArrayList<>();
-		while ((line = bf.readLine())!=null) {
+	public boolean persist(String path, String fname, Message msg )
+	{
+		
+		File file = new File(path+"/"+fname+""+ext);
+		if(file.exists())
+			return false;
+		try{
+			file.createNewFile();
+			FileWriter fw = new FileWriter(file);
+			BufferedWriter bw = new BufferedWriter(fw);
 			
-			String[] arr = line.split(" ");
-			if (arr.length < 3)
-				continue;
+			bw.write(msg.toStoreFormat());
+			bw.close();
+			fw.close();
 			
-			if (!this.isBetween(line, user.getName(), contact))
-				continue;
-			
-			Message msg = new Message(arr[1], arr[2], arr[5]);
-			messages.add(msg);
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		return (Message[]) messages.toArray();
-	}
-	
-	public boolean addMessage(String from, String to, String flag, String body) throws IOException {
-		Message msg = new Message(from, to, body);
-		String msgToWrite = msg.getTimeInMiliseconds() + " " + from + " " + to + " " + flag + " " + "-m " + "\"" + body + "\"";
-		this.bw.write(msgToWrite);
-		this.bw.flush();
+		System.out.println("ALL GOOD!");
 		return true;
-	}
-	
-	
-	private boolean isBetween(String line, String user, String contact){
-		String[]arr = line.split(" ");
-		if( arr[1].equals(user) && arr[2].equals(contact) )
-			return true;
-		if( arr[2].equals(user) && arr[1].equals(contact) )
-			return true;
-		return false;
 	}
 	
 	

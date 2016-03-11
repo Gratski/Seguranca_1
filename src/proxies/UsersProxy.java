@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import common.User;
+import domain.User;
 import enums.Filenames;
 
-public class UsersProxy implements Proxy {
+public class UsersProxy extends Proxy {
 
 	private static UsersProxy instance = null;
 	private File file;
@@ -135,7 +135,7 @@ public class UsersProxy implements Proxy {
 		return this.users.containsKey(name) ? this.users.get(name) : null;
 	}
 	
-	@Override
+	
 	public void destroy() throws IOException{
 		this.fw.close();
 		this.bw.close();
