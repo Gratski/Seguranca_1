@@ -30,6 +30,7 @@ public class MyWhats {
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
 			System.out.println("====================================");
+			
 			// estabelece ligacao
 			Connection connection = new Connection(
 					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
@@ -42,7 +43,7 @@ public class MyWhats {
 			
 			// get reply
 			Reply reply = receiveReply(connection);
-			System.out.println("");
+			
 			// Imprime server reply
 			reply.prettyPrint(request.getUser());
 
@@ -51,7 +52,7 @@ public class MyWhats {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("Aplicação terminada. Estabelecer nova ligacao.");
+			System.out.println("Aplicação terminada.");
 		}
 
 	}

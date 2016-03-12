@@ -1,98 +1,33 @@
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import java.io.IOException;
-import java.net.Socket;
 
 import org.junit.Test;
 
-import client.MyWhats;
 import domain.Message;
-import domain.Request;
 import domain.User;
-import helpers.Connection;
+import proxies.ConversationsProxy;
 
 public class MessagesTests {
 	
 	private static User validUser = new User("Joao", "myPass");
 	private static User invalidUserPass = new User("Joao", "myPasse");
 	private static User invalidUserName = new User("Simao", "myPass");
+
+	private static Message msg = new Message("Joao", "Simao", "TestsSuite automatic message");
+	private static Message msgGroup = new Message("Joao", "FCUL", "TestsSuite automatic message non good");
 	
-	private static Message msg = new Message(null, null, null);
-	
-	
-	/*
 	@Test
-	public void sendMessageWithInvalidCredentialsName() throws Exception{
-		Connection conn = setConnection();
-		Request req = new Request();
-		req.setUser(invalidUserName);
-		req.setType("-m");
-		req
-		MyWhats.sendRequest(conn, req);
-		assertNotEquals(MyWhats.receiveReply(conn).getStatus(), 200);
-		
+	public void insertValidPrivateMessage() throws IOException{
+		boolean sent = ConversationsProxy.getInstance().insertPrivateMessage(msg);
+		assertEquals(sent, true);
 	}
 	
 	@Test
-	public void sendMessageWithInvalidCredentialsPassword(){
-		
-	}
-	
-	@Test
-	public void sendMessageToExistingUser(){
-		
-	}
-	
-	@Test
-	public void sendMessageToNonExistingUser(){
-		
-	}
-	
-	
-	//obtaining messages
-	//private conversation
-	@Test
-	public void obtainMessageFromPrivateUser(){
-		
-	}
-	
-	@Test
-	public void obtainMessageFromNonExistingPrivateUser(){
-		
-	}
-	
-	@Test
-	public void obtainMessageFromExistingUserButNonExistingConversation(){
-		
-	}
-	
-	//group conversation
-	@Test
-	public void obtainMessageFromGroup(){
-		
-	}
-	
-	@Test
-	public void obtainMessageFromNonExistingGroup(){
-		
-	}
-	
-	@Test
-	public void obtainMessageFromExistingGroupButNotMember(){
-		
-	}
-	
-	*/
-	
-	private Connection setConnection(){
-		Connection conn = null;
-		try{
-			conn = new Connection(new Socket("127.0.0.1", 8080));
-		}catch(IOException e){
-			System.out.println("Erro ao estabelecer ligacao");
-			System.exit(-1);
-		}
-		return conn;
+	public void insertValidGroupMessage() throws IOException{		
+		boolean sent = ConversationsProxy.getInstance().insertPrivateMessage(msgGroup);
+		assertEquals(sent, true);
 	}
 	
 }
