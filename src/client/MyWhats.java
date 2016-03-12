@@ -39,25 +39,12 @@ public class MyWhats {
 
 			// send request
 			sendRequest(connection, request);
-
+			
 			// get reply
-			Reply reply = null;
-			if (download_error)
-				reply = new Reply(400, "Erro ao descarregar ficheiro");
-			else if (upload_error)
-				reply = new Reply(400, "Erro ao enviar ficheiro");
-			else
-				reply = receiveReply(connection);
-
-			// Se erro
-			if (reply.hasError()) {
-				System.out.println("There was an error, Reply received:");
-				System.out.println(reply.getMessage());
-			} else {
-				// TODO Just for le debugging, erase in the end
-				System.out.println("Reply received:");
-				System.out.println(reply);
-			}
+			Reply reply = receiveReply(connection);
+			System.out.println("");
+			// Imprime server reply
+			reply.prettyPrint(request.getUser());
 
 			// Fecha connection
 			connection.destroy();
@@ -83,36 +70,33 @@ public class MyWhats {
 		// send base request
 		conn.getOutputStream().writeObject(req);
 
-		// file type request handler
+		//caso especial para file upload
 		switch (req.getType()) {
 		case "-f":
-			System.out.println("FILENAME: " + req.getFile().getFullPath());
 			FilesHandler fHandler = new FilesHandler();
 			try {
-				System.out.println("Sending file...");
+				//authenticate
 				Reply auth = (Reply) conn.getInputStream().readObject();
+				
 				if(auth.getStatus() != 200)
 				{
 					upload_error = true;
 					break;
 				}
 				
+				//send file
 				fHandler.send(conn, new File(req.getFile().getFullPath()));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			break;
-		case "-m":
-			try {
-				System.out.println("Sending message...");
-				conn.getOutputStream().writeObject(req);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			break;
+			
+		//caso especial para flag -f
 		case "-r":
-			switch (req.getSpecs()) {
-			case "download":
+			
+			//se file download
+			if(req.getSpecs().equals("download"))
+			{
 				System.out.println("Downloading filename: " + req.getFile().getFullPath());
 				conn.getOutputStream().writeObject(req);
 				FilesHandler fileHandler = new FilesHandler();
@@ -133,78 +117,31 @@ public class MyWhats {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				break;
-			case "all":
-				System.out.println("Tratar reply de All Contacts");
-				Reply reply = null;
-				try {
-					reply = (Reply) conn.getInputStream().readObject();
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-				}
-				if (reply != null && !reply.hasError()) {
-					ArrayList<Conversation> conversations = reply.getConversations();
-					if (conversations != null) {
-						for (Conversation conversation : conversations) {
-							if (conversation.getGroup() != null)
-								System.out.println("Contact: " + conversation.getGroup().getName());
-							else {
-								ArrayList<User> users = conversation.getUsers();
-								String finalContact = null;
-								for (User user : users) {
-									if (user.getName().equals(req.getUser().getName()))
-										continue;
-									finalContact = user.getName();
-								}
-								System.out.println("Contact: " + finalContact);
-							}
-							ArrayList<Message> messages = conversation.getMessages();
-							if (messages != null && messages.size() == 1) {
-								printMessage(req.getUser().getName(), messages.get(0));
-							} else {
-
-							}
-						}
-					}
-				} else {
-					System.out.println("Reply had an error..");
-					break;
-				}
-				break;
-			case "single_contact":
-				System.out.println("Tratar reply de Single Contact");
-				reply = null;
-				try {
-					reply = (Reply) conn.getInputStream().readObject();
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-				}
-				if (reply != null && !reply.hasError()) {
-					ArrayList<Conversation> conversations = reply.getConversations();
-					if (conversations != null && conversations.size() == 1) {
-						ArrayList<Message> messages = conversations.get(0).getMessages();
-						Collections.sort(messages);
-						for (Message message : messages) {
-							printMessage(req.getUser().getName(), message);
-						}
-					}
-				} else {
-					System.out.println("Reply had an error..");
-					break;
-				}
-
-				break;
 			}
-			break;
 		}
 	}
 
-	private static void printMessage(String name, Message message) {
+	public static void printMessage(String name, Message message) {
 		String personInPerspective = (name.equals(message.getFrom()) ? "me" : message.getFrom());
 		System.out.println(personInPerspective + ": " + message.getBody());
 		System.out.println(message.getHumanDateString());
 	}
 
+	public static void printReply(Reply reply){
+		
+		if(reply == null)
+			return;
+		
+		//se erro
+		if(reply.hasError())
+		{
+			System.out.println("Error.");
+			System.out.println("Description: " + reply.getMessage());
+		}
+		//se nao ocorreu um erro
+		
+	}
+	
 	/**
 	 * Recebe um objecto Reply do servidor
 	 * 
@@ -214,13 +151,22 @@ public class MyWhats {
 	 * @throws Exception
 	 */
 	public static Reply receiveReply(Connection conn) {
-		try {
-			return (Reply) conn.getInputStream().readObject();
-		} catch (IOException e) {
-			return new Reply(400, "");
-		} catch (ClassNotFoundException e) {
-			// e.printStackTrace();
-			return new Reply(400, "");
-		}
+		
+		//se ocorreu um erro ao executar -r contact file
+		if (download_error)
+			return new Reply(400, "Erro ao descarregar ficheiro");
+		//se ocorreu um erro ao enviar file a contact
+		else if (upload_error)
+			return new Reply(400, "Erro ao enviar ficheiro");
+		//caso contrario espera pela resposta
+		else
+			try {
+				return (Reply) conn.getInputStream().readObject();
+			} catch (IOException e) {
+				return new Reply(400, "");
+			} catch (ClassNotFoundException e) {
+				// e.printStackTrace();
+				return new Reply(400, "");
+			}
 	}
 }

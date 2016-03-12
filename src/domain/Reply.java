@@ -2,7 +2,9 @@ package domain;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+
+import client.MyWhats;
 
 public class Reply extends NetworkMessage implements Serializable {
 	
@@ -66,6 +68,56 @@ public class Reply extends NetworkMessage implements Serializable {
 		sb.append(", message='").append(message).append('\'');
 		sb.append('}');
 		return sb.toString();
+	}
+	
+	public void prettyPrint(User user){
+		
+		//se erro
+		if(this.hasError()){
+			System.out.println("Error");
+			System.out.println("Description: " + this.message);
+		}
+		//se ok
+		else{
+			//se eh -r
+			if(this.conversations != null)
+			{
+				
+				//se eh apenas de contact
+				if(conversations.size() == 1)
+				{
+					ArrayList<Message> messages = conversations.get(0).getMessages();
+					Collections.sort(messages);
+					for (Message message : messages) {
+						MyWhats.printMessage(user.getName(), message);
+					}
+				}
+				//se eh last de todos os contact
+				else{
+					for (Conversation conversation : conversations) {
+						if (conversation.getGroup() != null)
+							System.out.println("Contact: " + conversation.getGroup().getName());
+						else {
+							ArrayList<User> users = conversation.getUsers();
+							String finalContact = null;
+							for (User u : users) {
+								if (u.getName().equals(user.getName()))
+									continue;
+								finalContact = u.getName();
+							}
+							System.out.println("Contact: " + finalContact);
+						}
+						ArrayList<Message> messages = conversation.getMessages();
+						if (messages != null && messages.size() == 1) {
+							MyWhats.printMessage(user.getName(), messages.get(0));
+						} else {
+
+						}
+					}
+				}
+				
+			}
+		}
 	}
 
 	/**
