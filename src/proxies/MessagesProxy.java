@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import domain.Message;
-import domain.User;
 import enums.Filenames;
 
 public class MessagesProxy {
@@ -42,13 +41,12 @@ public class MessagesProxy {
 	 * @return
 	 * 		true se registou, false caso contrario
 	 */
-	public boolean persist(String path, String fname, Message msg )
-	{
-		
-		File file = new File(path+"/"+fname+""+ext);
-		if(file.exists())
+	public boolean persist(String path, String fname, Message msg ) {
+		File file = new File(path + "/" + fname + "" + ext);
+		if (file.exists())
 			return false;
-		try{
+
+		try {
 			file.createNewFile();
 			FileWriter fw = new FileWriter(file);
 			BufferedWriter bw = new BufferedWriter(fw);
@@ -57,13 +55,12 @@ public class MessagesProxy {
 			bw.close();
 			fw.close();
 			
-		}catch(Exception e){
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		System.out.println("ALL GOOD!");
 		return true;
 	}
-	
 	
 	public ArrayList<Message> getMessages(String filename){
 		return null;

@@ -52,7 +52,7 @@ public class MyWhats {
 			// Se erro
 			if (reply.hasError()) {
 				System.out.println("There was an error, Reply received:");
-				System.out.println(reply.getMessage());
+				System.out.println(reply);
 			} else {
 				// TODO Just for le debugging, erase in the end
 				System.out.println("Reply received:");
@@ -217,10 +217,10 @@ public class MyWhats {
 		try {
 			return (Reply) conn.getInputStream().readObject();
 		} catch (IOException e) {
-			return new Reply(400, "");
+			return new Reply(400, "No Reply was sent from the server");
 		} catch (ClassNotFoundException e) {
 			// e.printStackTrace();
-			return new Reply(400, "");
+			return new Reply(400, "Class not found Exception");
 		}
 	}
 }

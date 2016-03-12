@@ -141,7 +141,7 @@ public class RequestHandler extends Thread {
 			case "download":
 				System.out.println("DOWNLOAD FILE");
 				boolean sent = sendFile(req);
-				reply = sent ? reply = new Reply(200) : new Reply(400, "Erro ao fazer download");
+				reply = sent ? new Reply(200) : new Reply(400, "Erro ao fazer download");
 				break;
 			// se eh para obter todas as mensagens de todos
 			case "all":
@@ -152,7 +152,6 @@ public class RequestHandler extends Thread {
 				System.out.println("UNKNOWN");
 				break;
 			}
-			reply.setStatus(200);
 			break;
 		default:
 			reply.setStatus(400);
