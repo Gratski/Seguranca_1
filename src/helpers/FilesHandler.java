@@ -92,4 +92,11 @@ public class FilesHandler {
 		out.close();
 		return totalRead == fileSize ? file : null;
 	}
+	
+	public boolean existsFile(String path){
+		File file = new File(path);
+		return file.exists();
+		
+	}
+	
 }

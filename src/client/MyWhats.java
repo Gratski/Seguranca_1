@@ -37,7 +37,14 @@ public class MyWhats {
 
 			// create request obj
 			Request request = RequestBuilder.make(parsedInput);
-
+			
+			//validate request before send
+			if(request.getUser().getName().equals(request.getContact()))
+			{
+				System.out.println("Nao enviei coisas para si pff... :/");
+				System.exit(-1);
+			}
+			
 			// send request
 			sendRequest(connection, request);
 			
