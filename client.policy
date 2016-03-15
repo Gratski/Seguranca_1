@@ -1,0 +1,7 @@
+grant codeBase "file:bin${/}*" {
+  //Socket
+  permission java.net.SocketPermission "*:*", "connect, resolve";
+
+  //Runtime
+  permission java.lang.RuntimePermission "exitVM.*";
+};

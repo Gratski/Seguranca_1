@@ -1,4 +1,4 @@
-grant codeBase "file:${/}bin${/}*" {
+grant codeBase "file:bin${/}*" {
 
   //Socket
   permission java.net.SocketPermission "127.0.0.1:8080", "listen, resolve";

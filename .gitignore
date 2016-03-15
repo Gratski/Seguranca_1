@@ -2,7 +2,8 @@
 *.db
 *.swp
 .DS_Store
+ProjectSC.iml
 /bin/
 /DATABASE/
-ProjectSC.iml
 .idea/
+*/.DS_Store
