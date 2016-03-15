@@ -53,7 +53,8 @@ public class InputValidator {
 		} catch(Exception e) {
 			return false;
 		}
-		return (portInt >= 1024 && portInt <= 65535);
+		return portInt == 23456;
+//		return (portInt >= 1024 && portInt <= 65535);
 	}
 	
 	public static Boolean validAddress(String address) {

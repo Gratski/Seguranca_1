@@ -49,11 +49,11 @@ public class FilesHandler {
 			else
 				byteNum = (int) ( fileSize - totalSent );
 				
-			System.out.println("ByteNum: " + byteNum);
+//			System.out.println("ByteNum: " + byteNum);
 			byteArr = new byte[byteNum];
 			int toSend = fs.read(byteArr,(int) 0, byteNum);
 
-			System.out.println("Sent now: " + toSend);
+//			System.out.println("Sent now: " + toSend);
 			conn.getOutputStream().write(byteArr, 0, toSend);
 			conn.getOutputStream().flush();
 			totalSent += toSend;
@@ -84,7 +84,7 @@ public class FilesHandler {
 				continue;
 			
 			out.write(byteArr, 0, cur);
-			System.out.println("writing on file...");
+//			System.out.println("writing on file...");
 			totalRead += cur;
 		}
 		
@@ -96,7 +96,5 @@ public class FilesHandler {
 	public boolean existsFile(String path){
 		File file = new File(path);
 		return file.exists();
-		
 	}
-	
 }

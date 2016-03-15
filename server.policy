@@ -1,8 +1,9 @@
 grant codeBase "file:bin${/}*" {
 
   //Socket
-  permission java.net.SocketPermission "127.0.0.1:8080", "listen, resolve";
-  permission java.net.SocketPermission "127.0.0.1:*", "accept, connect, resolve";
+  permission java.net.SocketPermission "127.0.0.1:23456", "listen, resolve";
+  permission java.net.SocketPermission "*:23456", "connect";
+  permission java.net.SocketPermission "*:*", "accept, resolve";
 
   //Runtime
   permission java.lang.RuntimePermission "stopThread";

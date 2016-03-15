@@ -108,7 +108,7 @@ public class MyWhats {
 
 					System.out.println("authenticated!");
 					System.out.println("starting download");
-					File downloaded = fileHandler.receive(conn, "DOWNLOADS", req.getFile().getFullPath());
+					File downloaded = fileHandler.receive(conn, ".", req.getFile().getFullPath());
 					if (downloaded == null)
 						System.out.println("Erro ao descarregar ficheiro");
 					else
