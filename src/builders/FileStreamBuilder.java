@@ -7,6 +7,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * Esta classe foi desenvolvida com o objectivo de automatizar o recurso a canais de leitura
+ * a ficheiros.
+ */
 public class FileStreamBuilder {
 
 	/**

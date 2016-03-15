@@ -7,43 +7,48 @@ import domain.Message;
 import domain.NetworkFile;
 import domain.Request;
 import domain.User;
+import validators.InputValidator;
 
 
+/**
+ * Esta classe eh um builder de requests
+ * Nesta estah encapsulado o conhecimento sobre criacao de diferentes
+ * tipos de Request
+ * A sua unica funcao eh formularar Requests com base em parametros
+ */
 public class RequestBuilder {
-	
+
+	/**
+	 * Formula um request
+	 * @param input
+	 * 		Map no qual se vai basear a criacao do Request
+	 * @return
+	 * 		o Request devido caso valido, null caso contrario
+     */
 	public static Request make(HashMap<String, String> input) {
 		String flag = input.get("flag");
-		User user = UserBuilder.make(input);
+		//valida flag
+		if(!InputValidator.validFlag(flag))
+			return null;
 
-		// verificar o tipo de input
-		Request request = null;
+		//inicializa user e request base
+		User user = UserBuilder.make(input);
+		Request request = new Request();
+		request.setType(flag);
+		request.setUser(user);
+
+		// tratar cada flag de forma diferente
 		switch(flag) {
-		case "-regUser":
-			System.out.println("User eh nulo? "+ user == null);
-			request = new Request();
-			request.setType(flag);
-			request.setUser(user);
-			break;
 		case "-a":
-			System.out.println("Adicionar user a group");
-			request = new Request();
-			request.setUser(user);
-			request.setType(flag);
 			request.setContact(input.get("field_1"));
 			request.setGroup(input.get("field_2"));
 			break;
 		case "-d":
-			request = new Request();
-			request.setUser(user);
-			request.setType(flag);
 			request.setContact(input.get("field_1"));
 			request.setGroup(input.get("field_2"));
 			break;
 		case "-f":
 			try {
-				request = new Request();
-				request.setUser(user);
-				request.setType(flag);
 				request.setContact(input.get("field_1"));
 				request.setFile(new NetworkFile(input.get("field_2")));
 			} catch(Exception e) {
@@ -52,9 +57,6 @@ public class RequestBuilder {
 			}
 			break;
 		case "-r":
-			request = new Request();
-			request.setUser(user);
-			request.setType(flag);
 			request.setSpecification("all");
 
 			//se eh especifico para um contacto
@@ -71,17 +73,11 @@ public class RequestBuilder {
 		case "-m":
 			String to = input.get("field_1");
 			String body = input.get("field_2");
-
-			request = new Request();
-			request.setUser(user);
 			request.setContact(to);
-			request.setType(flag);
 			request.setMessage(new Message(user.getName(), to, body));
 			break;
 		}
-		
-		System.out.println("FINAL REQUEST");
-		System.out.println(request.toString());
+
 		return request;
 		
 	}

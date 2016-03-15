@@ -6,12 +6,15 @@ import java.util.Scanner;
 import domain.User;
 import validators.InputValidator;
 
+/**
+ * Esta classa eh responsavel por criar Users
+ */
 public class UserBuilder {
 
 	/**
-	 * Used to build a User, based on the input given on the command line
-	 * @param  input represents the input given in the command line
-	 * @return       the new User
+	 * Cria um User com base no input
+	 * @param  input representa o input
+	 * @return       um novo User
 	 */
 	public static User make(HashMap<String, String> input) {
 		String password = input.get("password");
