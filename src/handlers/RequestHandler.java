@@ -41,8 +41,11 @@ public class RequestHandler extends Thread {
 			this.interrupt();
 			e2.printStackTrace();
 		} catch (IOException e2) {
+			System.out.println("Ligação foi abaixo com cliente");
+			// TODO:
+			// Temos de por isto a interromper a Thread mesmo a sério
 			this.interrupt();
-			e2.printStackTrace();
+			// e2.printStackTrace();
 		}
 
 		// Tratamento de request
@@ -51,8 +54,9 @@ public class RequestHandler extends Thread {
 			reply = parseRequest(clientRequest);
 
 		} catch (Exception e) {
-			System.out.println("Erro ao registar users");
-			e.printStackTrace();
+			System.out.println("Erro ao processar o pedido.");
+			// e.printStackTrace();
+			this.interrupt();
 		}
 
 		// ENVIA RESPOSTA
@@ -79,7 +83,7 @@ public class RequestHandler extends Thread {
 	 *            Request a ser considerado
 	 * @return Reply com a resposta devida para o client
 	 */
-	private Reply parseRequest(Request req) throws IOException {
+	Reply parseRequest(Request req) throws IOException {
 		// se eh apenas para registo
 		if (req.getType().equals("-regUser")) {
 			return insertNewUser(req.getUser(), this.userProxy);
