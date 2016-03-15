@@ -128,5 +128,11 @@ public class Reply extends NetworkMessage implements Serializable {
 	public boolean hasError(){
 		return !(this.status == 200 || this.status == 0 );
 	}
-	
+
+	public boolean equals(Object o) {
+		if (o == null || !(o instanceof Reply))
+			return false;
+		Reply other = (Reply) o;
+		return other.getStatus() == this.status && other.getMessage().equals(this.message);
+	}
 }

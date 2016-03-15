@@ -30,10 +30,8 @@ public class Connection {
 	public ObjectOutputStream getOutputStream(){
 		return this.output;
 	}
+
 	public ObjectInputStream getInputStream(){
 		return this.input;
-	}
-	public boolean isConnected(){
-		return this.socket.isConnected();
 	}
 }

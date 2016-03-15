@@ -18,10 +18,10 @@ public class MyWhatsServer {
 	public static void main(String[] args) throws NumberFormatException, IOException {
 
 		if (!InputValidator.validServerInput(args)) {
-			System.out.println("Parametros mal formed");
+			System.out.println("Parâmetros mal formados");
 			System.exit(-1);
 		}
-		
+
 		//prepare file structure
 		DatabaseBuilder dbBuilder = new DatabaseBuilder();
 		boolean createdFolders = dbBuilder.make();

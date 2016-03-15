@@ -30,10 +30,10 @@ public class InputValidatorTest {
         assertFalse("Recognizes invalid input with more arguments than suposed", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -m joao \"asdasd\" mais argumentos")));
         assertFalse("Recognizes invalid input for flag -regUser", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -regUser")));
         assertFalse("Recognizes invalid input with no arguments", InputValidator.validInput(null));
-        assertTrue("Recognizes valid input (-r)", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -r")));
-        assertTrue("Recognizes valid input (-m) without password", InputValidator.validInput(split("simao 127.0.0.1:8080 -m ricardo \"lala\"")));
-        assertTrue("Recognizes valid input (-m)", InputValidator.validInput(split("simao 127.0.0.1:8080 -p pass -m ricardo \"lala\"")));
-        assertTrue("Recognizes valid input (-f)", InputValidator.validInput(split("simao 127.0.0.1:8080 -f group file_name")));
+        assertTrue("Recognizes valid input (-r)", InputValidator.validInput(split("simao 127.0.0.1:23456 -p pass -r")));
+        assertTrue("Recognizes valid input (-m) without password", InputValidator.validInput(split("simao 127.0.0.1:23456 -m ricardo \"lala\"")));
+        assertTrue("Recognizes valid input (-m)", InputValidator.validInput(split("simao 127.0.0.1:23456 -p pass -m ricardo \"lala\"")));
+        assertTrue("Recognizes valid input (-f)", InputValidator.validInput(split("simao 127.0.0.1:23456 -f group file_name")));
     }
 
     @Test
@@ -65,16 +65,17 @@ public class InputValidatorTest {
     public void testValidAddress() throws Exception {
         assertFalse("Recognizes invalid port", InputValidator.validAddress("127.0.0.1:123456"));
         assertFalse("Recognizes invalid port", InputValidator.validAddress("127.0.0.1:asd"));
-        assertFalse("Recognizes invalid ip", InputValidator.validAddress("127.simao.0.1:12345"));
-        assertFalse("Recognizes invalid ip", InputValidator.validAddress("327.0.0.1:12345"));
-        assertFalse("Recognizes invalid ip", InputValidator.validAddress("123.0.256.1:12345"));
-        assertTrue("Recognizes valid port and ip", InputValidator.validAddress("127.0.0.1:12345"));
+        assertFalse("Recognizes invalid ip", InputValidator.validAddress("127.simao.0.1:23456"));
+        assertFalse("Recognizes invalid ip", InputValidator.validAddress("327.0.0.1:23456"));
+        assertFalse("Recognizes invalid ip", InputValidator.validAddress("123.0.256.1:23456"));
+        assertTrue("Recognizes valid port and ip", InputValidator.validAddress("127.0.0.1:23456"));
     }
 
     @Test
     public void testValidPort() throws Exception {
         assertFalse("Recognizes invalid port", InputValidator.validPort("17935682"));
-        assertTrue("Recognizes valid input", InputValidator.validPort("12345"));
+        assertFalse("Recognizes invalid input", InputValidator.validPort("12345"));
+        assertTrue("Recognizes valid input", InputValidator.validPort("23456"));
     }
 
     @Test
@@ -83,7 +84,7 @@ public class InputValidatorTest {
         assertFalse("Recognizes invalid input with no argumetns", InputValidator.validServerInput(null));
         assertFalse("Recognizes invalid input with multiple arguments", InputValidator.validServerInput(split("multiplos argumentos")));
         assertFalse("Recognizes invalid input with invalid port", InputValidator.validServerInput(split("123123123")));
-        assertTrue("Recognizes valid input", InputValidator.validServerInput(split("12345")));
+        assertTrue("Recognizes valid input", InputValidator.validServerInput(split("23456")));
     }
 
     public String[] split(String s) {

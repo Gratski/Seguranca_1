@@ -28,9 +28,6 @@ public class MyWhats {
 
 			// parse input
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
-
-			System.out.println("====================================");
-			
 			// estabelece ligacao
 			Connection connection = new Connection(
 					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
@@ -58,10 +55,8 @@ public class MyWhats {
 			connection.destroy();
 
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Aplicação terminada.");
+			System.out.println("Aplicação terminada com erro, tente de novo.");
 		}
-
 	}
 
 	/**
@@ -86,12 +81,10 @@ public class MyWhats {
 				//authenticate
 				Reply auth = (Reply) conn.getInputStream().readObject();
 				
-				if(auth.getStatus() != 200)
-				{
+				if (auth.getStatus() != 200) {
 					upload_error = true;
 					break;
 				}
-				
 				//send file
 				fHandler.send(conn, new File(req.getFile().getFullPath()));
 			} catch (Exception e) {
@@ -101,10 +94,8 @@ public class MyWhats {
 			
 		//caso especial para flag -f
 		case "-r":
-			
 			//se file download
-			if(req.getSpecs().equals("download"))
-			{
+			if (req.getSpecs().equals("download")) {
 				System.out.println("Downloading filename: " + req.getFile().getFullPath());
 				conn.getOutputStream().writeObject(req);
 				FilesHandler fileHandler = new FilesHandler();
@@ -117,7 +108,7 @@ public class MyWhats {
 
 					System.out.println("authenticated!");
 					System.out.println("starting download");
-					File downloaded = fileHandler.receive(conn, "DOWNLOADS", req.getFile().getFullPath());
+					File downloaded = fileHandler.receive(conn, ".", req.getFile().getFullPath());
 					if (downloaded == null)
 						System.out.println("Erro ao descarregar ficheiro");
 					else
@@ -135,21 +126,6 @@ public class MyWhats {
 		System.out.println(message.getHumanDateString());
 	}
 
-	public static void printReply(Reply reply){
-		
-		if(reply == null)
-			return;
-		
-		//se erro
-		if(reply.hasError())
-		{
-			System.out.println("Error.");
-			System.out.println("Description: " + reply.getMessage());
-		}
-		//se nao ocorreu um erro
-		
-	}
-	
 	/**
 	 * Recebe um objecto Reply do servidor
 	 * 
@@ -159,7 +135,6 @@ public class MyWhats {
 	 * @throws Exception
 	 */
 	public static Reply receiveReply(Connection conn) {
-		
 		//se ocorreu um erro ao executar -r contact file
 		if (download_error)
 			return new Reply(400, "Erro ao descarregar ficheiro");

@@ -100,7 +100,6 @@ public class ConversationsProxy extends Proxy {
 		if (conversations == null)
 			return null;
 		
-		
 		Collection<Group> groups = GroupsProxy.getInstance().getGroupsWhereMember(user.getName()).values();
 
 		// Para cada group criar uma conversation de grupo e juntar as de privates
@@ -160,12 +159,12 @@ public class ConversationsProxy extends Proxy {
 	}
 
 	public Conversation getConversationBetween(String user, String contact) throws IOException {
-
 		Group group = GroupsProxy.getInstance().find(contact);
-
-		// Substituir pelo novo metodo!
 		String path = userHasConversationWith(user, contact);
 		System.out.println("Im here! Path is: " + path);
+		if (path == null)
+			return null;
+
 		File f = new File(path);
 		int messagesNum = 0;
 		try {
@@ -177,7 +176,7 @@ public class ConversationsProxy extends Proxy {
 		}
 
 		Conversation conversation;
-		if ( group == null) {
+		if (group == null) {
 			conversation = new Conversation(new User(user), new User(contact));
 		} else {
 			conversation = new Conversation(group);

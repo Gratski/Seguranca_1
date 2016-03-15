@@ -17,9 +17,9 @@ public class DatabaseBuilder {
 	 * @return
 	 * 		true se todos estao criados, false caso contrario
 	 */
-	public boolean make(){	
+	public boolean make(){
 		boolean valid = true;
-		try{
+		try {
 			valid = makeDir(BASE_PATH)
 					&& makeDir(BASE_PATH+"/"+CONVERSATIONS)
 					&& makeDir(BASE_PATH+"/"+CONVERSATIONS+"/"+GROUPS)
@@ -27,7 +27,7 @@ public class DatabaseBuilder {
 					&& makeFile(BASE_PATH, "USERS")
 					&& makeFile(BASE_PATH, "GROUPS")
 					&& makeFile(BASE_PATH+"/"+CONVERSATIONS, "INDEX"); 
-		}catch(Exception e){
+		} catch(Exception e) {
 			valid = false;
 		}
 		
@@ -52,7 +52,26 @@ public class DatabaseBuilder {
 			file.createNewFile();
 		return file.exists();
 	}
-	
-	
+
+	public boolean destroy(){
+		File directory = new File(BASE_PATH);
+		return deleteDirectory(directory);
+	}
+
+	private boolean deleteDirectory(File directory) {
+		if (directory.exists()) {
+			File[] files = directory.listFiles();
+			if (null != files) {
+				for (int i = 0; i < files.length; i++) {
+					if (files[i].isDirectory()) {
+						deleteDirectory(files[i]);
+					} else {
+						files[i].delete();
+					}
+				}
+			}
+		}
+		return(directory.delete());
+	}
 	
 }
