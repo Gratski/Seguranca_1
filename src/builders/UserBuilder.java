@@ -20,7 +20,7 @@ public class UserBuilder {
 		if (password == null) {
 			Scanner sc = new Scanner(System.in);
 			do {
-				System.out.println("Insira a palavra-passe (sem espaços)");
+				System.out.println("Insira a palavra-passe (sem espaços):");
 				password = sc.nextLine();
 			} while (!InputValidator.validPassword(password) || password.split(" ").length > 1);
 			sc.close();

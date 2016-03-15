@@ -230,6 +230,10 @@ public class ConversationsProxy extends Proxy {
 		
 		//criar pasta de group
 		File file = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo());
+		
+		//set sent time to now
+		msg.setTimestampNow();
+		
 		boolean res = MessagesProxy.getInstance().persist(
 				"DATABASE/CONVERSATIONS/GROUP/" + msg.getTo(), 
 				""+file.list().length, 
@@ -270,8 +274,8 @@ public class ConversationsProxy extends Proxy {
 			if ((folder = this.add(msg.getFrom(), msg.getTo())) == null)
 				return false;
 		
-		System.out.println("here 1");
-		System.out.println("conversations folder is: " + folder);
+		//set sent time to now
+		msg.setTimestampNow();
 		
 		//verifica se a pasta de conversacao existe
 		File file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder);
@@ -279,7 +283,10 @@ public class ConversationsProxy extends Proxy {
 			return false;
 		
 		//cria file de mensagem
-		boolean res = MessagesProxy.getInstance().persist("DATABASE/CONVERSATIONS/PRIVATE/" + folder, ""+file.list().length, msg);
+		boolean res = MessagesProxy.getInstance().persist(
+				"DATABASE/CONVERSATIONS/PRIVATE/" + folder, 
+				""+file.list().length, 
+				msg);
 		System.out.println("Store result: " + res);
 		return res;
 	}

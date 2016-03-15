@@ -194,43 +194,68 @@ public class RequestHandler extends Thread {
 		// Obtem nome de ficheiro
 		String filename = req.getFile().getFile().getName();
 		System.out.println("Filename: " + filename);
-
+		
+		boolean isGroup = false;
+		
 		// formula message
 		Message msg = new Message(req.getUser().getName(), req.getContact(), filename);
 		msg.setType("-f");
 		msg.setTimestampNow();
 		req.setMessage(msg);
-
-		// escreve message
-		Reply reply = executeSendMessage(req);
-		this.connection.getOutputStream().writeObject(reply);
-		System.out.println("Sent!"); // fix thisrequehan
-		if (reply.getStatus() != 200) {
-			System.out.println("DIFERENTE DE 200...");
-			return false;
-		}
-
-		// obtem ficheiro de upload
-		FilesHandler handler = new FilesHandler();
-		String path = null;
-		System.out.println("Checking if is group or private...");
-		// verifica se eh uma mensagem para um group
-
+		
 		Group group = GroupsProxy.getInstance().find(req.getContact());
-		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
-			System.out.println("Store in group: " + req.getContact());
-			path = "DATABASE/CONVERSATIONS/GROUP/" + req.getContact() + "/FILES";
+		String path = "DATABASE/CONVERSATIONS/";
+		
+		// verifica se eh group
+		if (group != null){
+			if( group.hasMemberOrOwner(req.getUser().getName()) )
+			{
+				System.out.println("Store in group: " + req.getContact());
+				path = path + "GROUP/" + req.getContact();
+				isGroup = true;
+				System.out.println("eh para group");
+			}else{
+				return false;
+			}
 		}
 		// verifica se eh private
 		else {
-			path = "DATABASE/CONVERSATIONS/PRIVATE/";
+			path = path + "PRIVATE/";
 			path = path + ConversationsProxy.getInstance().getConversationID(req.getUser().getName(), req.getContact());
-			path = path + "/FILES";
-			System.out.println("Store in Private: " + path);
+			System.out.println("eh para private");
+			isGroup = false;
 		}
-
+		//pasta de ficheiros
+		path = path + "/FILES";
+		
+		
+		//verifica se o file jah existe
+		FilesHandler fHandler = new FilesHandler();
+		if(fHandler.existsFile(path+"/"+filename)){
+			System.out.println("File ja existe");
+			return false;
+		}
+		
+		//envia mensagem
+		boolean ok = true;
+		ConversationsProxy cProxy = ConversationsProxy.getInstance();
+		System.out.println("Registering message -f.");
+		if(isGroup)
+			ok = cProxy.insertGroupMessage(req.getMessage());
+		else
+			ok = cProxy.insertPrivateMessage(req.getMessage());
+		
+		//envia feedback ao user
+		if(ok)
+			this.connection.getOutputStream().writeObject(new Reply(200));
+		else{
+			this.connection.getOutputStream().writeObject(new Reply(400, "Erro ao enviar ficheiro"));
+			return false;
+		}
+		
+		
 		System.out.println("Writing file!");
-		return handler.receive(this.connection, path, filename) != null;
+		return fHandler.receive(this.connection, path, filename) != null;
 	}
 
 	private Reply executeSendMessage(Request req) throws IOException {
