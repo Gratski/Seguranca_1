@@ -355,16 +355,6 @@ public class RequestHandler extends Thread {
 			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
 			return reply;
 		}
-		// verifica se o member e owner, se for, elimina o grupo
-		if (groupsProxy.isOwner(groupName, member)) {
-			if (!groupsProxy.deleteGroup(groupName)) {
-				return reply;
-			} else {
-				reply.setStatus(400);
-				reply.setMessage("Erro ao eliminar o group " + groupName);
-			}
-			return reply;
-		}
 
 		// verifica se o member e realmente member do group
 		if (!group.hasMemberOrOwner(member)) {
@@ -374,7 +364,6 @@ public class RequestHandler extends Thread {
 		}
 
 		// remove member do group
-		System.out.println("Vai remover");
 		if (!groupsProxy.removeMember(groupName, member)) {
 			reply.setStatus(400);
 			reply.setMessage("Erro ao remover membro do group");
