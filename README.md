@@ -12,8 +12,8 @@ TODO:
 - Change Client flow
 - Test client/server with diferent computers (to check permissions)
 - Refactor printing Reply responsability
-- Add Tests from Requests for each case
 - Refactor Reply/NetworkMessage
+- Do Txt with how to run the project
 - Refactor some path constants from Proxy to others
 - Make executable?
 - Make Javadoc
