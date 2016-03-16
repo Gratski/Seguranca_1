@@ -342,25 +342,28 @@ public class RequestHandler extends Thread {
 		Reply reply = new Reply(200);
 		System.out.println("==========REMOVER MEMBRO DE GROUP===========");
 
+		Group group = groupsProxy.find(groupName);
+
 		// verifica se group existe
-		if (!groupsProxy.exists(groupName)) {
+		if (group == null) {
 			reply.setStatus(400);
 			reply.setMessage("Group inexistente");
 			return reply;
 		}
 		// verifica se user eh owner
-		if (!groupsProxy.isOwner(groupName, user.getName())) {
+		if (!group.getOwner().equals(user.getName())) {
 			reply.setStatus(401);
 			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
 			return reply;
 		}
 		// verifica se o member e realmente member do group
-		if (!groupsProxy.hasMember(groupName, member)) {
+		if (!group.hasMemberOrOwner(member)) {
 			reply.setStatus(400);
 			reply.setMessage("O utilizador " + member + " nao eh membro do group " + groupName);
 			return reply;
 		}
 		// remove member do group
+		System.out.println("Vai remover");
 		if (!groupsProxy.removeMember(groupName, member)) {
 			reply.setStatus(400);
 			reply.setMessage("Erro ao remover membro do group");

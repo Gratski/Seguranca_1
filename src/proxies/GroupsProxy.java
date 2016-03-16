@@ -16,6 +16,12 @@ import domain.Group;
 import domain.User;
 import enums.Filenames;
 
+/**
+ * Esta classe representa a entidade responsavel
+ * pela persistencia e acesso a dados de grupos
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class GroupsProxy extends Proxy {
 
 	private static GroupsProxy instance = null;
@@ -28,12 +34,19 @@ public class GroupsProxy extends Proxy {
 		this.groups = new HashMap<>();
 		this.init();
 	}
-	
+
+	/**
+	 * Obter instancia
+	 *
+	 * @return
+	 * @throws IOException
+     */
 	public static GroupsProxy getInstance() throws IOException {
 		if (instance == null)
 			instance = new GroupsProxy();
 		return instance;
 	}
+
 
 	public void reload() throws IOException {
 		this.groups = new HashMap<>();
@@ -177,14 +190,45 @@ public class GroupsProxy extends Proxy {
 	 * @throws IOException
 	 */
 	public boolean removeMember(String groupName, String member) throws IOException {
-		if (!this.groups.get(groupName).removeMember(member))
-			return false;
-		
+
+		Group g = this.groups.get(groupName);
+
+		//apagar grupo e suas mensagens
+		if( g.getOwner().equals(member) )
+		{
+			//apaga pastas de group
+			deleteGroup(new File("DATABASE/CONVERSATIONS/GROUP/"+g.getName()));
+			//apaga grupo em si
+			this.groups.remove(g.getName());
+		}
+		//remover membro de grupo
+		else{
+			if(!this.groups.get(groupName).removeMember(member)) {
+				return false;
+			}
+		}
+
 		updateFile();
 		return true;
 	}
 	
-	
+
+	private void deleteGroup(File f){
+		File[] fl = f.listFiles();
+
+		for( File file : fl )
+		{
+			if( file.isDirectory() && file.listFiles().length > 0 ) {
+				deleteGroup(file);
+			}
+			else {
+				file.delete();
+			}
+		}
+		f.delete();
+	}
+
+
 	/**
 	 * Actualiza o ficheiro de groups
 	 * @throws IOException

@@ -51,7 +51,7 @@ public class MyWhats {
 			}
 
 			//validate request before send
-			if (request.getUser().getName().equals(request.getContact())) {
+			if (request.getUser().getName().equals(request.getContact()) && !request.getType().equals("-d")) {
 				System.out.println("O destinatário nao pode ser o remetente.");
 				System.out.println("Aplicacao terminada.");
 				System.exit(-1);
