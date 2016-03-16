@@ -5,22 +5,42 @@ import java.util.HashMap;
 public class InputValidator {
 
 	public static Boolean validInput(String[] input) {
-		if (input == null || input.length < 3 || !validName(input[0]) || !validAddress(input[1]))
+		if (input == null || input.length < 3 ) {
+			System.out.println("first condition");
 			return false;
+		}
+
+		if( !validName(input[0]))
+		{
+			System.out.println("Second");
+			return false;
+		}
+
+		if( !validAddress(input[1])  )
+		{
+			System.out.println("Thrid");
+			return false;
+		}
 		
 		int i = 2;
 		if (input[2].equals("-p")) {
-			if (!(input.length > 3) || !validPassword(input[3]))
+			if (!(input.length > 3) || !validPassword(input[3])) {
+				System.out.println("-p invalida");
 				return false;
+			}
 			if (input.length == 4)
 				return true;
 			i = 4;
 		}
 
-		if (!validFlag(input[i]))
+		if (!validFlag(input[i])) {
+			System.out.println("flag invalida");
 			return false;
-		else if (!input[i].equals("-r") && input.length != (i + 3))
+		}
+		else if (!input[i].equals("-r") && input.length != (i + 3)) {
+			System.out.println("flag -r incompleta");
 			return false;
+		}
 
 		return true;
 	}
@@ -53,8 +73,8 @@ public class InputValidator {
 		} catch(Exception e) {
 			return false;
 		}
-		return portInt == 23456;
-//		return (portInt >= 1024 && portInt <= 65535);
+		//return portInt == 23456;
+		return (portInt >= 1024 && portInt <= 65535);
 	}
 	
 	public static Boolean validAddress(String address) {

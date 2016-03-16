@@ -13,6 +13,13 @@ import helpers.Connection;
 import helpers.FilesHandler;
 import validators.InputValidator;
 
+/**
+ * Esta classe representa o client
+ * O modo de uso e as suas operacoes sao em mais detalhe descritas
+ * no ficheiro README.info
+ *
+ * @author Joao Rodrigues && Simao Neves
+ */
 public class MyWhats {
 
 	private static boolean download_error = false;
@@ -21,13 +28,14 @@ public class MyWhats {
 	public static void main(String[] args) {
 		try {
 			// input validation
-			if (!InputValidator.validInput(args)) {
+			if (!InputValidator.validInput(args)){
 				System.out.println("Parametros mal formed");
 				System.exit(-1);
 			}
 
 			// parse input
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
+
 			// estabelece ligacao
 			Connection connection = new Connection(
 					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
@@ -38,7 +46,8 @@ public class MyWhats {
 			//validate request before send
 			if(request.getUser().getName().equals(request.getContact()))
 			{
-				System.out.println("Nao enviei coisas para si pff... :/");
+				System.out.println("O destinatário nao pode ser o remetente.");
+				System.out.println("Aplicacao terminada.");
 				System.exit(-1);
 			}
 			
@@ -73,51 +82,63 @@ public class MyWhats {
 		// send base request
 		conn.getOutputStream().writeObject(req);
 
-		//caso especial para file upload
+		//se a operacao inclui ficheiros
+		if( isFileOperation(req) )
+		{
+			//obtem autorizacao para enviar/receber ficheiro
+			try{
+
+				Reply auth = (Reply) conn.getInputStream().readObject();
+
+				//se nao autorizado
+				if (auth.getStatus() != 200) {
+					upload_error = true;
+					return;
+				}
+
+			}catch(ClassNotFoundException e){
+				throw new IOException();
+			}
+		}
+
+		//se a operacao inclui ficheiros e tem autorizacao
 		switch (req.getType()) {
+		//caso especial para upload
 		case "-f":
 			FilesHandler fHandler = new FilesHandler();
 			try {
-				//authenticate
-				Reply auth = (Reply) conn.getInputStream().readObject();
-				
-				if (auth.getStatus() != 200) {
-					upload_error = true;
-					break;
-				}
-				//send file
+
+				//enviar file
 				fHandler.send(conn, new File(req.getFile().getFullPath()));
+
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 			break;
 			
-		//caso especial para flag -f
+		//caso especial para download
 		case "-r":
 			//se file download
 			if (req.getSpecs().equals("download")) {
-				System.out.println("Downloading filename: " + req.getFile().getFullPath());
-				conn.getOutputStream().writeObject(req);
-				FilesHandler fileHandler = new FilesHandler();
-				try {
-					Reply auth = (Reply) conn.getInputStream().readObject();
-					if (!(auth.getStatus() == 200)) {
-						download_error = true;
-						break;
-					}
 
-					System.out.println("authenticated!");
-					System.out.println("starting download");
-					File downloaded = fileHandler.receive(conn, ".", req.getFile().getFullPath());
+				try {
+
+					File downloaded = new FilesHandler().receive(conn, ".", req.getFile().getFullPath());
 					if (downloaded == null)
 						System.out.println("Erro ao descarregar ficheiro");
 					else
 						System.out.println("Descarregamento efectuado");
+
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		}
+	}
+
+	private static boolean isFileOperation(Request req){
+		String type = req.getType();
+		return ( type.equals("-f") || ( type.equals("-r") && req.getSpecs().equals("download") ) );
 	}
 
 	public static void printMessage(String name, Message message) {

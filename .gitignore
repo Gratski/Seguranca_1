@@ -7,3 +7,4 @@ ProjectSC.iml
 /DATABASE/
 .idea/
 */.DS_Store
+*.iml
