@@ -40,14 +40,14 @@ public class DatabaseBuilder {
 		return file.exists();
 	}
 	
-	private boolean makeFile(String path, String filename) throws IOException{ 
+	public boolean makeFile(String path, String filename) throws IOException{
 		//directory
 		this.makeDir(path);
 		
 		//file itself
 		String fullPath = path + "/" + filename;
 		File file = new File(fullPath);
-		if(!file.exists())
+		if (!file.exists())
 			file.createNewFile();
 		return file.exists();
 	}

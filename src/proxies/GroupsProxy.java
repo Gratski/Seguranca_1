@@ -35,6 +35,11 @@ public class GroupsProxy extends Proxy {
 		return instance;
 	}
 
+	public void reload() throws IOException {
+		this.groups = new HashMap<>();
+		init();
+	}
+
 	public void init() throws IOException {
 		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
 		

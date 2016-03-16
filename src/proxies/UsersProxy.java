@@ -134,10 +134,9 @@ public class UsersProxy extends Proxy {
 	public User find(String name){
 		return this.users.containsKey(name) ? this.users.get(name) : null;
 	}
-	
-	
-	public void destroy() throws IOException{
-		this.fw.close();
-		this.bw.close();
+
+	public void reload() throws IOException {
+		this.users = new HashMap<>();
+		init();
 	}
 }

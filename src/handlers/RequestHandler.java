@@ -116,14 +116,16 @@ public class RequestHandler extends Thread {
 		case "-f":
 			System.out.println("Receber ficheiro");
 
-			if (!this.userProxy.exists(new User(req.getContact())) || !this.groupsProxy.exists(req.getContact())) {
+			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) ) {
 				reply.setStatus(400);
 				reply.setMessage("Destinatário inexistente");
 				return reply;
 			}
 
+			System.out.println("É Suposto existir");
+
 			try {
-				if(!executeGetFile(req))
+				if (!executeGetFile(req))
 					reply = new Reply(400, "Erro ao receber ficheiro");
 				else
 					reply = new Reply(200);

@@ -3,6 +3,7 @@ package handlers;
 import builders.RequestBuilder;
 import domain.*;
 import helpers.DatabaseBuilder;
+import helpers.FilesHandler;
 import org.junit.*;
 import org.junit.internal.matchers.ThrowableCauseMatcher;
 import proxies.ConversationsProxy;
@@ -37,10 +38,14 @@ public class RequestHandlerTest {
 
     @Before
     public void setUp() throws Exception {
+        System.out.println("Destroying DATABASE");
+        this.db.destroy();
         System.out.println("Setting up things");
         this.db.make();
         UsersProxy usersProxy = UsersProxy.getInstance();
+        usersProxy.reload();
         GroupsProxy groupsProxy = GroupsProxy.getInstance();
+        groupsProxy.reload();
         ConversationsProxy conversationsProxy = ConversationsProxy.getInstance();
         usersProxy.insert(simao);
         usersProxy.insert(joao);
@@ -56,11 +61,6 @@ public class RequestHandlerTest {
 
         // é preciso por um servidorzito a correr para simular a connection com o socket, mas não era suposto
         this.rh = new RequestHandler(new Socket("127.0.0.1", 23456), usersProxy, groupsProxy, conversationsProxy);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        this.db.destroy();
     }
 
     @Test
@@ -126,7 +126,6 @@ public class RequestHandlerTest {
         req.setType("-f");
         req.setContact(nonExistentUser.getName());
         req.setFile(new NetworkFile("README.md"));
-
         Reply reply = rh.parseRequest(req);
         assertEquals("Enviar File para nonExistentUser dá erro", new Reply(400, "Destinatário inexistente"), reply);
         conv = conversationsProxy.getConversationBetween(simao.getName(), nonExistentUser.getName());
@@ -137,6 +136,21 @@ public class RequestHandlerTest {
         } catch (Throwable ex) {
             assertTrue("Raise Exception when no file is found", ex instanceof FileNotFoundException);
         }
+
+        Request req2 = new Request();
+        req2.setUser(simao);
+        req2.setType("-f");
+        req2.setContact(joao.getName());
+        req2.setFile(new NetworkFile("README.md"));
+
+        String path = conversationsProxy.userHasConversationWith(simao.getName(), joao.getName());
+        // Insert dummy file
+        System.out.println("Insere dummy file: " + db.makeFile(path + "/FILES", "README.md"));
+        System.out.println("Path is: " + path);
+        Reply reply2 = rh.parseRequest(req2);
+        assertEquals("Enviar file que já existe no servidor dá erro", new Reply(400, "Erro ao receber ficheiro"), reply2);
+
+        // Testar envio de um ficheiro a sério é complicado, porque é preciso usar a socket de comunicação com o servidor..
     }
 
     @Test
@@ -156,5 +170,4 @@ public class RequestHandlerTest {
     public String[] split(String s) {
         return s.split(" ");
     }
-
 }
