@@ -171,6 +171,9 @@ public class RequestHandler extends Thread {
 		if (conversations == null) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
+		} else if (conversations.size() == 0) {
+			reply.setStatus(400);
+			reply.setMessage("Não existem nenhumas conversas");
 		} else {
 			reply.setStatus(200);
 			reply.setConversations(conversations);

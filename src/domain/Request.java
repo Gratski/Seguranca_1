@@ -1,6 +1,5 @@
 package domain;
 
-import java.io.File;
 import java.io.Serializable;
 
 public class Request extends NetworkMessage implements Serializable {
@@ -61,5 +60,4 @@ public class Request extends NetworkMessage implements Serializable {
 		sb.append("Group: " + this.getGroup() + "\n");
 		return sb.toString();
 	}
-	
 }

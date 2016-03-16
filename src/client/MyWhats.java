@@ -44,8 +44,7 @@ public class MyWhats {
 			Request request = RequestBuilder.make(parsedInput);
 			
 			//validate request before send
-			if(request.getUser().getName().equals(request.getContact()))
-			{
+			if (request.getUser().getName().equals(request.getContact())) {
 				System.out.println("O destinatário nao pode ser o remetente.");
 				System.out.println("Aplicacao terminada.");
 				System.exit(-1);
@@ -83,20 +82,16 @@ public class MyWhats {
 		conn.getOutputStream().writeObject(req);
 
 		//se a operacao inclui ficheiros
-		if( isFileOperation(req) )
-		{
+		if ( isFileOperation(req) ) {
 			//obtem autorizacao para enviar/receber ficheiro
-			try{
-
+			try {
 				Reply auth = (Reply) conn.getInputStream().readObject();
-
 				//se nao autorizado
 				if (auth.getStatus() != 200) {
 					upload_error = true;
 					return;
 				}
-
-			}catch(ClassNotFoundException e){
+			} catch (ClassNotFoundException e) {
 				throw new IOException();
 			}
 		}
@@ -107,10 +102,8 @@ public class MyWhats {
 		case "-f":
 			FilesHandler fHandler = new FilesHandler();
 			try {
-
 				//enviar file
 				fHandler.send(conn, new File(req.getFile().getFullPath()));
-
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -120,9 +113,7 @@ public class MyWhats {
 		case "-r":
 			//se file download
 			if (req.getSpecs().equals("download")) {
-
 				try {
-
 					File downloaded = new FilesHandler().receive(conn, ".", req.getFile().getFullPath());
 					if (downloaded == null)
 						System.out.println("Erro ao descarregar ficheiro");
@@ -141,12 +132,6 @@ public class MyWhats {
 		return ( type.equals("-f") || ( type.equals("-r") && req.getSpecs().equals("download") ) );
 	}
 
-	public static void printMessage(String name, Message message) {
-		String personInPerspective = (name.equals(message.getFrom()) ? "me" : message.getFrom());
-		System.out.println(personInPerspective + ": " + message.getBody());
-		System.out.println(message.getHumanDateString());
-	}
-
 	/**
 	 * Recebe um objecto Reply do servidor
 	 * 
@@ -163,7 +148,7 @@ public class MyWhats {
 		else if (upload_error)
 			return new Reply(400, "Erro ao enviar ficheiro");
 		//caso contrario espera pela resposta
-		else
+		else {
 			try {
 				return (Reply) conn.getInputStream().readObject();
 			} catch (IOException e) {
@@ -172,5 +157,6 @@ public class MyWhats {
 				// e.printStackTrace();
 				return new Reply(400, "");
 			}
+		}
 	}
 }
