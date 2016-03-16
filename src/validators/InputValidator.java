@@ -2,6 +2,13 @@ package validators;
 
 import java.util.HashMap;
 
+/**
+ * Esta classe representa um validator de input
+ * Neste projecto eh utilizada para validar o input
+ * dado aquando da execução do programa client e server
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class InputValidator {
 
 	public static Boolean validInput(String[] input) {

@@ -7,7 +7,10 @@ import domain.User;
 import validators.InputValidator;
 
 /**
- * Esta classa eh responsavel por criar Users
+ * Esta classe representa a entidade responsavel
+ * pela criacao de Users
+ *
+ * @author Joao Rodrigues & Simao Neves
  */
 public class UserBuilder {
 

@@ -11,10 +11,10 @@ import validators.InputValidator;
 
 
 /**
- * Esta classe eh um builder de requests
- * Nesta estah encapsulado o conhecimento sobre criacao de diferentes
- * tipos de Request
- * A sua unica funcao eh formularar Requests com base em parametros
+ * Esta classe representa a entidade responsavel
+ * pela criacao de Requests
+ *
+ * @author JoaoRodrigues & Simao Neves
  */
 public class RequestBuilder {
 

@@ -4,11 +4,23 @@ import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Date;
 
+/**
+ * Esta classe representa a entidade Message
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class Message implements Serializable, Comparable {
 
 	private String from, to, body, type;
 	private Date timestamp;
-	
+
+	/**
+	 * Constructor
+	 *
+	 * @param from 	Nome do autor
+	 * @param to 	Nome do destinatario
+	 * @param body 	Conteudo da mensagem
+     */
 	public Message(String from, String to, String body) {
 		this.from = from;
 		this.to = to;
@@ -16,6 +28,12 @@ public class Message implements Serializable, Comparable {
 		this.timestamp = null;
 	}
 
+	/**
+	 * Constructor
+	 *
+	 * @param from 	Nome do autor
+	 * @param body	Conteudo da mensagem
+     */
 	public Message(String from, String body) {
 		this.from = from;
 		this.to = null;
@@ -23,43 +41,91 @@ public class Message implements Serializable, Comparable {
 		this.timestamp = null;
 	}
 
+	/**
+	 * Obtem o nome do autor
+	 *
+	 * @return String
+     */
 	public String getFrom() {
 		return from;
 	}
 
+	/**
+	 * Obtem o destinatario
+	 *
+	 * @return String
+     */
 	public String getTo() {
 		return to;
 	}
 
+	/**
+	 * Obtem o conteudo
+	 *
+	 * @return String
+     */
 	public String getBody() {
 		return body;
 	}
-	
+
+	/**
+	 * Obtem tipo de mensagem
+	 *
+	 * @return String
+     */
 	public String getType(){
 		return this.type;
 	}
 
-	public void setType(String type){
-		this.type = type;
-	}
+	/**
+	 * Altera tipo de mensagem
+	 *
+	 * @param type Novo tipo de mensagem
+     */
+	public void setType(String type){ this.type = type; }
 
+	/**
+	 * Altera o valor de timestamp da mensagem
+	 * para timestamp do instante da invocacao
+	 * deste metodo
+	 */
 	public void setTimestampNow(){
 		this.timestamp = new Date();
 	}
 
+	/**
+	 * Obtem o timestamp da mensagem
+	 *
+	 * @return Date timestamp
+     */
 	public Date getTimestamp() {
 		return timestamp;
 	}
 
+	/**
+	 * Obtem o timestamp me Milisegundos
+	 *
+	 * @return long milisegundos
+     */
 	public long getTimeInMiliseconds() {
 		return this.timestamp.getTime();
 	}
 
+	/**
+	 * Altera o timestamp da mensagem
+	 *
+	 * @param milliseconds Novo valor timestamp em milisegundos
+     */
 	public void setTimeInMilliseconds(long milliseconds) {
 		this.timestamp = new Date();
 		this.timestamp.setTime(milliseconds);
 	}
 
+	/**
+	 * Obtem a data readable
+	 *
+	 * @return String
+     */
 	public String getHumanDateString() {
 		Date date = this.timestamp;
 		StringBuilder sb = new StringBuilder();
@@ -85,22 +151,6 @@ public class Message implements Serializable, Comparable {
 		sb.append('}');
 		return sb.toString();
 	}
-	
-	/**
-	 * Este metodo retorna o formato em que
-	 * uma mensagem eh guardada
-	 * @return
-	 * 		String com o formato a persistir
-	 */
-	public String toStoreFormat(){
-		StringBuilder sb = new StringBuilder();
-		sb.append(this.getTimeInMiliseconds() + " ");
-		sb.append(this.getFrom() + " ");
-		sb.append(this.getType() + " ");
-		sb.append(this.getBody() + "\n");
-		return sb.toString();
-	}
-
 
 	@Override
 	public int compareTo(Object o) {

@@ -7,6 +7,12 @@ import java.util.List;
 
 import proxies.MessagesProxy;
 
+/**
+ * Esta classe representa a entidade Conversacao
+ * Contempla conversacoes entre 2 ou mais intervenientes
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class Conversation implements Serializable {
 
 	private String filename;
@@ -14,6 +20,13 @@ public class Conversation implements Serializable {
 	private Group group;
 	private ArrayList<User> users;
 
+	/**
+	 * Constructor
+	 *
+	 * @param u1 User interveniente
+	 * @param u2 User interveniente
+	 * @param filename Nome do ficheiro de Conversation
+     */
 	public Conversation(User u1, User u2, String filename) {
 		this.filename = filename;
 		this.users = new ArrayList<>();
@@ -23,10 +36,12 @@ public class Conversation implements Serializable {
 		this.group = null;
 	}
 
-	public Group getGroup() {
-		return this.group;
-	}
-
+	/**
+	 * Constructor
+	 *
+	 * @param u1 User interveniente
+	 * @param u2 User interveniente
+     */
 	public Conversation(User u1, User u2) {
 		this.filename = null;
 		this.users = new ArrayList<>();
@@ -36,6 +51,11 @@ public class Conversation implements Serializable {
 		this.group = null;
 	}
 
+	/**
+	 * Constructor
+	 *
+	 * @param group Group de Conversation
+     */
 	public Conversation(Group group) {
 		this.filename = null;
 		this.group = group;
@@ -43,21 +63,52 @@ public class Conversation implements Serializable {
 		this.msgs = new ArrayList<>();
 	}
 
+	/**
+	 * Obter group
+	 *
+	 * @return Group de Conversation
+     */
+	public Group getGroup() {
+		return this.group;
+	}
+
+	/**
+	 * Adiciona mensagem a msgs
+	 *
+	 * @param msg Message a adicionar a msgs
+	 * @return true se adicionou, false caso contrario
+     */
 	public boolean addMessage(Message msg) {
 		return this.msgs.add(msg);
 	}
 
+	/**
+	 * Obter filename
+	 *
+	 * @return String
+     */
 	public String getFilename(){
 		return this.filename;
 	}
-	
+
+	/**
+	 * Obter Messages
+	 *
+	 * @return ArrayList<Message>
+     */
 	public ArrayList<Message> getMessages() {
 		return this.msgs;
 	}
 
+	/**
+	 * Obter users intervenientes
+	 *
+	 * @return ArrayList<User>
+     */
 	public ArrayList<User> getUsers() {
 		return users;
 	}
+
 
 	@Override
 	public String toString() {
@@ -69,19 +120,5 @@ public class Conversation implements Serializable {
 		sb.append('}');
 		return sb.toString();
 	}
-
-
-//	public Message getLastMessage() throws IOException {
-//		return MessagesProxy.getInstance().getLastMessage(this.directory + "/" + this.filename);
-//	}
-	
-//	public User getUser1(){
-//		return this.user1;
-//	}
-//
-//	public User getUser2(){
-//		return this.user2;
-//	}
-
 
 }

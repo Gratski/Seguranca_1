@@ -6,12 +6,20 @@ import java.util.Collections;
 
 import client.MyWhats;
 
+/**
+ * Esta classe representa uma resposta do servidor para o client
+ *
+ * @author JoaoRodrigues & Simao Neves
+ */
 public class Reply extends NetworkMessage implements Serializable {
 	
 	private ArrayList<Conversation> conversations;
 	private int status;
 	private String message;
 
+	/**
+	 * 
+	 */
 	public Reply() {
 		this.conversations = null;
 		this.status = 0;

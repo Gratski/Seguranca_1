@@ -12,6 +12,9 @@ import java.util.Date;
 import domain.Message;
 import enums.Filenames;
 
+/**
+ * Esta classe
+ */
 public class MessagesProxy {
 
 	private static MessagesProxy instance = null;
@@ -51,7 +54,7 @@ public class MessagesProxy {
 			FileWriter fw = new FileWriter(file);
 			BufferedWriter bw = new BufferedWriter(fw);
 			
-			bw.write(msg.toStoreFormat());
+			bw.write(toStoreFormat(msg));
 			bw.close();
 			fw.close();
 			
@@ -69,5 +72,15 @@ public class MessagesProxy {
 	public Message getLastMessage(String filename){
 		return null;
 	}
-	
+
+
+	// PRIVATE
+	private String toStoreFormat(Message msg){
+		StringBuilder sb = new StringBuilder();
+		sb.append(msg.getTimeInMiliseconds() + " ");
+		sb.append(msg.getFrom() + " ");
+		sb.append(msg.getType() + " ");
+		sb.append(msg.getBody() + "\n");
+		return sb.toString();
+	}
 }

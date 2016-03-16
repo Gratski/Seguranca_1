@@ -7,26 +7,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Esta classe representa a entidade Group
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class Group implements Serializable {
 
 	private String name;
 	private User owner;
 	private Map<String, User> members;
-	
+
+	/**
+	 * Constructor
+	 *
+	 * @param name Nome de Group
+	 * @param owner Owner de Group
+     */
 	public Group(String name, User owner) {
 		this.name = name;
 		this.owner = owner;
 		this.members = new HashMap<>();
 	}
-	
+
+	/**
+	 * Obter membros de Group
+	 *
+	 * @return Collection<User> membros do Group
+     */
 	public Collection<User> getMembers(){
 		return this.members.values();
 	}
 	
 	/**
-	 * Adiciona um user ao grupo
-	 * @param user
-	 * 		User a ser adicionado ao grupo
+	 * Adiciona um user ao Group
+	 *
+	 * @param user User a ser adicionado ao Group
 	 */
 	public boolean addMember(String user) {
 		if (this.members.containsKey(user))
@@ -38,33 +54,48 @@ public class Group implements Serializable {
 	
 	/**
 	 * Verifica se o user existe neste group
-	 * @param user
-	 * 		User a considerar
-	 * @return
-	 * 		true se existe, false caso contrario
+	 *
+	 * @param user User a considerar
+	 * @return true se existe, false caso contrario
 	 */
 	public boolean hasMember(String user) {
 		return this.members.containsKey(user);
 	}
 
+	/**
+	 * Verifca se um dado nome eh o nome do Group Owner
+	 *
+	 * @param user Nome de User a ser considerado
+	 * @return true se eh Owner, false caso contrario
+     */
 	public boolean hasMemberOrOwner(String user) {
 		return (hasMember(user) || this.owner.getName().equals(user));
 	}
 	
 	/**
-	 * Remove o dado utilizador do grupo caso exista
-	 * @param user
-	 * 		User a ser adicionado
+	 * Remove o dado utilizador do Group caso exista
+	 *
+	 * @param user User a ser adicionado
 	 */
 	public boolean removeMember(String user) {
 		this.members.remove(user);
 		return !this.members.containsKey(user);
 	}
-	
+
+	/**
+	 * Obtem o nome do Group Owner
+	 *
+	 * @return String
+     */
 	public String getOwner(){
 		return this.owner.getName();
 	}
-	
+
+	/**
+	 * Obtem o nome do Group
+	 *
+	 * @return String
+     */
 	public String getName(){
 		return this.name;
 	}
