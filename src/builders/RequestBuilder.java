@@ -1,6 +1,7 @@
 package builders;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 
 import domain.Message;
@@ -25,10 +26,10 @@ public class RequestBuilder {
 	 * @return
 	 * 		o Request devido caso valido, null caso contrario
      */
-	public static Request make(HashMap<String, String> input) {
+	public static Request make(HashMap<String, String> input) throws FileNotFoundException {
 		String flag = input.get("flag");
 		//valida flag
-		if(!InputValidator.validFlag(flag))
+		if (!InputValidator.validFlag(flag))
 			return null;
 
 		//inicializa user e request base
@@ -52,8 +53,7 @@ public class RequestBuilder {
 				request.setContact(input.get("field_1"));
 				request.setFile(new NetworkFile(input.get("field_2")));
 			} catch(Exception e) {
-				System.out.println("Erro ao abrir ficheiro");
-				break;
+				throw new FileNotFoundException();
 			}
 			break;
 		case "-r":
@@ -77,9 +77,6 @@ public class RequestBuilder {
 			request.setMessage(new Message(user.getName(), to, body));
 			break;
 		}
-
 		return request;
-		
 	}
-	
 }

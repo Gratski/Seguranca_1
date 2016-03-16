@@ -1,6 +1,7 @@
 package client;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -41,8 +42,14 @@ public class MyWhats {
 					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
 
 			// create request obj
-			Request request = RequestBuilder.make(parsedInput);
-			
+			Request request = null;
+			try {
+				request = RequestBuilder.make(parsedInput);
+			} catch (FileNotFoundException e) {
+				System.out.println("Ficheiro não encontrado");
+				System.exit(-1);
+			}
+
 			//validate request before send
 			if (request.getUser().getName().equals(request.getContact())) {
 				System.out.println("O destinatário nao pode ser o remetente.");

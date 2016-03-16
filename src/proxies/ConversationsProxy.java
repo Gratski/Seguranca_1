@@ -283,12 +283,7 @@ public class ConversationsProxy extends Proxy {
 			return false;
 		
 		//cria file de mensagem
-		boolean res = MessagesProxy.getInstance().persist(
-				"DATABASE/CONVERSATIONS/PRIVATE/" + folder, 
-				""+file.list().length, 
-				msg);
-		System.out.println("Store result: " + res);
-		return res;
+		return MessagesProxy.getInstance().persist("DATABASE/CONVERSATIONS/PRIVATE/" + folder, "" + file.list().length, msg);
 	}
 
 	
