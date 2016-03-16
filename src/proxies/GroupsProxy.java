@@ -48,7 +48,6 @@ public class GroupsProxy extends Proxy {
 		return instance;
 	}
 
-
 	public void reload() throws IOException {
 		this.groups = new HashMap<>();
 		init();

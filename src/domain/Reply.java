@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-
-import client.MyWhats;
-
 /**
  * Esta classe representa uma resposta do servidor para o client
  *

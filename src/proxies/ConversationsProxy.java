@@ -72,7 +72,6 @@ public class ConversationsProxy extends Proxy {
 	}
 
 	public ArrayList<Conversation> getConversationsFrom(String user) throws IOException {
-
 		ArrayList<Conversation> list = new ArrayList<>();
 		File f = new File("DATABASE/CONVERSATIONS/INDEX");
 		FileReader fr = new FileReader(f);
@@ -108,7 +107,9 @@ public class ConversationsProxy extends Proxy {
 		}
 		// Iterar as conversations para ir buscar a lastMessage (em novo metodo, como em baixo)
 		for (Conversation conversation : conversations) {
-			conversation.addMessage(getLastMessage(conversation));
+			Message lastMessage = getLastMessage(conversation);
+			if (lastMessage != null)
+				conversation.addMessage(lastMessage);
 		}
 		return conversations;
 	}
@@ -123,6 +124,7 @@ public class ConversationsProxy extends Proxy {
 			if ( f.listFiles().length > 1)
 				lastMessage = f.list().length - 1 + ".msg";
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Erro ao tentar f.list()");
 			return null;
 		}
@@ -135,7 +137,6 @@ public class ConversationsProxy extends Proxy {
 		Message message = null;
 
 		if ((line = br.readLine()) != null) {
-
 			String[] split = line.split(" ");
 			String timeInMilliseconds = split[0];
 			String from = split[1];
@@ -152,7 +153,6 @@ public class ConversationsProxy extends Proxy {
 			fr.close();
 			return null;
 		}
-
 		br.close();
 		fr.close();
 		return message;
@@ -233,10 +233,9 @@ public class ConversationsProxy extends Proxy {
 		
 		//set sent time to now
 		msg.setTimestampNow();
-		
 		boolean res = MessagesProxy.getInstance().persist(
 				"DATABASE/CONVERSATIONS/GROUP/" + msg.getTo(), 
-				""+file.list().length, 
+				"" + file.list().length,
 				msg);
 		return res;
 	}
@@ -326,5 +325,4 @@ public class ConversationsProxy extends Proxy {
 		
 		return "" + id;
 	}
-
 }
