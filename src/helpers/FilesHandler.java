@@ -7,26 +7,10 @@ import java.io.IOException;
 
 public class FilesHandler {
 
-	private String filename;
-	private Connection connection;
-	
 	private static final int CHUNK = 1024;
 	
-	public FilesHandler(){}
-	
-	public boolean sendReceive(Connection conn, String filename) {
-		this.connection = conn;
-		this.filename = filename;
-		return true;
-	}
-	
-	public boolean receiveSend(Connection conn, String filename) {
-		this.connection = conn;
-		this.filename = filename;
-		return true;
-	}
-	
-	
+	public FilesHandler() {}
+
 	public boolean send(Connection conn, File file) throws IOException {
 		byte[] byteArr;
 		
@@ -41,7 +25,6 @@ public class FilesHandler {
 		//send file itself
 		long fileSize = file.length();
 		long totalSent = 0;
-		
 		while (totalSent < fileSize) {
 			int byteNum = 0;
 			if ( (totalSent + CHUNK) <= fileSize )
@@ -84,7 +67,6 @@ public class FilesHandler {
 				continue;
 			
 			out.write(byteArr, 0, cur);
-//			System.out.println("writing on file...");
 			totalRead += cur;
 		}
 		

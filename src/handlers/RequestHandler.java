@@ -353,7 +353,7 @@ public class RequestHandler extends Thread {
 			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
 			return reply;
 		}
-		// verifica se o member e realmente member do group
+		// verifica se o member e owner, se for, elimina o grupo
 		if (groupsProxy.isOwner(groupName, member)) {
 			if (!groupsProxy.deleteGroup(groupName)) {
 				return reply;
