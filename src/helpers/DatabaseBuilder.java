@@ -57,7 +57,7 @@ public class DatabaseBuilder {
 		return deleteDirectory(directory);
 	}
 
-	private boolean deleteDirectory(File directory) {
+	public boolean deleteDirectory(File directory) {
 		if (directory.exists()) {
 			File[] files = directory.listFiles();
 			if (files != null) {

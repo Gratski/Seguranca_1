@@ -154,6 +154,108 @@ public class RequestHandlerTest {
     }
 
     @Test
+    public void testAddUserToGroup() throws Exception {
+        // Nao adiciona users que não existem
+        GroupsProxy groupsProxy = GroupsProxy.getInstance();
+        Request req = new Request();
+        req.setUser(simao);
+        req.setType("-a");
+        req.setGroup("FCUL");
+        req.setContact(nonExistentUser.getName());
+        Reply reply = rh.parseRequest(req);
+        assertEquals("Adicionar user que não existe a grupo dá erro", new Reply(400, "O user nonExistent nao existe"), reply);
+
+        // adiciona normalmente
+        Group group = groupsProxy.find("FCUL");
+        assertNotNull("Grupo deve existir", group);
+        assertEquals("Deve haver 1 membro no grupo", 1, group.getMembers().size());
+        Request req2 = new Request();
+        req2.setUser(simao);
+        req2.setType("-a");
+        req2.setGroup("FCUL");
+        req2.setContact(ricardo.getName());
+        Reply reply2 = rh.parseRequest(req2);
+        assertEquals("Adiciona a group ", 200, reply2.getStatus());
+        group = groupsProxy.find("FCUL");
+        assertEquals("Devem haver 2 membros no grupo", 2, group.getMembers().size());
+
+        // só owner pode adicionar
+        Request req3 = new Request();
+        req3.setUser(joao);
+        req3.setType("-a");
+        req3.setGroup("FCUL");
+        req3.setContact(ricardo.getName());
+        Reply reply3 = rh.parseRequest(req3);
+        assertEquals("Só o owner pode adicionar membros a um group", new Reply(400, "User Joao is not the owner of group FCUL"), reply3);
+
+        // se grupo não existe cria-o e insere o contact
+        group = groupsProxy.find("NotExistant");
+        assertNull("Grupo deve existir", group);
+        Request req4 = new Request();
+        req4.setUser(joao);
+        req4.setType("-a");
+        req4.setGroup("NotExistant");
+        req4.setContact(simao.getName());
+        Reply reply4 = rh.parseRequest(req4);
+        assertEquals("Se um grupo não existe cria-o", 200, reply4.getStatus());
+        group = groupsProxy.find("NotExistant");
+        assertNotNull("Grupo deve existir agora", group);
+    }
+
+    @Test
+    public void testRemoveUserFromGroup() throws Exception {
+        // Nao remmove users que não existem
+        GroupsProxy groupsProxy = GroupsProxy.getInstance();
+        Request req = new Request();
+        req.setUser(simao);
+        req.setType("-d");
+        req.setGroup("FCUL");
+        req.setContact(nonExistentUser.getName());
+        Reply reply = rh.parseRequest(req);
+        assertEquals("Remover user que não existe a grupo dá erro", new Reply(400, "O utilizador nonExistent nao eh membro do group FCUL"), reply);
+
+        // remove normalmente
+        Group group = groupsProxy.find("FCUL");
+        assertNotNull("Grupo deve existir", group);
+        assertEquals("Deve haver 1 membro no grupo", 1, group.getMembers().size());
+        Request req2 = new Request();
+        req2.setUser(simao);
+        req2.setType("-d");
+        req2.setGroup("FCUL");
+        req2.setContact(joao.getName());
+        Reply reply2 = rh.parseRequest(req2);
+        assertEquals("Remove de grupo", 200, reply2.getStatus());
+        group = groupsProxy.find("FCUL");
+        assertEquals("Devem haver 0 membros no grupo (para além de owner)", 0, group.getMembers().size());
+
+        // só owner pode remover
+        Request req3 = new Request();
+        req3.setUser(joao);
+        req3.setType("-d");
+        req3.setGroup("FCUL");
+        req3.setContact(simao.getName());
+        Reply reply3 = rh.parseRequest(req3);
+        assertEquals("Só o owner pode remover membros a um group", new Reply(401, "User Joao is not the owner of group FCUL"), reply3);
+
+        // se contact for o ower, eliminar grupo
+        group = groupsProxy.find("FCUL");
+        assertNotNull("Grupo deve existir", group);
+        Request req4 = new Request();
+        req4.setUser(simao);
+        req4.setType("-d");
+        req4.setGroup("FCUL");
+        req4.setContact(simao.getName());
+        FilesHandler filesHandler = new FilesHandler();
+        assertTrue("Existe directoria do grupo", filesHandler.existsFile("DATABASE/CONVERSATIONS/GROUP/FCUL"));
+
+        Reply reply4 = rh.parseRequest(req4);
+        assertEquals("Elimina grupo e ficheiros", 200, reply4.getStatus());
+        group = groupsProxy.find("FCUL");
+        assertNull("Grupo não deve existir agora", group);
+        assertFalse("Não existe directoria do grupo", filesHandler.existsFile("DATABASE/CONVERSATIONS/GROUP/FCUL"));
+    }
+
+    @Test
     public void testGetLastMessageFromConversations() throws Exception {
         Request req = new Request();
         req.setUser(simao);

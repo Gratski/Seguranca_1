@@ -104,7 +104,6 @@ public class RequestHandler extends Thread {
 			System.out.println("Adicionar membro a group");
 			synchronized (groupsProxy) {
 				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), this.userProxy);
-				System.out.println("RSP DE SAIDA: " + reply.getStatus());
 			}
 			break;
 		case "-d":
@@ -356,12 +355,24 @@ public class RequestHandler extends Thread {
 			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
 			return reply;
 		}
+		// verifica se o member e owner, se for, elimina o grupo
+		if (groupsProxy.isOwner(groupName, member)) {
+			if (!groupsProxy.deleteGroup(groupName)) {
+				return reply;
+			} else {
+				reply.setStatus(400);
+				reply.setMessage("Erro ao eliminar o group " + groupName);
+			}
+			return reply;
+		}
+
 		// verifica se o member e realmente member do group
 		if (!group.hasMemberOrOwner(member)) {
 			reply.setStatus(400);
 			reply.setMessage("O utilizador " + member + " nao eh membro do group " + groupName);
 			return reply;
 		}
+
 		// remove member do group
 		System.out.println("Vai remover");
 		if (!groupsProxy.removeMember(groupName, member)) {
