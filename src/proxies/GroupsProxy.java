@@ -15,6 +15,7 @@ import builders.FileStreamBuilder;
 import domain.Group;
 import domain.User;
 import enums.Filenames;
+import helpers.DatabaseBuilder;
 
 public class GroupsProxy extends Proxy {
 
@@ -120,6 +121,16 @@ public class GroupsProxy extends Proxy {
 	 */
 	public boolean isOwner(String groupName, String username) {
 		return this.groups.get(groupName).getOwner().equals(username);
+	}
+
+	public boolean deleteGroup(String groupName) throws IOException {
+		File groupFolder = new File("DATABASE/CONVERSATIONS/GROUP/" + groupName + "/");
+		DatabaseBuilder db = new DatabaseBuilder();
+		db.deleteDirectory(groupFolder);
+
+		this.groups.remove(groupName);
+		updateFile();
+		return exists(groupName);
 	}
 	
 	/**
