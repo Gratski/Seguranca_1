@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import domain.User;
-import enums.Filenames;
 
 public class UsersProxy extends Proxy {
 
@@ -37,14 +36,7 @@ public class UsersProxy extends Proxy {
 	 * @throws IOException
 	 */
 	private void init() throws IOException {
-		
-		File file = new File("DATABASE/" + Filenames.USERS.toString());
-		// if ( !file.exists() ){
-		// 	file.createNewFile();
-		// } else {
-		// 	System.out.println("Users file already exists");
-		// }
-		
+		File file = new File(USERS_INDEX);
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
 		
@@ -65,7 +57,7 @@ public class UsersProxy extends Proxy {
 		br.close();
 		
 		//open writing streams
-		this.file = new File("DATABASE/" + Filenames.USERS.toString());
+		this.file = new File(USERS_INDEX);
 		this.fw = new FileWriter(this.file, true);
 		this.bw = new BufferedWriter(this.fw);
 	}

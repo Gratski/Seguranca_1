@@ -14,7 +14,6 @@ TODO:
 - Refactor printing Reply responsability
 - Refactor Reply/NetworkMessage
 - Do Txt with how to run the project
-- Refactor some path constants from Proxy to others
 - Make executable?
 - Make Javadoc
 - Try to see if everything is synchronized?

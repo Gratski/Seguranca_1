@@ -5,21 +5,16 @@ import domain.*;
 import helpers.DatabaseBuilder;
 import helpers.FilesHandler;
 import org.junit.*;
-import org.junit.internal.matchers.ThrowableCauseMatcher;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
 import validators.InputValidator;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.Socket;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by simon on 10/03/16.
- */
 public class RequestHandlerTest {
 
     public RequestHandler rh;

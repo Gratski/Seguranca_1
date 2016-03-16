@@ -58,7 +58,7 @@ public class RequestHandler extends Thread {
 
 		} catch (Exception e) {
 			System.out.println("Erro ao processar o pedido.");
-			// e.printStackTrace();
+			 e.printStackTrace();
 			this.interrupt();
 		}
 

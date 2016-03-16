@@ -10,17 +10,17 @@ grant codeBase "file:bin${/}*" {
   permission java.lang.RuntimePermission "exitVM.*";
 
   //Files
-  permission java.io.FilePermission "DATABASE", "read, write";
-  permission java.io.FilePermission "DATABASE/USERS", "read, write";
-  permission java.io.FilePermission "DATABASE/GROUPS", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/USERS", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/GROUPS", "read, write";
 
-  permission java.io.FilePermission "DATABASE/CONVERSATIONS", "read, write";
-  permission java.io.FilePermission "DATABASE/CONVERSATIONS/INDEX", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/INDEX", "read, write";
 
-  permission java.io.FilePermission "DATABASE/CONVERSATIONS/PRIVATE", "read, write";
-  permission java.io.FilePermission "DATABASE/CONVERSATIONS/PRIVATE/-", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/PRIVATE", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/PRIVATE/-", "read, write";
 
-  permission java.io.FilePermission "DATABASE/CONVERSATIONS/GROUP", "read, write";
-  permission java.io.FilePermission "DATABASE/CONVERSATIONS/GROUP/-", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/GROUP", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/GROUP/-", "read, write";
 
 };

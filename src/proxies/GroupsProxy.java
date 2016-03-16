@@ -3,19 +3,14 @@ package proxies;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import builders.FileStreamBuilder;
 import domain.Group;
 import domain.User;
-import enums.Filenames;
-import helpers.DatabaseBuilder;
 
 /**
  * Esta classe representa a entidade responsavel
@@ -26,9 +21,6 @@ import helpers.DatabaseBuilder;
 public class GroupsProxy extends Proxy {
 
 	private static GroupsProxy instance = null;
-	private File file;
-	private FileWriter fw;
-	private BufferedWriter bw;
 	private Map<String, Group> groups;
 	
 	private GroupsProxy() throws IOException {
@@ -54,7 +46,7 @@ public class GroupsProxy extends Proxy {
 	}
 
 	public void init() throws IOException {
-		BufferedReader br = FileStreamBuilder.makeReader("DATABASE/" + Filenames.GROUPS.toString());
+		BufferedReader br = FileStreamBuilder.makeReader(GROUPS_INDEX);
 		
 		//reading users file
 		String line = null;
@@ -105,7 +97,7 @@ public class GroupsProxy extends Proxy {
 		this.groups.put(groupName, new Group(groupName, owner));
 		
 		//persistencia em ficheiro
-		BufferedWriter bw = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), true);
+		BufferedWriter bw = FileStreamBuilder.makeWriter(GROUPS_INDEX, true);
 		StringBuilder sb = new StringBuilder();
 		sb.append(owner.getName() + " " + groupName);
 		sb.append("\n");
@@ -115,7 +107,7 @@ public class GroupsProxy extends Proxy {
 		bw.close();
 		
 		//cria estrutura de pastas necessaria
-		File filesFolder = new File("DATABASE/CONVERSATIONS/GROUP/" + groupName + "/FILES");
+		File filesFolder = new File(CONVERSATIONS_GROUP + "/" + groupName + FILES_FOLDER);
 		if (!filesFolder.exists())
 			filesFolder.mkdirs();
 	}
@@ -135,16 +127,6 @@ public class GroupsProxy extends Proxy {
 		return this.groups.get(groupName).getOwner().equals(username);
 	}
 
-	public boolean deleteGroup(String groupName) throws IOException {
-		File groupFolder = new File("DATABASE/CONVERSATIONS/GROUP/" + groupName + "/");
-		DatabaseBuilder db = new DatabaseBuilder();
-		db.deleteDirectory(groupFolder);
-
-		this.groups.remove(groupName);
-		updateFile();
-		return exists(groupName);
-	}
-	
 	/**
 	 * Verifica se um determinado group existe
 	 * @param name
@@ -200,20 +182,17 @@ public class GroupsProxy extends Proxy {
 	 * @throws IOException
 	 */
 	public boolean removeMember(String groupName, String member) throws IOException {
-
 		Group g = this.groups.get(groupName);
-
 		//apagar grupo e suas mensagens
-		if( g.getOwner().equals(member) )
-		{
+		if ( g.getOwner().equals(member) ) {
 			//apaga pastas de group
-			deleteGroup(new File("DATABASE/CONVERSATIONS/GROUP/"+g.getName()));
+			deleteGroup(new File(CONVERSATIONS_GROUP + "/" + g.getName()));
 			//apaga grupo em si
 			this.groups.remove(g.getName());
 		}
 		//remover membro de grupo
-		else{
-			if(!this.groups.get(groupName).removeMember(member)) {
+		else {
+			if (!this.groups.get(groupName).removeMember(member)) {
 				return false;
 			}
 		}
@@ -221,23 +200,18 @@ public class GroupsProxy extends Proxy {
 		updateFile();
 		return true;
 	}
-	
 
-	private void deleteGroup(File f){
+	private void deleteGroup(File f) {
 		File[] fl = f.listFiles();
-
-		for( File file : fl )
-		{
-			if( file.isDirectory() && file.listFiles().length > 0 ) {
+		for ( File file : fl ) {
+			if ( file.isDirectory() && file.listFiles().length > 0 ) {
 				deleteGroup(file);
-			}
-			else {
+			} else {
 				file.delete();
 			}
 		}
 		f.delete();
 	}
-
 
 	/**
 	 * Actualiza o ficheiro de groups
@@ -266,9 +240,8 @@ public class GroupsProxy extends Proxy {
 			sb.append("\n");
 		}
 		//reescreve ficheiro
-		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/" + Filenames.GROUPS.toString(), false);
+		BufferedWriter writer = FileStreamBuilder.makeWriter(GROUPS_INDEX, false);
 		writer.write(sb.toString());
 		writer.close();
 	}
-	
 }
