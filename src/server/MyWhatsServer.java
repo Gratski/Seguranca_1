@@ -38,7 +38,7 @@ public class MyWhatsServer {
 		ServerSocket server = new ServerSocket(port);
 		server.setReuseAddress(true);
 
-		ExecutorService executor = Executors.newFixedThreadPool(2);
+		ExecutorService executor = Executors.newFixedThreadPool(4);
 		
 		while (true) {
 			System.out.println("===============================");

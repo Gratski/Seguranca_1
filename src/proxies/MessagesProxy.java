@@ -61,7 +61,6 @@ public class MessagesProxy {
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("ALL GOOD!");
 		return true;
 	}
 	

@@ -115,14 +115,23 @@ public class RequestHandler extends Thread {
 			break;
 		case "-f":
 			System.out.println("Receber ficheiro");
+
+			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) ) {
+				reply.setStatus(400);
+				reply.setMessage("Destinatário inexistente");
+				return reply;
+			}
+
+			System.out.println("É Suposto existir");
+
 			try {
-				if(!executeGetFile(req))
-					reply = new Reply(400, "Erro ao enviar ficheiro");
+				if (!executeGetFile(req))
+					reply = new Reply(400, "Erro ao receber ficheiro");
 				else
 					reply = new Reply(200);
 			} catch (Exception e) {
 				reply.setStatus(400);
-				reply.setMessage("Erro ao enviar ficheiro");
+				reply.setMessage("Erro ao receber ficheiro");
 				e.printStackTrace();
 			}
 			break;
@@ -171,6 +180,9 @@ public class RequestHandler extends Thread {
 		if (conversations == null) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
+		} else if (conversations.size() == 0) {
+			reply.setStatus(400);
+			reply.setMessage("Não existem nenhumas conversas");
 		} else {
 			reply.setStatus(200);
 			reply.setConversations(conversations);
@@ -235,7 +247,7 @@ public class RequestHandler extends Thread {
 		
 		//verifica se o file jah existe
 		FilesHandler fHandler = new FilesHandler();
-		if(fHandler.existsFile(path+"/"+filename)){
+		if (fHandler.existsFile(path + "/" + filename)) {
 			System.out.println("File ja existe");
 			return false;
 		}
@@ -285,7 +297,7 @@ public class RequestHandler extends Thread {
 			// verifica se destinatario existe
 			if (!this.userProxy.exists(new User(req.getMessage().getTo()))) {
 				reply.setStatus(400);
-				reply.setMessage("Destinatario inexistente");
+				reply.setMessage("Destinatário inexistente");
 				return reply;
 			}
 

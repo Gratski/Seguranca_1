@@ -10,7 +10,6 @@ public class DatabaseBuilder {
 	private static final String GROUPS = "GROUP";
 	private static final String PRIVATE = "PRIVATE";
 	
-	
 	/**
 	 * Este metodo eh o responsavel pela
 	 * criacao da estrutura de ficheiros
@@ -21,12 +20,12 @@ public class DatabaseBuilder {
 		boolean valid = true;
 		try {
 			valid = makeDir(BASE_PATH)
-					&& makeDir(BASE_PATH+"/"+CONVERSATIONS)
-					&& makeDir(BASE_PATH+"/"+CONVERSATIONS+"/"+GROUPS)
-					&& makeDir(BASE_PATH+"/"+CONVERSATIONS+"/"+PRIVATE)
+					&& makeDir(BASE_PATH + "/" + CONVERSATIONS)
+					&& makeDir(BASE_PATH + "/" + CONVERSATIONS + "/" + GROUPS)
+					&& makeDir(BASE_PATH + "/" + CONVERSATIONS + "/" + PRIVATE)
 					&& makeFile(BASE_PATH, "USERS")
 					&& makeFile(BASE_PATH, "GROUPS")
-					&& makeFile(BASE_PATH+"/"+CONVERSATIONS, "INDEX"); 
+					&& makeFile(BASE_PATH + "/"+CONVERSATIONS, "INDEX");
 		} catch(Exception e) {
 			valid = false;
 		}
@@ -41,14 +40,14 @@ public class DatabaseBuilder {
 		return file.exists();
 	}
 	
-	private boolean makeFile(String path, String filename) throws IOException{ 
+	public boolean makeFile(String path, String filename) throws IOException{
 		//directory
 		this.makeDir(path);
 		
 		//file itself
 		String fullPath = path + "/" + filename;
 		File file = new File(fullPath);
-		if(!file.exists())
+		if (!file.exists())
 			file.createNewFile();
 		return file.exists();
 	}
@@ -61,7 +60,7 @@ public class DatabaseBuilder {
 	private boolean deleteDirectory(File directory) {
 		if (directory.exists()) {
 			File[] files = directory.listFiles();
-			if (null != files) {
+			if (files != null) {
 				for (int i = 0; i < files.length; i++) {
 					if (files[i].isDirectory()) {
 						deleteDirectory(files[i]);
@@ -73,5 +72,4 @@ public class DatabaseBuilder {
 		}
 		return(directory.delete());
 	}
-	
 }

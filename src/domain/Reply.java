@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
+
 import client.MyWhats;
 
 /**
@@ -97,7 +98,7 @@ public class Reply extends NetworkMessage implements Serializable {
 					ArrayList<Message> messages = conversations.get(0).getMessages();
 					Collections.sort(messages);
 					for (Message message : messages) {
-						MyWhats.printMessage(user.getName(), message);
+						message.printMessageFromPerspective(user.getName());
 					}
 				}
 				//se eh last de todos os contact
@@ -117,7 +118,7 @@ public class Reply extends NetworkMessage implements Serializable {
 						}
 						ArrayList<Message> messages = conversation.getMessages();
 						if (messages != null && messages.size() == 1) {
-							MyWhats.printMessage(user.getName(), messages.get(0));
+							messages.get(0).printMessageFromPerspective(user.getName());
 						} else {
 
 						}
