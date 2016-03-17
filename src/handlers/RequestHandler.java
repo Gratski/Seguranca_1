@@ -13,6 +13,11 @@ import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
 
+/**
+ * Esta classe representa a entidade que trata 
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class RequestHandler extends Thread {
 
 	private Connection connection;
@@ -36,19 +41,13 @@ public class RequestHandler extends Thread {
 		// Obter request
 		try {
 			clientRequest = (Request) this.connection.getInputStream().readObject();
-			System.out.println("REQUEST RECEIVED: " + clientRequest.toString());
-		} catch (ClassNotFoundException e) {
+		} catch(Exception e){
+			try{
+				this.connection.destroy();
+			}catch(Exception ex){
+				this.interrupt();
+			}
 			this.interrupt();
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.out.println("Ligação foi abaixo com cliente");
-			// TODO:
-			// Temos de por isto a interromper a Thread mesmo a sério
-			this.interrupt();
-			// e2.printStackTrace();
-		} catch (ClassCastException e) {
-			System.out.println("Pedido não tem formato aceite");
-
 		}
 
 		// Tratamento de request
@@ -64,9 +63,7 @@ public class RequestHandler extends Thread {
 
 		// ENVIA RESPOSTA
 		try {
-			System.out.println(reply);
 			this.connection.getOutputStream().writeObject(reply);
-			System.out.println("Replied!");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -96,7 +93,6 @@ public class RequestHandler extends Thread {
 	}
 
 	private Reply executeRequest(Request req) throws IOException {
-		System.out.println("Executing request");
 		Reply reply = new Reply();
 		switch (req.getType()) {
 		case "-a":
@@ -112,7 +108,6 @@ public class RequestHandler extends Thread {
 			}
 			break;
 		case "-f":
-			System.out.println("Receber ficheiro");
 
 			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) ) {
 				reply.setStatus(400);
@@ -132,7 +127,6 @@ public class RequestHandler extends Thread {
 			}
 			break;
 		case "-m":
-			System.out.println("Enviar mensagem");
 			synchronized (groupsProxy) {
 				req.getMessage().setType("-t");
 				req.getMessage().setTimestampNow();
@@ -154,11 +148,11 @@ public class RequestHandler extends Thread {
 				break;
 			// se eh para obter todas as mensagens de todos
 			case "all":
-				System.out.println("TODAS DE TODOS");
 				reply = getLastMessageFromConversations(req);
 				break;
 			default:
-				System.out.println("UNKNOWN");
+				reply.setStatus(400);
+				reply.setMessage("Operacao invalida");
 				break;
 			}
 			break;
@@ -198,7 +192,6 @@ public class RequestHandler extends Thread {
 	}
 
 	private boolean executeGetFile(Request req) throws Exception {
-		System.out.println("UPLOAD ========================");
 
 		// Obtem nome de ficheiro
 		String filename = req.getFile().getFile().getName();
@@ -259,9 +252,7 @@ public class RequestHandler extends Thread {
 			this.connection.getOutputStream().writeObject(new Reply(400, "Erro ao enviar ficheiro"));
 			return false;
 		}
-		
-		
-		System.out.println("Writing file!");
+
 		return fHandler.receive(this.connection, path, filename) != null;
 	}
 
@@ -274,7 +265,7 @@ public class RequestHandler extends Thread {
 			reply.setStatus(400);
 			reply.setMessage("with yourself..? o.O");
 		} else if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
-			System.out.println("Message destination is a group!");
+
 			boolean inserted = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
 			if (!inserted) {
 				reply.setStatus(400);
@@ -284,7 +275,7 @@ public class RequestHandler extends Thread {
 		}
 		// se nao e para um group
 		else {
-			System.out.println("Message is for a private user!");
+
 			// verifica se destinatario existe
 			if (!this.userProxy.exists(new User(req.getMessage().getTo()))) {
 				reply.setStatus(400);
@@ -292,7 +283,7 @@ public class RequestHandler extends Thread {
 				return reply;
 			}
 
-			System.out.println("Now we are going to send it!");
+
 			ConversationsProxy.getInstance().insertPrivateMessage(req.getMessage());
 			reply.setStatus(200);
 		}
@@ -316,20 +307,15 @@ public class RequestHandler extends Thread {
 		this.connection.getOutputStream().writeObject(reply);
 		this.connection.getOutputStream().flush();
 
-		if (!ok){
-			System.out.println("file nao existe");
-			System.out.println("path eh:");
+		if (!ok)
 			return false;
-		}
 
 		// devolve o resultado do envio do file
-		System.out.println("authenticated, vai enviar>>>");
 		return new FilesHandler().send(this.connection, file);
 	}
 
 	private Reply removeUserFromGroup(String groupName, User user, String member) throws IOException {
 		Reply reply = new Reply(200);
-		System.out.println("==========REMOVER MEMBRO DE GROUP===========");
 
 		Group group = groupsProxy.find(groupName);
 
@@ -363,7 +349,6 @@ public class RequestHandler extends Thread {
 	}
 
 	private Reply addUserToGroup(String groupName, User user, String newMember, UsersProxy uProxy) throws IOException {
-		System.out.println("==========ADICIONAR MEMBRO A GROUP===========");
 
 		// verifica se o user de contacto existe
 		if (!uProxy.exists(new User(newMember)))
