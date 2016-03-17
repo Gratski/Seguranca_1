@@ -99,7 +99,7 @@ public class RequestHandler extends Thread {
 	 */
 	Reply parseRequest(Request req) throws IOException {
 		// autentica se existe, senao cria novo
-		if (!validateUser(req.getUser(), this.userProxy))
+		if (!validateUser(req.getUser()))
 			return new Reply(400, "User nao autenticado");
 
 		// executa o request
@@ -197,7 +197,7 @@ public class RequestHandler extends Thread {
 	private Reply getLastMessageFromConversations(Request req) throws IOException {
 		Reply reply = new Reply();
 		//obtem todas as conversas
-		ArrayList<Conversation> conversations = ConversationsProxy.getInstance().getLastMessageFromAll(req.getUser());
+		ArrayList<Conversation> conversations = this.convProxy.getLastMessageFromAll(req.getUser());
 		if (conversations.size() == 0) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem nenhumas conversas");
@@ -223,7 +223,7 @@ public class RequestHandler extends Thread {
 		Reply reply = new Reply();
 
 		//obtem a conversacao entre user e contacto
-		Conversation conversation = ConversationsProxy.getInstance().getConversationBetween(req.getUser().getName(),
+		Conversation conversation = this.convProxy.getConversationBetween(req.getUser().getName(),
 				req.getContact());
 
 		if (conversation == null) {
@@ -262,17 +262,15 @@ public class RequestHandler extends Thread {
 		msg.setTimestampNow();
 		req.setMessage(msg);
 		
-		Group group = GroupsProxy.getInstance().find(req.getContact());
+		Group group = this.groupsProxy.find(req.getContact());
 
 		String path = "";
 		
 		// verifica se eh group
 		if (group != null) {
 			if ( group.hasMemberOrOwner(req.getUser().getName()) ) {
-
 				path = Proxy.getConversationsGroup() + req.getContact();
 				isGroup = true;
-
 			} else {
 				return false;
 			}
@@ -280,7 +278,7 @@ public class RequestHandler extends Thread {
 		// verifica se eh private
 		else {
 			path = Proxy.getConversationsPrivate();
-			path = path + ConversationsProxy.getInstance().getOrCreate(req.getUser().getName(), req.getContact());
+			path = path + this.convProxy.getOrCreate(req.getUser().getName(), req.getContact());
 		}
 
 		//pasta de ficheiros
@@ -294,18 +292,15 @@ public class RequestHandler extends Thread {
 			return false;
 		}
 
-
 		//envia mensagem
 		boolean ok = true;
-		ConversationsProxy cProxy = ConversationsProxy.getInstance();
-
-		if(isGroup)
-			ok = cProxy.insertGroupMessage(req.getMessage());
+		if (isGroup)
+			ok = this.convProxy.insertGroupMessage(req.getMessage());
 		else
-			ok = cProxy.insertPrivateMessage(req.getMessage());
+			ok = this.convProxy.insertPrivateMessage(req.getMessage());
 		
 		//envia feedback ao user
-		if(ok)
+		if (ok)
 			this.connection.getOutputStream().writeObject(new Reply(200));
 		else{
 			this.connection.getOutputStream().writeObject(new Reply(400, "Erro ao enviar ficheiro"));
@@ -328,7 +323,7 @@ public class RequestHandler extends Thread {
      */
 	private Reply executeSendMessage(Request req) throws IOException {
 		Reply reply = new Reply();
-		Group group = GroupsProxy.getInstance().find(req.getMessage().getTo());
+		Group group = this.groupsProxy.find(req.getMessage().getTo());
 
 		// verifica se o user de destino nao eh o proprio autor
 		if (req.getUser().getName().equals(req.getMessage().getTo())) {
@@ -336,7 +331,7 @@ public class RequestHandler extends Thread {
 			reply.setMessage("with yourself..? o.O");
 		} else if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
 
-			boolean inserted = ConversationsProxy.getInstance().insertGroupMessage(req.getMessage());
+			boolean inserted = this.convProxy.insertGroupMessage(req.getMessage());
 			if (!inserted) {
 				reply.setStatus(400);
 				reply.setMessage("Erro ao enviar mensagem");
@@ -345,16 +340,13 @@ public class RequestHandler extends Thread {
 		}
 		// se nao e para um group
 		else {
-
 			// verifica se destinatario existe
 			if (!this.userProxy.exists(new User(req.getMessage().getTo()))) {
 				reply.setStatus(400);
 				reply.setMessage("Destinatário inexistente");
 				return reply;
 			}
-
-
-			ConversationsProxy.getInstance().insertPrivateMessage(req.getMessage());
+			this.convProxy.insertPrivateMessage(req.getMessage());
 			reply.setStatus(200);
 		}
 		return reply;
@@ -372,9 +364,8 @@ public class RequestHandler extends Thread {
 	private boolean sendFile(Request req) throws IOException {
 
 		String filename = req.getFile().getFullPath();
-		ConversationsProxy cProxy = ConversationsProxy.getInstance();
 
-		String path = cProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
+		String path = this.convProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
 
 		boolean ok = false;
 		File file = null;
@@ -459,34 +450,18 @@ public class RequestHandler extends Thread {
 			return new Reply(400, "O user " + newMember + " nao existe");
 
 		// group nao existe => cria novo
-		GroupsProxy gProxy = GroupsProxy.getInstance();
-		if (!gProxy.exists(groupName))
-			gProxy.create(groupName, user);
+		if (!this.groupsProxy.exists(groupName))
+			this.groupsProxy.create(groupName, user);
 
 		// verifica se user eh owner
-		if (!gProxy.isOwner(groupName, user.getName()))
+		if (!this.groupsProxy.isOwner(groupName, user.getName()))
 			return new Reply(400, "User " + user.getName() + " is not the owner of group " + groupName);
 
 		// adiciona newMember a group
-		if (!gProxy.addMember(groupName, newMember))
+		if (!this.groupsProxy.addMember(groupName, newMember))
 			return new Reply(400, "O utilizador " + newMember + " ja e membro do grupo " + groupName);
 
 		return new Reply(200);
-	}
-
-	/**
-	 * Insere um novo Utilizador
-	 *
-	 * @param user	Utilizador a ser inserido
-	 * @param proxy	Proxy de Utilizadores a utilizar
-     * @return	Reply ja tratada para client
-	 * @require proxy != null
-     */
-	private Reply insertNewUser(User user, UsersProxy proxy) {
-		if (proxy.exists(user) || !proxy.insert(user))
-			return new Reply(404, "Erro ao adicionar novo utilizador");
-		else
-			return new Reply(200);
 	}
 
 	/**
@@ -494,18 +469,17 @@ public class RequestHandler extends Thread {
 	 * Se utilizador nao existe cria um novo
 	 *
 	 * @param user	User a considerar
-	 * @param uProxy	Proxy de Utilizadores a considerar
      * @return	true se sucesso, false caso contrario
 	 * @require user != null && uProxy != null
      */
-	private boolean validateUser(User user, UsersProxy uProxy) {
+	private boolean validateUser(User user) {
 		boolean valid = false;
 		// se user existe
-		if (uProxy.exists(user))
-			valid = uProxy.autheticate(user);
+		if (this.userProxy.exists(user))
+			valid = this.userProxy.autheticate(user);
 		// se user nao existe
 		else
-			valid = uProxy.insert(user);
+			valid = this.userProxy.insert(user);
 
 		return valid;
 	}

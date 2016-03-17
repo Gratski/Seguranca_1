@@ -30,7 +30,7 @@ public class MyWhatsServer {
 		//prepare file structure
 		DatabaseBuilder dbBuilder = new DatabaseBuilder();
 		boolean createdFolders = dbBuilder.make();
-		if(!createdFolders)
+		if (!createdFolders)
 			System.exit(-1);
 
 		//obtain singletons

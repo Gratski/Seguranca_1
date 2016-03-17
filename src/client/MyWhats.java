@@ -42,10 +42,6 @@ public class MyWhats {
 			// parse input
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
-			// estabelece ligacao
-			Connection connection = new Connection(
-					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
-
 			// create request obj
 			Request request = null;
 			try {
@@ -57,11 +53,21 @@ public class MyWhats {
 
 			//validate request before send
 			if (request.getUser().getName().equals(request.getContact()) && !request.getType().equals("-d")) {
-				System.out.println("O destinatário nao pode ser o remetente.");
-				System.out.println("Aplicacao terminada.");
-				System.exit(-1);
+				if (request.getType().equals("-m") || request.getType().equals("-f")) {
+					System.out.println("O destinatário nao pode ser o remetente.");
+					System.out.println("Aplicacao terminada.");
+					System.exit(-1);
+				} else if (request.getType().equals("-a")) {
+					System.out.println("Não se pode adicionar a si próprio a um grupo.");
+					System.out.println("Aplicacao terminada.");
+					System.exit(-1);
+				}
 			}
-			
+
+			// estabelece ligacao
+			Connection connection = new Connection(
+					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
+
 			// send request
 			sendRequest(connection, request);
 			
