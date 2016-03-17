@@ -45,7 +45,7 @@ public class RequestHandler extends Thread {
 	}
 
 	/**
-	 * Executa com base nos seus
+	 * Executa com base no request
 	 */
 	public void run() {
 		Request clientRequest = null;
@@ -90,14 +90,13 @@ public class RequestHandler extends Thread {
 	}
 
 	/**
-	 * Faz parse de request
+	 * Faz parse de request e encaminha
 	 * 
-	 * @param req
-	 *            Request a ser considerado
-	 * @return Reply com a resposta devida para o client
+	 * @param req 	Request a ser considerado
+	 * @return 		Reply com a resposta devida para o client
 	 */
 	Reply parseRequest(Request req) throws IOException {
-		// valida user
+		// autentica se existe, senao cria novo
 		if (!validateUser(req.getUser(), this.userProxy))
 			return new Reply(400, "User nao autenticado");
 
@@ -105,17 +104,17 @@ public class RequestHandler extends Thread {
 		return executeRequest(req);
 	}
 
+
 	private Reply executeRequest(Request req) throws IOException {
 		Reply reply = new Reply();
+
 		switch (req.getType()) {
 		case "-a":
-			System.out.println("Adicionar membro a group");
 			synchronized (groupsProxy) {
 				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), this.userProxy);
 			}
 			break;
 		case "-d":
-			System.out.println("Remover membro de group");
 			synchronized (groupsProxy) {
 				reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact());
 			}
@@ -151,12 +150,10 @@ public class RequestHandler extends Thread {
 			switch (req.getSpecs()) {
 			// se eh para obter mensagens de uma conversa
 			case "single_contact":
-				System.out.println("SINGLE CONTACT");
 				reply = getConversation(req);
 				break;
 			// se eh para fazer download
 			case "download":
-				System.out.println("DOWNLOAD FILE");
 				boolean sent = sendFile(req);
 				reply = sent ? new Reply(200) : new Reply(400, "Erro ao fazer download");
 				break;
