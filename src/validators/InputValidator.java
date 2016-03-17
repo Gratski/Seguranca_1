@@ -103,7 +103,6 @@ public class InputValidator {
 			return false;
 		}
 		return portInt == 23456;
-//		return (portInt >= 1024 && portInt <= 65535);
 	}
 
 	/**
@@ -154,5 +153,4 @@ public class InputValidator {
 
 		return parsedInput;
 	}
-
 }

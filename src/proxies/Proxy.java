@@ -1,5 +1,10 @@
 package proxies;
 
+/**
+ * Esta class
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class Proxy {
 	protected static final String DATABASE = "DATABASE/";
 	
@@ -13,4 +18,40 @@ public class Proxy {
 
 	protected static final String FILES_FOLDER = "FILES/";
 	protected static final String MESSAGE_FILE_EXTENSION = ".msg";
+
+	public static String getDATABASE() {
+		return DATABASE;
+	}
+
+	public static String getUsersIndex() {
+		return USERS_INDEX;
+	}
+
+	public static String getGroupsIndex() {
+		return GROUPS_INDEX;
+	}
+
+	public static String getCONVERSATIONS() {
+		return CONVERSATIONS;
+	}
+
+	public static String getConversationsPrivateIndex() {
+		return CONVERSATIONS_PRIVATE_INDEX;
+	}
+
+	public static String getConversationsPrivate() {
+		return CONVERSATIONS_PRIVATE;
+	}
+
+	public static String getConversationsGroup() {
+		return CONVERSATIONS_GROUP;
+	}
+
+	public static String getFilesFolder() {
+		return FILES_FOLDER;
+	}
+
+	public static String getMessageFileExtension() {
+		return MESSAGE_FILE_EXTENSION;
+	}
 }

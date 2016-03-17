@@ -11,6 +11,13 @@ import java.util.Map;
 
 import domain.User;
 
+/**
+ * Esta classe é responsável por persistir os Users nos ficheiros
+ * e funciona como base de dados em memória com um Map
+ * Class é Singleton
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class UsersProxy extends Proxy {
 
 	private static UsersProxy instance = null;
@@ -18,12 +25,24 @@ public class UsersProxy extends Proxy {
 	private FileWriter fw;
 	private BufferedWriter bw;
 	private Map<String, User> users;
-	
+
+	/**
+	 * Constructor para usersProxy
+	 * Cria um Map e popula-o através do ficheiro de users (se existir)
+	 *
+	 * @throws IOException
+     */
 	private UsersProxy() throws IOException {
 		this.users = new HashMap<>();
 		this.init();
-	} 
-	
+	}
+
+	/**
+	 * Função para obter a instância de UsersProxy
+	 *
+	 * @return usersProxy para ser usado
+	 * @throws IOException
+     */
 	public static UsersProxy getInstance() throws IOException {
 		if (instance == null)
 			instance = new UsersProxy();
@@ -33,6 +52,7 @@ public class UsersProxy extends Proxy {
 	/**
 	 * Popula o map de users
 	 * Abre streams de escrita em USERS
+	 *
 	 * @throws IOException
 	 */
 	private void init() throws IOException {
@@ -88,7 +108,7 @@ public class UsersProxy extends Proxy {
 	}
 	
 	/**
-	 * Insere um novo utilizador
+	 * Insere um novo utilizador no ficheiro e em memoria
 	 * @param user
 	 * 		User a ser inserido
 	 * @require
@@ -121,12 +141,18 @@ public class UsersProxy extends Proxy {
 	 * @param name
 	 * 		name of the user to be considered
 	 * @return
-	 * 		User if exists, null if doesnt
+	 * 		User if exists, null if it doesnt
 	 */
 	public User find(String name){
 		return this.users.containsKey(name) ? this.users.get(name) : null;
 	}
 
+	/**
+	 * Method used for tests, emptys the Map in memory and
+	 * reloads from the Users file
+	 *
+	 * @throws IOException
+     */
 	public void reload() throws IOException {
 		this.users = new HashMap<>();
 		init();

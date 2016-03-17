@@ -13,6 +13,11 @@ import proxies.GroupsProxy;
 import proxies.UsersProxy;
 import validators.InputValidator;
 
+/**
+ * Classe que contém o Servidor
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class MyWhatsServer {
 	
 	public static void main(String[] args) throws NumberFormatException, IOException {
@@ -49,5 +54,4 @@ public class MyWhatsServer {
 			executor.execute(requestHandler);
 		}
 	}
-	
 }
