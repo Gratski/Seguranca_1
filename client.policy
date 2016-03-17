@@ -1,4 +1,4 @@
-grant codeBase "file:bin${/}*" {
+grant codeBase "file:out${/}-" {
   //Socket
   permission java.net.SocketPermission "*:23456", "connect, resolve";
 

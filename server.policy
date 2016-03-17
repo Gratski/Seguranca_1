@@ -1,4 +1,4 @@
-grant codeBase "file:bin${/}*" {
+grant codeBase "file:out${/}production${/}Seguranca_1${/}-" {
 
   //Socket
   permission java.net.SocketPermission "127.0.0.1:23456", "listen, resolve";
@@ -21,6 +21,7 @@ grant codeBase "file:bin${/}*" {
   permission java.io.FilePermission "DATABASE/CONVERSATIONS/PRIVATE/-", "read, write";
 
   permission java.io.FilePermission "DATABASE/CONVERSATIONS/GROUP", "read, write";
-  permission java.io.FilePermission "DATABASE/CONVERSATIONS/GROUP/-", "read, write";
+  permission java.io.FilePermission "DATABASE/CONVERSATIONS/GROUP/-", "read, write, delete";
 
+  permission java.util.PropertyPermission "user.dir", "read";
 };

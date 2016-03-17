@@ -84,10 +84,6 @@ public class RequestHandler extends Thread {
 	 * @return Reply com a resposta devida para o client
 	 */
 	Reply parseRequest(Request req) throws IOException {
-		// se eh apenas para registo
-		if (req.getType().equals("-regUser")) {
-			return insertNewUser(req.getUser(), this.userProxy);
-		}
 		// valida user
 		if (!validateUser(req.getUser(), this.userProxy))
 			return new Reply(400, "User nao autenticado");
