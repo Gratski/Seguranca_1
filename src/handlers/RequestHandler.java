@@ -22,9 +22,9 @@ import proxies.UsersProxy;
 public class RequestHandler extends Thread {
 
 	private Connection connection;
-	public volatile UsersProxy userProxy;
-	public volatile GroupsProxy groupsProxy;
-	public volatile ConversationsProxy convProxy;
+	private UsersProxy userProxy;
+	private GroupsProxy groupsProxy;
+	private ConversationsProxy convProxy;
 
 	/**
 	 * Constructor
