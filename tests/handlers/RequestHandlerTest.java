@@ -134,7 +134,7 @@ public class RequestHandlerTest {
 
         String path = conversationsProxy.userHasConversationWith(simao.getName(), joao.getName());
         // Insert dummy file
-        System.out.println("Insere dummy file: " + db.makeFile(path + "/FILES", "README.md"));
+        System.out.println("Insere dummy file: " + db.makeFile(path + "/FILES", path + "/FILES/" + "README.md"));
         System.out.println("Path is: " + path);
         Reply reply2 = rh.parseRequest(req2);
         assertEquals("Enviar file que já existe no servidor dá erro", new Reply(400, "Erro ao receber ficheiro"), reply2);

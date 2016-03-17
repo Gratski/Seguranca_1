@@ -121,8 +121,14 @@ public class RequestHandler extends Thread {
 
 		switch (req.getType()) {
 		case "-a":
+			// verifica se o user a adicionar é o próprio
+			if (req.getUser().getName().equals(req.getContact())) {
+				reply.setStatus(400);
+				reply.setMessage("Não se pode adicionar a si próprio a um grupo.");
+				break;
+			}
 			synchronized (groupsProxy) {
-				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), this.userProxy);
+				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact());
 			}
 			break;
 		case "-d":
@@ -283,7 +289,7 @@ public class RequestHandler extends Thread {
 
 		//pasta de ficheiros
 		path = path + "/" + Proxy.getFilesFolder();
-		System.out.println("Filepath: "+path);
+		System.out.println("Filepath: " + path);
 
 		//verifica se o file jah existe
 		FilesHandler fHandler = new FilesHandler();
@@ -362,15 +368,13 @@ public class RequestHandler extends Thread {
 	 * 			req.getUser() != null
      */
 	private boolean sendFile(Request req) throws IOException {
-
 		String filename = req.getFile().getFullPath();
-
 		String path = this.convProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
 
 		boolean ok = false;
 		File file = null;
 		if (path != null) {
-			file = new File(path + "/FILES/" + filename);
+			file = new File(path + "/" + Proxy.getFilesFolder() + filename);
 			ok = file.exists();
 		}
 
@@ -436,17 +440,16 @@ public class RequestHandler extends Thread {
 	 * Adiciona um Utilizador a um Grupo
 	 *
 	 * @param groupName Nome do Grupo
-	 * @param user		Utilizador autor do Request
-	 * @param newMember	Nome do novo membro a adicionar a Grupo
-	 * @param uProxy	Proxy de Utilizadores
+	 * @param user        Utilizador autor do Request
+	 * @param newMember    Nome do novo membro a adicionar a Grupo
 	 * @return	Reply ja tratada para client
      * @throws IOException
 	 * @require uProxy != null && user != null
      */
-	private Reply addUserToGroup(String groupName, User user, String newMember, UsersProxy uProxy) throws IOException {
+	private Reply addUserToGroup(String groupName, User user, String newMember) throws IOException {
 
 		// verifica se o user de contacto existe
-		if (!uProxy.exists(new User(newMember)))
+		if (!this.userProxy.exists(new User(newMember)))
 			return new Reply(400, "O user " + newMember + " nao existe");
 
 		// group nao existe => cria novo
