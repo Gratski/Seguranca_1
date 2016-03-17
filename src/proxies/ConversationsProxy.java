@@ -116,7 +116,7 @@ public class ConversationsProxy extends Proxy {
 		String id = conversation.getGroup() == null ? conversation.getFilename() : conversation.getGroup().getName();
 
 		String lastMessage = null;
-		File f = new File(CONVERSATIONS + "/" + folder + "/" + id);
+		File f = new File(CONVERSATIONS + folder + "/" + id);
 		try {
 			if ( f.listFiles().length > 1)
 				lastMessage = f.list().length - 1 + MESSAGE_FILE_EXTENSION;
@@ -225,12 +225,12 @@ public class ConversationsProxy extends Proxy {
 	public boolean insertGroupMessage(Message msg) throws IOException {
 		
 		//criar pasta de group
-		File file = new File(CONVERSATIONS_GROUP + "/" + msg.getTo());
+		File file = new File(CONVERSATIONS_GROUP + msg.getTo());
 		
 		//set sent time to now
 		msg.setTimestampNow();
 		boolean res = MessagesProxy.getInstance().persist(
-				CONVERSATIONS_GROUP + "/" + msg.getTo(),
+				CONVERSATIONS_GROUP + msg.getTo(),
 				"" + file.list().length,
 				msg);
 		return res;
@@ -243,13 +243,13 @@ public class ConversationsProxy extends Proxy {
 		
 		//se eh-group
 		if ( groups.containsKey(with) ) {
-			path = CONVERSATIONS_GROUP + "/" + with;
+			path = CONVERSATIONS_GROUP + with;
 		}
 		//se eh private
 		else {
 			String dir = getConversationID(user, with);
 			if (dir != null)
-				path = CONVERSATIONS_PRIVATE + "/" + dir;
+				path = CONVERSATIONS_PRIVATE + dir;
 		}
 		return path;
 	}
@@ -273,12 +273,12 @@ public class ConversationsProxy extends Proxy {
 		msg.setTimestampNow();
 		
 		//verifica se a pasta de conversacao existe
-		File file = new File(CONVERSATIONS_PRIVATE + "/" + folder);
+		File file = new File(CONVERSATIONS_PRIVATE + folder);
 		if (!file.exists())
 			return false;
 		
 		//cria file de mensagem
-		return MessagesProxy.getInstance().persist(CONVERSATIONS_PRIVATE + "/" + folder, "" + file.list().length, msg);
+		return MessagesProxy.getInstance().persist(CONVERSATIONS_PRIVATE + folder, "" + file.list().length, msg);
 	}
 	
 	/**
@@ -300,7 +300,7 @@ public class ConversationsProxy extends Proxy {
 	private String add(String from, String to) throws IOException {
 		
 		int id = getNextID();
-		File f = new File(CONVERSATIONS_PRIVATE + "/" + id + FILES_FOLDER);
+		File f = new File(CONVERSATIONS_PRIVATE + id + "/" + FILES_FOLDER);
 		f.mkdirs();
 		if (!f.exists())
 			return null;

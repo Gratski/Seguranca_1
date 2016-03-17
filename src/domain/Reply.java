@@ -77,9 +77,8 @@ public class Reply extends NetworkMessage implements Serializable {
 	}
 	
 	public void prettyPrint(User user){
-		
 		//se erro
-		if(this.hasError()){
+		if (this.hasError()) {
 			System.out.println("Error");
 			System.out.println("Description: " + this.message);
 		}
@@ -87,9 +86,8 @@ public class Reply extends NetworkMessage implements Serializable {
 		else {
 			//se eh -r
 			if (this.conversations != null) {
-				
 				//se eh apenas de contact
-				if (conversations.size() == 1) {
+				if (this.getType().equals("single") && this.conversations.size() == 1) {
 					ArrayList<Message> messages = conversations.get(0).getMessages();
 					Collections.sort(messages);
 					for (Message message : messages) {
@@ -97,7 +95,7 @@ public class Reply extends NetworkMessage implements Serializable {
 					}
 				}
 				//se eh last de todos os contact
-				else {
+				else if (this.getType().equals("all")) {
 					for (Conversation conversation : conversations) {
 						if (conversation.getGroup() != null)
 							System.out.println("Contact: " + conversation.getGroup().getName());
@@ -119,7 +117,6 @@ public class Reply extends NetworkMessage implements Serializable {
 						}
 					}
 				}
-				
 			}
 		}
 	}

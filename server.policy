@@ -10,6 +10,7 @@ grant codeBase "file:out${/}production${/}Seguranca_1${/}-" {
   permission java.lang.RuntimePermission "exitVM.*";
 
   //Files
+  permission java.util.PropertyPermission "user.dir", "read";
   permission java.io.FilePermission ".${/}DATABASE", "read, write";
   permission java.io.FilePermission ".${/}DATABASE/USERS", "read, write";
   permission java.io.FilePermission ".${/}DATABASE/GROUPS", "read, write";
