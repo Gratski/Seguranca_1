@@ -16,7 +16,7 @@ public class Reply extends NetworkMessage implements Serializable {
 	private String message;
 
 	/**
-	 * 
+	 * Constructor
 	 */
 	public Reply() {
 		this.conversations = null;
@@ -24,58 +24,100 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.message = null;
 	}
 
+	/**
+	 * Constructor
+	 *
+	 * @param status Status de Reply
+	 * @param message Mensagem de Reply
+     */
 	public Reply(int status, String message) {
 		this.conversations = null;
 		this.status = status;
 		this.message = message;
 	}
 
+	/**
+	 * Constructor
+	 *
+	 * @param status Status de Reply
+     */
 	public Reply(int status) {
 		this.status = status;
 		this.message = null;
 		this.conversations = null;
 	}
 
+	/**
+	 * Obtem conversacoes
+	 *
+	 * @return lista com conversacoes
+     */
 	public ArrayList<Conversation> getConversations() {
 		return this.conversations;
 	}
 
+	/**
+	 * Altera o valor das conversacoes
+	 *
+	 * @param conversations Novo valor para conversacoes
+     */
 	public void setConversations(ArrayList<Conversation> conversations) {
 		this.conversations = conversations;
 	}
 
-	public void addConversation(Conversation conversation) {
+	/**
+	 * Adiciona uma conversacao a lista de conversacoes
+	 *
+	 * @param conversation Conversacao a adicionar
+     */
+	public void setConversation(Conversation conversation) {
 		ArrayList<Conversation> list = new ArrayList<>();
 		list.add(conversation);
 		this.conversations = list;
 	}
 
+	/**
+	 * Altera o valor do status
+	 *
+	 * @param status Novo valor de Status
+     */
 	public void setStatus(int status) {
 		this.status = status;
 	}
 
+	/**
+	 * Altera o valor da message
+	 *
+	 * @param message Novo valor da message
+     */
 	public void setMessage(String message) {
 		this.message = message;
 	}
-	
+
+	/**
+	 * Obtem o valor da mensagem
+	 *
+	 * @return mensagem actual
+     */
 	public String getMessage(){
 		return this.message;
 	}
 
+	/**
+	 * Obtem o status
+	 *
+	 * @return status actual
+     */
 	public int getStatus(){
 		return this.status;
 	}
 
-	@Override
-	public String toString() {
-		final StringBuffer sb = new StringBuffer("Reply{");
-		sb.append("conversations=").append(conversations);
-		sb.append(", status=").append(status);
-		sb.append(", message='").append(message).append('\'');
-		sb.append('}');
-		return sb.toString();
-	}
-	
+	/**
+	 * Faz o pretty print da Reply
+	 *
+	 * @param user Utilizador em sessao
+	 * @require user != null
+     */
 	public void prettyPrint(User user){
 		//se erro
 		if (this.hasError()) {
@@ -130,10 +172,22 @@ public class Reply extends NetworkMessage implements Serializable {
 		return !(this.status == 200 || this.status == 0 );
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (o == null || !(o instanceof Reply))
 			return false;
 		Reply other = (Reply) o;
 		return other.getStatus() == this.status && other.getMessage().equals(this.message);
 	}
+
+	@Override
+	public String toString() {
+		final StringBuffer sb = new StringBuffer("Reply{");
+		sb.append("conversations=").append(conversations);
+		sb.append(", status=").append(status);
+		sb.append(", message='").append(message).append('\'');
+		sb.append('}');
+		return sb.toString();
+	}
+
 }

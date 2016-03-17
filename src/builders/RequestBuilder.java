@@ -21,12 +21,12 @@ public class RequestBuilder {
 
 	/**
 	 * Formula um request
-	 * @param input
-	 * 		Map no qual se vai basear a criacao do Request
-	 * @return
-	 * 		o Request devido caso valido, null caso contrario
+	 * @param input Map no qual se vai basear a criacao do Request
+	 * @return Request devido caso valido, null caso contrario
+	 * @require input != null
      */
 	public static Request make(HashMap<String, String> input) throws FileNotFoundException {
+
 		String flag = input.get("flag");
 		//valida flag
 		if (!InputValidator.validFlag(flag))

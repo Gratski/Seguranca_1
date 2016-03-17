@@ -124,7 +124,8 @@ public class Message implements Serializable, Comparable {
 	/**
 	 * Obtem a data readable
 	 *
-	 * @return String
+	 * @return mensagem em String num formato perceptivel
+	 * @require name != null
      */
 	public void printMessageFromPerspective(String name) {
 		String personInPerspective = (name.equals(this.from) ? "me" : this.from);
@@ -132,6 +133,11 @@ public class Message implements Serializable, Comparable {
 		System.out.println(getHumanDateString());
 	}
 
+	/**
+	 * Obtem data
+	 *
+	 * @return data num formato perceptivel
+     */
 	public String getHumanDateString() {
 		Date date = this.timestamp;
 		StringBuilder sb = new StringBuilder();

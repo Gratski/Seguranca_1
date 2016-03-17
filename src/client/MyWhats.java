@@ -23,10 +23,15 @@ import validators.InputValidator;
  */
 public class MyWhats {
 
+	/**
+	 * flag utilizada para identifica erro em operacao
+	 * download e upload respectivamente
+	 */
 	private static boolean download_error = false;
 	private static boolean upload_error = false;
 
 	public static void main(String[] args) {
+
 		try {
 			// input validation
 			if (!InputValidator.validInput(args)){
@@ -77,10 +82,8 @@ public class MyWhats {
 	/**
 	 * This method handles a request sending
 	 * 
-	 * @param conn
-	 *            Connection to be considered
-	 * @param req
-	 *            Request to be considered
+	 * @param conn Connection to be considered
+	 * @param req Request to be considered
 	 * @throws IOException
 	 * @require conn != null && req != null && conn.getOutputStream != null
 	 */
@@ -134,6 +137,13 @@ public class MyWhats {
 		}
 	}
 
+	/**
+	 * Verifica se a operacao envolve ficheiros
+	 *
+	 * @param req Request a considerar
+	 * @return true se opracao de ficheiros, false caso contrario
+	 * @require req != null
+     */
 	private static boolean isFileOperation(Request req){
 		String type = req.getType();
 		return ( type.equals("-f") || ( type.equals("-r") && req.getSpecs().equals("download") ) );
@@ -142,10 +152,10 @@ public class MyWhats {
 	/**
 	 * Recebe um objecto Reply do servidor
 	 * 
-	 * @param conn
-	 *            Connection considerada na ligacao
+	 * @param conn Connection considerada na ligacao
 	 * @return Reply com resposta
 	 * @throws Exception
+	 * @require conn != null
 	 */
 	public static Reply receiveReply(Connection conn) {
 		//se ocorreu um erro ao executar -r contact file

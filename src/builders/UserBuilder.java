@@ -18,6 +18,7 @@ public class UserBuilder {
 	 * Cria um User com base no input
 	 * @param  input representa o input
 	 * @return       um novo User
+	 * @require input != null
 	 */
 	public static User make(HashMap<String, String> input) {
 		String password = input.get("password");

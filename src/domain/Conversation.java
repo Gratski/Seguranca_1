@@ -55,6 +55,7 @@ public class Conversation implements Serializable {
 	 * Constructor
 	 *
 	 * @param group Group de Conversation
+	 * @require group != null
      */
 	public Conversation(Group group) {
 		this.filename = null;

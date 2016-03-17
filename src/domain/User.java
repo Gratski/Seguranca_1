@@ -10,23 +10,35 @@ import java.util.Scanner;
 import proxies.GroupsProxy;
 import validators.InputValidator;
 
+/**
+ * Esta classe representa a entidade Utilizador
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class User implements Serializable {
 
 	private String name;
 	private String password;
 	private List<Group> groups;
-	
+
+	/**
+	 * Constructor
+	 *
+	 * @param name Nome do Utilizador
+     */
 	public User(String name) {
 		this.name = name;
 	}
-	
+
+	/**
+	 * Constructor
+	 *
+	 * @param name Nome de utilizador
+	 * @param password Password de utilizador
+     */
 	public User(String name, String password){
 		this.name = name;
-
-		if ( password == null )
-			this.askForPassword();
-		else
-			this.password = password;
+		this.password = password;
 	}
 
 	/**
@@ -41,11 +53,21 @@ public class User implements Serializable {
 		}
 		this.password = pwd;
 	}
-	
+
+	/**
+	 * Obtem o valor de nome
+	 *
+	 * @return actual name
+     */
 	public String getName(){
 		return this.name;
 	}
 
+	/**
+	 * Obtem o valor da password
+	 *
+	 * @return actual password
+     */
 	public String getPassword(){
 		return this.password;
 	}
