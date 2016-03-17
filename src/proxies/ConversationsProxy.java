@@ -103,10 +103,9 @@ public class ConversationsProxy extends Proxy {
 
 	public ArrayList<Conversation> getLastMessageFromAll(User user) throws IOException {
 		// Ir buscar conversations com privates
-		ArrayList<Conversation> conversations = getConversationsFrom(user.getName());
-		if (conversations == null)
-			return null;
-		
+		ArrayList<Conversation> conversations = new ArrayList<>();
+		conversations.addAll(getConversationsFrom(user.getName()));
+
 		Collection<Group> groups = GroupsProxy.getInstance().getGroupsWhereMember(user.getName()).values();
 
 		// Para cada group criar uma conversation de grupo e juntar as de privates
@@ -119,8 +118,13 @@ public class ConversationsProxy extends Proxy {
 			if (lastMessage != null)
 				conversation.addMessage(lastMessage);
 		}
+
+		if(conversations.size() == 0)
+			return null;
+
 		return conversations;
 	}
+
 
 	private Message getLastMessage(Conversation conversation) throws IOException {
 		String folder = conversation.getGroup() == null ? "PRIVATE" : "GROUP";
