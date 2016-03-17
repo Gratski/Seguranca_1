@@ -14,7 +14,8 @@ import proxies.GroupsProxy;
 import proxies.UsersProxy;
 
 /**
- * Esta classe representa a entidade que trata 
+ * Esta classe representa a entidade que trata de um Request
+ * enviado por um client
  *
  * @author Joao Rodrigues & Simao Neves
  */
@@ -25,15 +26,27 @@ public class RequestHandler extends Thread {
 	public volatile GroupsProxy groupsProxy;
 	public volatile ConversationsProxy convProxy;
 
+	/**
+	 * Constructor
+	 *
+	 * @param clientSocket 	Socket client a ser utilizada
+	 * @param userProxy		Proxy de Users a ser utilizado
+	 * @param groupsProxy	Proxy de Groups a ser utilizado
+	 * @param conversationsProxy	Proxy de Conversations a ser utilizado
+	 *
+     * @throws IOException
+     */
 	public RequestHandler(Socket clientSocket, UsersProxy userProxy, GroupsProxy groupsProxy,
 			ConversationsProxy conversationsProxy) throws IOException {
 		this.connection = new Connection(clientSocket);
 		this.userProxy = userProxy;
 		this.groupsProxy = groupsProxy;
 		this.convProxy = conversationsProxy;
-		System.out.println("New Thread created!");
 	}
 
+	/**
+	 * Executa com base nos seus
+	 */
 	public void run() {
 		Request clientRequest = null;
 		Reply reply = null;
@@ -223,7 +236,8 @@ public class RequestHandler extends Thread {
 		// verifica se eh private
 		else {
 			path = path + "PRIVATE/";
-			path = path + ConversationsProxy.getInstance().getConversationID(req.getUser().getName(), req.getContact());
+
+			path = path + ConversationsProxy.getInstance().getOrCreate(req.getUser().getName(), req.getContact());
 			System.out.println("eh para private");
 			isGroup = false;
 		}

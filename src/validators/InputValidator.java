@@ -11,6 +11,12 @@ import java.util.HashMap;
  */
 public class InputValidator {
 
+	/**
+	 * Valida input com base em regras MyWhats
+	 *
+	 * @param input Input a ser analisado
+	 * @return true se valido, false caso contrario
+     */
 	public static Boolean validInput(String[] input) {
 		if (input == null || input.length < 3 || !validName(input[0]) || !validAddress(input[1]))
 			return false;
@@ -32,27 +38,63 @@ public class InputValidator {
 		return true;
 	}
 
+	/**
+	 * Valida server
+	 *
+	 * @param input Server a ser considerado
+	 * @return true se valido, false caso contrario
+     */
 	public static Boolean validServerInput(String[] input) {
 		return  (input != null && input.length == 1 && validPort(input[0]));
 	}
 
+	/**
+	 * Valida o nome de User passado como atributo
+	 *
+	 * @param name Nome a ser considerado
+	 * @return true se valido, false caso contrario
+     */
 	public static Boolean validName(String name) {
 		return !name.contains(":") && !name.contains(",");
 	}
-	
+
+	/**
+	 * Valida a password
+	 *
+	 * @param password Password a ser considerada
+	 * @return true se valida, false caso contrario
+     */
 	public static Boolean validPassword(String password) {
 		return !password.contains(":") && password.length() > 2;
 	}
-	
+
+	/**
+	 * Valida flag
+	 *
+	 * @param flag Flag a ser considerada
+	 * @return true se valida, false caso contrario
+     */
 	public static Boolean validFlag(String flag) {
 		return (flag.equals("-a") || flag.equals("-d") || flag.equals("-r") 
-								  || flag.equals("-f") || flag.equals("-m") || flag.equals("-regUser"));
+								  || flag.equals("-f") || flag.equals("-m"));
 	}
 
+	/**
+	 * Valida IP
+	 *
+	 * @param ip IP a ser considerada
+	 * @return true se valida, false caso contrario
+     */
 	private static Boolean validIp(String ip) {
 		return ip.matches("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
 	}
 
+	/**
+	 * Valida porto
+	 *
+	 * @param port Porto a ser considerado
+	 * @return true se valido, false caso contrario
+     */
 	public static Boolean validPort(String port) {
 		int portInt;
 		try {
@@ -63,12 +105,24 @@ public class InputValidator {
 		return portInt == 23456;
 //		return (portInt >= 1024 && portInt <= 65535);
 	}
-	
+
+	/**
+	 * Valida endereco com IP e Porto
+	 *
+	 * @param address Endereco a ser considerado
+	 * @return true se valido, false caso contrario
+     */
 	public static Boolean validAddress(String address) {
 		String[] addressSplit = address.split(":");
 		return (validPort(addressSplit[1]) && validIp(addressSplit[0]));
 	}
 
+	/**
+	 * Devolve um Input mais facil de utilizar
+	 *
+	 * @param args Input base a ser considerado
+	 * @return Nova estrutura de Input
+     */
 	public static HashMap<String, String> parseInput(String[] args) {
 		HashMap<String, String> parsedInput = new HashMap<>();
 		parsedInput.put("username", args[0]);
@@ -87,13 +141,7 @@ public class InputValidator {
 			parsedInput.put("password", null);
 			parsedInput.put("passwordFlag", null);
 		}
-		
-		//se eh apenas para registar user
-		if ( parsedInput.get("password") != null && args.length == 4 ) {
-			System.out.println("É apenas para registar user");
-			parsedInput.put("flag", "-regUser");
-			return parsedInput;
-		}
+
 		//flag
 		parsedInput.put("flag", args[i++]);
 		
@@ -106,6 +154,5 @@ public class InputValidator {
 
 		return parsedInput;
 	}
-	
-	
+
 }
