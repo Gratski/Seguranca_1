@@ -258,7 +258,6 @@ public class RequestHandlerTest {
         req2.setType("-r");
         req2.setSpecification("all");
         reply = rh.parseRequest(req2);
-        System.out.println(reply);
         assertEquals("A user who is not in a group should not receive messages from that group", 1, reply.getConversations().size());
 
         this.db.destroy();

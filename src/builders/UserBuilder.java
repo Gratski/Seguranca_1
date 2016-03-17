@@ -34,5 +34,4 @@ public class UserBuilder {
 		}
 		return new User(input.get("username"), password);
 	}
-	
 }
