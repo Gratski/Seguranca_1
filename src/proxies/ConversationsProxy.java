@@ -158,7 +158,7 @@ public class ConversationsProxy extends Proxy {
 			if (lastMessage != null)
 				conversation.addMessage(lastMessage);
 		}
-		return conversations.size() == 0 ? null : conversations;
+		return conversations;
 	}
 
 	/**

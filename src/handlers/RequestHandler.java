@@ -196,10 +196,8 @@ public class RequestHandler extends Thread {
      */
 	private Reply getLastMessageFromConversations(Request req) throws IOException {
 		Reply reply = new Reply();
-
 		//obtem todas as conversas
 		ArrayList<Conversation> conversations = ConversationsProxy.getInstance().getLastMessageFromAll(req.getUser());
-
 		if (conversations.size() == 0) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem nenhumas conversas");
@@ -208,7 +206,6 @@ public class RequestHandler extends Thread {
 			reply.setType("all");
 			reply.setConversations(conversations);
 		}
-
 		return reply;
 	}
 

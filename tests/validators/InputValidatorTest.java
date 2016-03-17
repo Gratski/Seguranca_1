@@ -7,9 +7,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/**
- * Created by simon on 02/03/16.
- */
 public class InputValidatorTest {
 
     @Before
@@ -57,7 +54,6 @@ public class InputValidatorTest {
                                             && InputValidator.validFlag("-a")
                                             && InputValidator.validFlag("-d")
                                             && InputValidator.validFlag("-m")
-                                            && InputValidator.validFlag("-regUser")
                                             && InputValidator.validFlag("-f"));
     }
 
