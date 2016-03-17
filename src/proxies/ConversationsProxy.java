@@ -68,6 +68,17 @@ public class ConversationsProxy extends Proxy {
 		return res;
 	}
 
+	public String getOrCreate(String user1, String user2) throws IOException{
+
+		String folder = null;
+
+		if( ( folder = getConversationID(user1, user2) ) == null )
+			folder = this.add(user1, user2);
+
+		return folder;
+	}
+
+
 	public ArrayList<Conversation> getConversationsFrom(String user) throws IOException {
 		ArrayList<Conversation> list = new ArrayList<>();
 		File f = new File(CONVERSATIONS_PRIVATE_INDEX);
