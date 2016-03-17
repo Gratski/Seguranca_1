@@ -63,7 +63,7 @@ public class RequestHandlerTest {
         UsersProxy usersProxy = UsersProxy.getInstance();
         Request req = new Request();
         req.setUser(nonExistentUser);
-        req.setType("-regUser");
+        req.setType("-qualquer");
         assertFalse("User não devia existir", usersProxy.exists(nonExistentUser));
         rh.parseRequest(req);
         assertTrue("User que não existia passa a existir", usersProxy.exists(nonExistentUser));
@@ -74,12 +74,6 @@ public class RequestHandlerTest {
         assertTrue(usersProxy.exists(joao));
         Reply reply = rh.parseRequest(req2);
         assertEquals("User não autenticado é identificado", new Reply(400, "User nao autenticado"), reply);
-
-        Request req3 = new Request();
-        req3.setUser(simao);
-        req3.setType("-regUser");
-        Reply reply2 = rh.parseRequest(req3);
-        assertEquals("User que já existe não pode ser inserido novamente", new Reply(404, "Erro ao adicionar novo utilizador"), reply2);
     }
 
     @Test
@@ -259,6 +253,14 @@ public class RequestHandlerTest {
         Reply reply = rh.parseRequest(req);
         assertEquals("There should be 3 conversations", 3, reply.getConversations().size());
 
+        Request req2 = new Request();
+        req2.setUser(ricardo);
+        req2.setType("-r");
+        req2.setSpecification("all");
+        reply = rh.parseRequest(req2);
+        System.out.println(reply);
+        assertEquals("A user who is not in a group should not receive messages from that group", 1, reply.getConversations().size());
+
         this.db.destroy();
         this.db.make();
         UsersProxy.getInstance().reload();
@@ -284,6 +286,14 @@ public class RequestHandlerTest {
         req2.setContact("FCUL");
         reply = rh.parseRequest(req2);
         assertEquals("There should be 2 messages in this group conversation", 2, reply.getConversations().get(0).getMessages().size());
+
+        Request req5 = new Request();
+        req5.setUser(ricardo);
+        req5.setType("-r");
+        req5.setSpecification("single_contact");
+        req5.setContact("FCUL");
+        reply = rh.parseRequest(req5);
+        assertEquals("A user who is not in a group should not receive messages from that group", new Reply(400, "Não existem conversas entre " + ricardo.getName() + " e " + "FCUL"), reply);
 
         this.db.destroy();
         this.db.make();
