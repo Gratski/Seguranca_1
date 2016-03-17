@@ -6,6 +6,6 @@ grant codeBase "file:bin${/}*" {
   permission java.lang.RuntimePermission "exitVM.*";
 
   //Files
-  permission java.io.FilePermission ".${/}*", "read";
+  permission java.io.FilePermission "<<ALL FILES>>", "read";
   permission java.io.FilePermission ".${/}*", "write";
 };
