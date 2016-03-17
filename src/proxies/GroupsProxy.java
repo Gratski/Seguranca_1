@@ -71,7 +71,13 @@ public class GroupsProxy extends Proxy {
 	}
 	
 	public Map<String, Group> getGroupsWhereMember(String name) {
-		return this.groups;
+		Map<String, Group> map = new HashMap<>();
+		Collection<Group> groups = this.groups.values();
+		for(Group group : groups) {
+			if (group.hasMemberOrOwner(name))
+				map.put(group.getName(), group);
+		}
+		return map;
 	}
 	
 	/**
