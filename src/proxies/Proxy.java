@@ -1,7 +1,8 @@
 package proxies;
 
 /**
- * Esta class
+ * Esta classe contém as directorias todas da aplicação
+ * usadas pelos outros Proxys
  *
  * @author Joao Rodrigues & Simao Neves
  */

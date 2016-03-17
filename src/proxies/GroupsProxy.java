@@ -14,7 +14,7 @@ import domain.User;
 
 /**
  * Esta classe representa a entidade responsavel
- * pela persistencia e acesso a dados de grupos
+ * pela persistencia e acesso a dados de Groups
  *
  * @author Joao Rodrigues & Simao Neves
  */
@@ -22,14 +22,21 @@ public class GroupsProxy extends Proxy {
 
 	private static GroupsProxy instance = null;
 	private Map<String, Group> groups;
-	
+
+	/**
+	 * Constructor for GroupsProxy
+	 * Cria um novo Map para usar como memória e popula-o
+	 * com os grupos existentes no ficheiro
+	 *
+	 * @throws IOException
+     */
 	private GroupsProxy() throws IOException {
 		this.groups = new HashMap<>();
 		this.init();
 	}
 
 	/**
-	 * Obter instancia
+	 * Obter instancia de GroupsProxy para persistir grupos
 	 *
 	 * @return
 	 * @throws IOException
@@ -40,11 +47,22 @@ public class GroupsProxy extends Proxy {
 		return instance;
 	}
 
+	/**
+	 * Method used for tests, emptys the Map in memory and
+	 * reloads from the Groups file
+	 *
+	 * @throws IOException
+	 */
 	public void reload() throws IOException {
 		this.groups = new HashMap<>();
 		init();
 	}
 
+	/**
+	 * Popula o map de groups
+	 *
+	 * @throws IOException
+	 */
 	public void init() throws IOException {
 		BufferedReader br = FileStreamBuilder.makeReader(GROUPS_INDEX);
 		
@@ -69,7 +87,15 @@ public class GroupsProxy extends Proxy {
 		}
 		br.close();
 	}
-	
+
+	/**
+	 * Gets all Groups where the user with name name exists
+	 *
+	 * @param name
+	 * 			Name of the User that should be in the groups to be returned
+	 * @return
+	 * 			Map of all the groups where the users exist, might be empty
+     */
 	public Map<String, Group> getGroupsWhereMember(String name) {
 		Map<String, Group> map = new HashMap<>();
 		Collection<Group> groups = this.groups.values();
@@ -83,7 +109,7 @@ public class GroupsProxy extends Proxy {
 	/**
 	 * Find a group by name if exists
 	 * @param groupName
-	 * 		GroupName to be searchedBy
+	 * 		GroupName to be searched by
 	 * @return
 	 * 		Group if exists, null if not
 	 * @throws IOException
@@ -93,15 +119,18 @@ public class GroupsProxy extends Proxy {
 	} 
 	
 	/**
-	 * Adiciona um novo group a groups
+	 * Creates a new Group, persists it into the file, adds it to the Map
+	 * and creates all the necessery file structure
 	 * @param groupName
 	 * 		Nome do novo group
 	 * @param owner
 	 * 		Owner do novo group
+	 *
+	 * 	@require !exists(groupName)
 	 */
 	public void create(String groupName, User owner) throws IOException {
 		this.groups.put(groupName, new Group(groupName, owner));
-		
+
 		//persistencia em ficheiro
 		BufferedWriter bw = FileStreamBuilder.makeWriter(GROUPS_INDEX, true);
 		StringBuilder sb = new StringBuilder();
@@ -145,17 +174,16 @@ public class GroupsProxy extends Proxy {
 	}
 	
 	/**
-	 * Verifica se um determinado group tem um
-	 * determinado member
+	 * Verifica se o Group com nome groupName tem um membro com nome name
 	 * @param groupName
 	 * 		Nome do group a considerar
-	 * @param user
+	 * @param name
 	 * 		User a considerar
 	 * @return
 	 * 		true se eh membro, false caso contrario
 	 */
-	public boolean hasMember(String groupName, String user){
-		return this.groups.get(groupName).hasMember(user);
+	public boolean hasMember(String groupName, String name){
+		return this.groups.get(groupName).hasMember(name);
 	}
 	
 	/**
@@ -178,13 +206,20 @@ public class GroupsProxy extends Proxy {
 	}
 	
 	/**
-	 * Remove um dado utilizador de um dado group
+	 * Remove um User com nome member do Group com nome groupName
+	 * Actualiza o Map em memória e actualiza o ficheiro
+	 * Se esse User for o criador do grupo, remove o grupo de memória e apaga as
+	 * pastas associadas a esse grupo
+	 *
 	 * @param groupName
 	 * 		Nome do group a considerar
 	 * @param member
 	 * 		Member a ser retirado do grupo
 	 * @return
 	 * 		true se ok, false caso contrario
+	 *
+	 * @requires
+	 * 		exists(groupName)
 	 * @throws IOException
 	 */
 	public boolean removeMember(String groupName, String member) throws IOException {
@@ -202,11 +237,14 @@ public class GroupsProxy extends Proxy {
 				return false;
 			}
 		}
-
 		updateFile();
 		return true;
 	}
 
+	/**
+	 * Elimina a directoria e todas as subdirectorias de File f
+	 * @param f O File que corresponde à directoria a ser apagada
+     */
 	private void deleteGroup(File f) {
 		File[] fl = f.listFiles();
 		for ( File file : fl ) {
@@ -220,7 +258,7 @@ public class GroupsProxy extends Proxy {
 	}
 
 	/**
-	 * Actualiza o ficheiro de groups
+	 * Actualiza o ficheiro de Groups
 	 * @throws IOException
 	 */
 	private void updateFile() throws IOException {

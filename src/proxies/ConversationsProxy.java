@@ -17,7 +17,7 @@ import domain.User;
 
 /**
  * Esta classe representa o responsavel pelo acesso e manutencao
- * das conversacoes entre utilizadores
+ * das Conversations entre utilizadores
  * @author JoaoRodrigues & SimãoNeves
  *
  */
@@ -25,6 +25,12 @@ public class ConversationsProxy extends Proxy {
 
 	private static ConversationsProxy instance = null;
 
+	/**
+	 * Obter instancia de ConversationsProxy para persistir conversas
+	 *
+	 * @return conversationProxy a ser usado para persistência de conversas
+	 * @throws IOException
+	 */
 	public static ConversationsProxy getInstance() throws IOException {
 		if( instance == null )
 			instance = new ConversationsProxy();
@@ -32,7 +38,7 @@ public class ConversationsProxy extends Proxy {
 	}
 	
 	/**
-	 * Este metodo devolve o nome do directorio onde esta
+	 * Método que devolve o nome do directorio onde esta
 	 * a informacao relativa ah conversa
 	 * @param user1
 	 * 		Nome de utilizador 1
@@ -42,6 +48,8 @@ public class ConversationsProxy extends Proxy {
 	 * 		nome do directorio caso a conversa exista,
 	 * 		null caso contrario
 	 * @throws IOException
+	 *
+	 * @requires user1 != null && user2 != null
 	 */
 	public String getConversationID(String user1, String user2) throws IOException {
 		
@@ -68,17 +76,37 @@ public class ConversationsProxy extends Proxy {
 		return res;
 	}
 
+	/**
+	 * Método que devolve a pasta de uma conversa entre dois utilizadores
+	 * Se a conversa não existir ainda, cria-a
+	 *
+	 * @param user1
+	 * 		User que participa na conversa
+	 * @param user2
+	 * 		Segundo User que participa na conversa
+	 * @return
+	 * 		String com o nome da directoria
+	 * @throws IOException
+     */
 	public String getOrCreate(String user1, String user2) throws IOException{
-
 		String folder = null;
-
-		if( ( folder = getConversationID(user1, user2) ) == null )
+		if ( ( folder = getConversationID(user1, user2) ) == null )
 			folder = this.add(user1, user2);
 
 		return folder;
 	}
 
-
+	/**
+	 *	Método que retorna todas as conversa privadas que User com nome user tem
+	 *
+	 * @param user
+	 * 		Utilizador que tem as conversas a serem procuradas
+	 * @return
+	 * 		Lista de Conversations onde o user participa
+	 * @requires user != null
+	 *
+	 * @throws IOException
+     */
 	public ArrayList<Conversation> getConversationsFrom(String user) throws IOException {
 		ArrayList<Conversation> list = new ArrayList<>();
 		File f = new File(CONVERSATIONS_PRIVATE_INDEX);
@@ -101,11 +129,23 @@ public class ConversationsProxy extends Proxy {
 		return list;
 	}
 
+	/**
+	 * Método que procura e devolve todas as Conversations (de grupo e privadas)
+	 * que o User user tem.
+	 * As Conversations devolvidas só têm a última mensagem nessa conversa
+	 *
+	 * @param user
+	 * 		Utilizador que participa nas conversas que são devolvidas
+	 * @return
+	 * 		Lista com todas as Conversations com a última mensagem da conversa
+	 * @requires user != null
+	 *
+	 * @throws IOException
+     */
 	public ArrayList<Conversation> getLastMessageFromAll(User user) throws IOException {
-		// Ir buscar conversations com privates
+		// Ir buscar conversations
 		ArrayList<Conversation> conversations = new ArrayList<>();
 		conversations.addAll(getConversationsFrom(user.getName()));
-
 		Collection<Group> groups = GroupsProxy.getInstance().getGroupsWhereMember(user.getName()).values();
 
 		// Para cada group criar uma conversation de grupo e juntar as de privates
@@ -118,14 +158,21 @@ public class ConversationsProxy extends Proxy {
 			if (lastMessage != null)
 				conversation.addMessage(lastMessage);
 		}
-
-		if(conversations.size() == 0)
-			return null;
-
-		return conversations;
+		return conversations.size() == 0 ? null : conversations;
 	}
 
-
+	/**
+	 * Método que devolve a última Message de da Conversation conversation
+	 *
+	 * @param conversation
+	 *		Conversation de onde vamos buscar a última Message
+	 * @return
+	 * 		Message que é a última na Conversation (com base no número do ficheiro), ou
+	 * 		null se houver algum erro
+	 * @throws IOException
+	 *
+	 * @requires conversation != null
+     */
 	private Message getLastMessage(Conversation conversation) throws IOException {
 		String folder = conversation.getGroup() == null ? "PRIVATE" : "GROUP";
 		String id = conversation.getGroup() == null ? conversation.getFilename() : conversation.getGroup().getName();
@@ -142,7 +189,6 @@ public class ConversationsProxy extends Proxy {
 		}
 
 		File f2 = new File(CONVERSATIONS + folder + "/" + id + "/" + lastMessage);
-
 		FileReader fr = new FileReader(f2);
 		BufferedReader br = new BufferedReader(fr);
 		String line;
@@ -170,11 +216,21 @@ public class ConversationsProxy extends Proxy {
 		return message;
 	}
 
+	/**
+	 * Método que devolve a Conversation entre user com nome user e com o contacto
+	 * contact, que é o nome de outro User ou um Group
+	 *
+	 * @param user
+	 * 		Nome de um User
+	 * @param contact
+	 * 		Nome de um User ou Group
+	 * @return	Conversation entre user e contact, null se nãoe xistir essa conversa ou
+	 * 		se houver algum erro
+	 * @throws IOException
+     */
 	public Conversation getConversationBetween(String user, String contact) throws IOException {
 		Group group = GroupsProxy.getInstance().find(contact);
-
 		String path = userHasConversationWith(user, contact);
-		System.out.println("Im here! Path is: " + path);
 		if (path == null)
 			return null;
 
@@ -222,7 +278,13 @@ public class ConversationsProxy extends Proxy {
 		}
 		return conversation;
 	}
-	
+
+	/**
+	 * Devolve o próximo ID, o novo ficheiro onde guardar uma nova mensagem
+	 *
+	 * @return	Inteiro que representa o nome da nova mensagem a ser guardada
+	 * @throws IOException
+     */
 	private int getNextID() throws IOException {
 		File f = new File(CONVERSATIONS_PRIVATE);
 		if ( f.list() != null )
@@ -232,14 +294,16 @@ public class ConversationsProxy extends Proxy {
 	
 	/**
 	 * Regista mensagem em pasta de group
+	 *
 	 * @param msg
 	 * 		Mensagem a registar
 	 * @return
-	 * 		true se enviou, false caso contrario
+	 * 		true se a mensagem persistiu, false caso contrario
+	 * @requires	msg != null
+	 *
 	 * @throws IOException
 	 */
 	public boolean insertGroupMessage(Message msg) throws IOException {
-		
 		//criar pasta de group
 		File file = new File(CONVERSATIONS_GROUP + msg.getTo());
 		
@@ -251,11 +315,24 @@ public class ConversationsProxy extends Proxy {
 				msg);
 		return res;
 	}
-	
+
+	/**
+	 * Devolve o path para a conversa que existe entre o User com nome user e o contact with
+	 * que pode ser um outro User ou um Group
+	 *
+	 * @param user
+	 * 		Nome de User que participa na conversa
+	 * @param with
+	 * 		Nome de outro User ou Group que participa na conversa
+	 * @return
+	 * 		Path para a directoria da conversa, ou null se não existir conversa entre user e with
+	 * @requires
+	 * 		user != null
+	 * @throws IOException
+     */
 	public String userHasConversationWith(String user, String with) throws IOException{
 		String path = null;
-		GroupsProxy gProxy = GroupsProxy.getInstance();
-		Map<String, Group> groups = gProxy.getGroupsWhereMember(user);
+		Map<String, Group> groups = GroupsProxy.getInstance().getGroupsWhereMember(user);
 		
 		//se eh-group
 		if ( groups.containsKey(with) ) {
@@ -277,6 +354,8 @@ public class ConversationsProxy extends Proxy {
 	 * 		mensagem em si
 	 * @return
 	 * 		true se okay, caso contrario false
+	 * @requires
+	 * 		msg != null
 	 * @throws IOException
 	 */
 	public boolean insertPrivateMessage(Message msg) throws IOException {
@@ -296,25 +375,21 @@ public class ConversationsProxy extends Proxy {
 		//cria file de mensagem
 		return MessagesProxy.getInstance().persist(CONVERSATIONS_PRIVATE + folder, "" + file.list().length, msg);
 	}
-	
+
 	/**
-	 * Insere um ficheiro na conversa entre dois users
-	 * Assim como uma mensagem representativa do mesmo
+	 * Adiciona nova conversa ao ficheiro de indice de conversas
+	 * e cria todas as pastas necessárias associadas a essa conversa
+	 *
 	 * @param from
-	 * 		autor de upload
+	 * 		Nome de User que vai participar na conversa
 	 * @param to
-	 * 		destinatario de upload
-	 * @param file
-	 * 		Ficheiro a ser recebido
+	 * 		Nome de User que vai participar na conversa
 	 * @return
-	 */
-	public boolean insertFile(String from, String to, File file){
-		return false;
-	}
-	
-	//add a new conversation to index conversations file
+	 *		Devolve nome da pasta onde a conversa vai ficar guardada
+	 * @requires from != null && to != null
+	 * @throws IOException
+     */
 	private String add(String from, String to) throws IOException {
-		
 		int id = getNextID();
 		File f = new File(CONVERSATIONS_PRIVATE + id + "/" + FILES_FOLDER);
 		f.mkdirs();
@@ -322,7 +397,7 @@ public class ConversationsProxy extends Proxy {
 			return null;
 		
 		//save on file
-		BufferedWriter writer = FileStreamBuilder.makeWriter("DATABASE/CONVERSATIONS/INDEX", true);
+		BufferedWriter writer = FileStreamBuilder.makeWriter(CONVERSATIONS_PRIVATE_INDEX, true);
 		StringBuilder sb = new StringBuilder();
 		sb.append(from);
 		sb.append(" " + to);
@@ -332,7 +407,6 @@ public class ConversationsProxy extends Proxy {
 		writer.write(sb.toString());
 		writer.flush();
 		writer.close();
-		
 		return "" + id;
 	}
 }

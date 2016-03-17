@@ -8,14 +8,27 @@ import java.io.IOException;
 import domain.Message;
 
 /**
- * Esta classe
+ * Esta classe é responsável por persistir as Messages em ficheiros
+ * Class é Singleton
+ *
+ * @author Joao Rodrigues & Simao Neves
  */
 public class MessagesProxy extends Proxy {
 
 	private static MessagesProxy instance = null;
 
+	/**
+	 * Constructor for MessagesProxy
+	 * @throws IOException
+     */
 	private MessagesProxy() throws IOException {}
-	
+
+	/**
+	 * Função para obter a instância de MessagesProxy
+	 *
+	 * @return messagesProxy to be used and persist Messages
+	 * @throws IOException
+     */
 	public static MessagesProxy getInstance() throws IOException {
 		if(instance == null)
 			instance = new MessagesProxy();
@@ -23,7 +36,7 @@ public class MessagesProxy extends Proxy {
 	}
 	
 	/**
-	 * Regista uma mensagem
+	 * Regista uma mensagem em ficheiro
 	 * @param path
 	 * 		Path onde a mensagem vai ser registada
 	 * @param fname
@@ -34,7 +47,7 @@ public class MessagesProxy extends Proxy {
 	 * 		true se registou, false caso contrario
 	 */
 	public boolean persist(String path, String fname, Message msg ) {
-		File file = new File(path + "/" + fname + "" + MESSAGE_FILE_EXTENSION);
+		File file = new File(path + "/" + fname + MESSAGE_FILE_EXTENSION);
 		if (file.exists())
 			return false;
 
@@ -46,14 +59,20 @@ public class MessagesProxy extends Proxy {
 			bw.write(toStoreFormat(msg));
 			bw.close();
 			fw.close();
-			
 		} catch(Exception e) {
 			e.printStackTrace();
+			System.out.println("Erro ao persistir mensagem em " + path);
+			return false;
 		}
 		return true;
 	}
-	
-	// PRIVATE
+
+	/**
+	 * Private message that has the format in which to store the message in the file
+	 * @param msg
+	 * 			Message that needs to be stored
+	 * @return The message format to be saved in the message file
+     */
 	private String toStoreFormat(Message msg){
 		StringBuilder sb = new StringBuilder();
 		sb.append(msg.getTimeInMiliseconds() + " ");

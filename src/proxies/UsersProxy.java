@@ -12,7 +12,7 @@ import java.util.Map;
 import domain.User;
 
 /**
- * Esta classe é responsável por persistir os Users nos ficheiros
+ * Esta classe é responsável por persistir os Users num ficheiro
  * e funciona como base de dados em memória com um Map
  * Class é Singleton
  *
@@ -40,7 +40,7 @@ public class UsersProxy extends Proxy {
 	/**
 	 * Função para obter a instância de UsersProxy
 	 *
-	 * @return usersProxy para ser usado
+	 * @return usersProxy para ser usado para persistir Users
 	 * @throws IOException
      */
 	public static UsersProxy getInstance() throws IOException {
