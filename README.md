@@ -16,3 +16,8 @@ TODO:
 - Try to see if everything is synchronized?
 - Test in FCUL Labs
 - Make Report
+
+
+errors:
+- user nao no grupo conseguiu receber mensagens de um grupo
+- descrição de nao existir ficheiro no servidor está errada
