@@ -11,10 +11,7 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 TODO:
 - Change Client flow
 - Test client/server with diferent computers (to check permissions)
-- Refactor printing Reply responsability
-- Refactor Reply/NetworkMessage
 - Do Txt with how to run the project
-- Make executable?
 - Make Javadoc
 - Try to see if everything is synchronized?
 - Test in FCUL Labs

@@ -178,6 +178,7 @@ public class RequestHandler extends Thread {
 			reply.setMessage("Não existem nenhumas conversas");
 		} else {
 			reply.setStatus(200);
+			reply.setType("all");
 			reply.setConversations(conversations);
 		}
 		return reply;
@@ -192,6 +193,7 @@ public class RequestHandler extends Thread {
 			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
 		} else {
 			reply.setStatus(200);
+			reply.setType("single");
 			reply.addConversation(conversation);
 		}
 		return reply;

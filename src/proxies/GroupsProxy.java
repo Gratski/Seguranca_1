@@ -107,7 +107,7 @@ public class GroupsProxy extends Proxy {
 		bw.close();
 		
 		//cria estrutura de pastas necessaria
-		File filesFolder = new File(CONVERSATIONS_GROUP + "/" + groupName + FILES_FOLDER);
+		File filesFolder = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER);
 		if (!filesFolder.exists())
 			filesFolder.mkdirs();
 	}
@@ -186,7 +186,7 @@ public class GroupsProxy extends Proxy {
 		//apagar grupo e suas mensagens
 		if ( g.getOwner().equals(member) ) {
 			//apaga pastas de group
-			deleteGroup(new File(CONVERSATIONS_GROUP + "/" + g.getName()));
+			deleteGroup(new File(CONVERSATIONS_GROUP + g.getName()));
 			//apaga grupo em si
 			this.groups.remove(g.getName());
 		}
