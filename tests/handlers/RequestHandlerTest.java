@@ -5,21 +5,16 @@ import domain.*;
 import helpers.DatabaseBuilder;
 import helpers.FilesHandler;
 import org.junit.*;
-import org.junit.internal.matchers.ThrowableCauseMatcher;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.UsersProxy;
 import validators.InputValidator;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.Socket;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by simon on 10/03/16.
- */
 public class RequestHandlerTest {
 
     public RequestHandler rh;
@@ -117,7 +112,7 @@ public class RequestHandlerTest {
     }
 
     @Test
-    public void testSendFile() throws Exception {
+    public void testGetFile() throws Exception {
         ConversationsProxy conversationsProxy = ConversationsProxy.getInstance();
         Conversation conv = conversationsProxy.getConversationBetween(simao.getName(), nonExistentUser.getName());
         assertNull("Conversa não deve de existir", conv);
@@ -260,6 +255,75 @@ public class RequestHandlerTest {
         Request req = new Request();
         req.setUser(simao);
         req.setType("-r");
+        req.setSpecification("all");
+        Reply reply = rh.parseRequest(req);
+        assertEquals("There should be 3 conversations", 3, reply.getConversations().size());
+
+        this.db.destroy();
+        this.db.make();
+        UsersProxy.getInstance().reload();
+        GroupsProxy.getInstance().reload();
+        reply = rh.parseRequest(req);
+        assertEquals("With no conversations, -r should give an error", new Reply(400, "Não existem nenhumas conversas"), reply);
+    }
+
+    @Test
+    public void testGetConversation() throws Exception {
+        Request req = new Request();
+        req.setUser(simao);
+        req.setType("-r");
+        req.setSpecification("single_contact");
+        req.setContact(joao.getName());
+        Reply reply = rh.parseRequest(req);
+        assertEquals("There should be 3 messages in this conversation", 3, reply.getConversations().get(0).getMessages().size());
+
+        Request req2 = new Request();
+        req2.setUser(simao);
+        req2.setType("-r");
+        req2.setSpecification("single_contact");
+        req2.setContact("FCUL");
+        reply = rh.parseRequest(req2);
+        assertEquals("There should be 2 messages in this group conversation", 2, reply.getConversations().get(0).getMessages().size());
+
+        this.db.destroy();
+        this.db.make();
+        UsersProxy.getInstance().reload();
+        GroupsProxy.getInstance().reload();
+        Request req3 = new Request();
+        req3.setUser(simao);
+        req3.setType("-r");
+        req3.setSpecification("single_contact");
+        req3.setContact(joao.getName());
+        reply = rh.parseRequest(req3);
+        assertEquals("With no conversations, -r contact should give an error", new Reply(400, "Não existem conversas entre " + simao.getName() + " e " + joao.getName()), reply);
+
+        Request req4 = new Request();
+        req4.setUser(simao);
+        req4.setType("-r");
+        req4.setSpecification("single_contact");
+        req4.setContact(nonExistentUser.getName());
+        reply = rh.parseRequest(req4);
+        assertEquals("There should be an error getting conversation with a non existant user", new Reply(400, "Não existem conversas entre " + simao.getName() + " e " + nonExistentUser.getName()), reply);
+    }
+
+    @Test
+    public void testSendFile() throws Exception {
+        Request req = new Request();
+        req.setUser(simao);
+        req.setType("-r");
+        req.setSpecification("download");
+        req.setContact(joao.getName());
+        req.setFile(new NetworkFile("non_existant_file"));
+        Reply reply = rh.parseRequest(req);
+        assertEquals("There should be an error trying to download a non existant file", new Reply(400, "Erro ao fazer download"), reply);
+
+        req.setUser(simao);
+        req.setType("-r");
+        req.setSpecification("download");
+        req.setContact(nonExistentUser.getName());
+        req.setFile(new NetworkFile("whatever"));
+        reply = rh.parseRequest(req);
+        assertEquals("There should be an error trying to download a file from a contact that doesnt exist", new Reply(400, "Erro ao fazer download"), reply);
     }
 
     @AfterClass

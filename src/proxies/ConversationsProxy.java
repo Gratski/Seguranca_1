@@ -4,11 +4,9 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import builders.FileStreamBuilder;
@@ -47,7 +45,7 @@ public class ConversationsProxy extends Proxy {
 	 */
 	public String getConversationID(String user1, String user2) throws IOException {
 		
-		File f = new File("DATABASE/CONVERSATIONS/INDEX");
+		File f = new File(CONVERSATIONS_PRIVATE_INDEX);
 		FileReader fr = new FileReader(f);
 		BufferedReader br = new BufferedReader(fr);
 		String line = null;
@@ -61,7 +59,6 @@ public class ConversationsProxy extends Proxy {
 			String u1 = split[0];
 			String u2 = split[1];
 			String dir = split[2];
-			
 			if ( (user1.equals(u1) && user2.equals(u2))
 					|| (user2.equals(u1) && user1.equals(u2)) ) {
 				res = dir;
@@ -72,9 +69,8 @@ public class ConversationsProxy extends Proxy {
 	}
 
 	public ArrayList<Conversation> getConversationsFrom(String user) throws IOException {
-
 		ArrayList<Conversation> list = new ArrayList<>();
-		File f = new File("DATABASE/CONVERSATIONS/INDEX");
+		File f = new File(CONVERSATIONS_PRIVATE_INDEX);
 		FileReader fr = new FileReader(f);
 		BufferedReader br = new BufferedReader(fr);
 		String line = null;
@@ -108,7 +104,9 @@ public class ConversationsProxy extends Proxy {
 		}
 		// Iterar as conversations para ir buscar a lastMessage (em novo metodo, como em baixo)
 		for (Conversation conversation : conversations) {
-			conversation.addMessage(getLastMessage(conversation));
+			Message lastMessage = getLastMessage(conversation);
+			if (lastMessage != null)
+				conversation.addMessage(lastMessage);
 		}
 		return conversations;
 	}
@@ -118,16 +116,17 @@ public class ConversationsProxy extends Proxy {
 		String id = conversation.getGroup() == null ? conversation.getFilename() : conversation.getGroup().getName();
 
 		String lastMessage = null;
-		File f = new File("DATABASE/CONVERSATIONS/" + folder + "/" + id);
+		File f = new File(CONVERSATIONS + "/" + folder + "/" + id);
 		try {
 			if ( f.listFiles().length > 1)
-				lastMessage = f.list().length - 1 + ".msg";
+				lastMessage = f.list().length - 1 + MESSAGE_FILE_EXTENSION;
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Erro ao tentar f.list()");
 			return null;
 		}
 
-		File f2 = new File("DATABASE/CONVERSATIONS/" + folder + "/" + id + "/" + lastMessage);
+		File f2 = new File(CONVERSATIONS + folder + "/" + id + "/" + lastMessage);
 
 		FileReader fr = new FileReader(f2);
 		BufferedReader br = new BufferedReader(fr);
@@ -135,7 +134,6 @@ public class ConversationsProxy extends Proxy {
 		Message message = null;
 
 		if ((line = br.readLine()) != null) {
-
 			String[] split = line.split(" ");
 			String timeInMilliseconds = split[0];
 			String from = split[1];
@@ -152,7 +150,6 @@ public class ConversationsProxy extends Proxy {
 			fr.close();
 			return null;
 		}
-
 		br.close();
 		fr.close();
 		return message;
@@ -183,7 +180,7 @@ public class ConversationsProxy extends Proxy {
 		}
 
 		for (int i = 1; i <= messagesNum; i++) {
-			File f2 = new File(path + "/" + i + ".msg");
+			File f2 = new File(path + "/" + i + MESSAGE_FILE_EXTENSION);
 			FileReader fr = new FileReader(f2);
 			BufferedReader br = new BufferedReader(fr);
 			String line;
@@ -201,7 +198,6 @@ public class ConversationsProxy extends Proxy {
 				message = new Message(from, messageBody);
 				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
 				conversation.addMessage(message);
-
 			} else {
 				br.close();
 				fr.close();
@@ -212,7 +208,7 @@ public class ConversationsProxy extends Proxy {
 	}
 	
 	private int getNextID() throws IOException {
-		File f = new File("DATABASE/CONVERSATIONS/PRIVATE");
+		File f = new File(CONVERSATIONS_PRIVATE);
 		if ( f.list() != null )
 			return f.list().length + 1;
 		return -1;
@@ -229,14 +225,13 @@ public class ConversationsProxy extends Proxy {
 	public boolean insertGroupMessage(Message msg) throws IOException {
 		
 		//criar pasta de group
-		File file = new File("DATABASE/CONVERSATIONS/GROUP/" + msg.getTo());
+		File file = new File(CONVERSATIONS_GROUP + "/" + msg.getTo());
 		
 		//set sent time to now
 		msg.setTimestampNow();
-		
 		boolean res = MessagesProxy.getInstance().persist(
-				"DATABASE/CONVERSATIONS/GROUP/" + msg.getTo(), 
-				""+file.list().length, 
+				CONVERSATIONS_GROUP + "/" + msg.getTo(),
+				"" + file.list().length,
 				msg);
 		return res;
 	}
@@ -248,13 +243,13 @@ public class ConversationsProxy extends Proxy {
 		
 		//se eh-group
 		if ( groups.containsKey(with) ) {
-			path = "DATABASE/CONVERSATIONS/GROUP/" + with;
+			path = CONVERSATIONS_GROUP + "/" + with;
 		}
 		//se eh private
 		else {
 			String dir = getConversationID(user, with);
 			if (dir != null)
-				path = "DATABASE/CONVERSATIONS/PRIVATE/" + dir;
+				path = CONVERSATIONS_PRIVATE + "/" + dir;
 		}
 		return path;
 	}
@@ -278,15 +273,13 @@ public class ConversationsProxy extends Proxy {
 		msg.setTimestampNow();
 		
 		//verifica se a pasta de conversacao existe
-		File file = new File("DATABASE/CONVERSATIONS/PRIVATE/" + folder);
+		File file = new File(CONVERSATIONS_PRIVATE + "/" + folder);
 		if (!file.exists())
 			return false;
 		
 		//cria file de mensagem
-		return MessagesProxy.getInstance().persist("DATABASE/CONVERSATIONS/PRIVATE/" + folder, "" + file.list().length, msg);
+		return MessagesProxy.getInstance().persist(CONVERSATIONS_PRIVATE + "/" + folder, "" + file.list().length, msg);
 	}
-
-	
 	
 	/**
 	 * Insere um ficheiro na conversa entre dois users
@@ -307,7 +300,7 @@ public class ConversationsProxy extends Proxy {
 	private String add(String from, String to) throws IOException {
 		
 		int id = getNextID();
-		File f = new File("DATABASE/CONVERSATIONS/PRIVATE/" + id + "/FILES");
+		File f = new File(CONVERSATIONS_PRIVATE + "/" + id + FILES_FOLDER);
 		f.mkdirs();
 		if (!f.exists())
 			return null;
@@ -326,5 +319,4 @@ public class ConversationsProxy extends Proxy {
 		
 		return "" + id;
 	}
-
 }

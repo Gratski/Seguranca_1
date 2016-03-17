@@ -37,15 +37,18 @@ public class RequestHandler extends Thread {
 		try {
 			clientRequest = (Request) this.connection.getInputStream().readObject();
 			System.out.println("REQUEST RECEIVED: " + clientRequest.toString());
-		} catch (ClassNotFoundException e2) {
+		} catch (ClassNotFoundException e) {
 			this.interrupt();
-			e2.printStackTrace();
-		} catch (IOException e2) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			System.out.println("Ligação foi abaixo com cliente");
 			// TODO:
 			// Temos de por isto a interromper a Thread mesmo a sério
 			this.interrupt();
 			// e2.printStackTrace();
+		} catch (ClassCastException e) {
+			System.out.println("Pedido não tem formato aceite");
+
 		}
 
 		// Tratamento de request
@@ -55,7 +58,7 @@ public class RequestHandler extends Thread {
 
 		} catch (Exception e) {
 			System.out.println("Erro ao processar o pedido.");
-			// e.printStackTrace();
+			 e.printStackTrace();
 			this.interrupt();
 		}
 
@@ -117,8 +120,6 @@ public class RequestHandler extends Thread {
 				return reply;
 			}
 
-			System.out.println("É Suposto existir");
-
 			try {
 				if (!executeGetFile(req))
 					reply = new Reply(400, "Erro ao receber ficheiro");
@@ -172,10 +173,7 @@ public class RequestHandler extends Thread {
 	private Reply getLastMessageFromConversations(Request req) throws IOException {
 		Reply reply = new Reply();
 		ArrayList<Conversation> conversations = ConversationsProxy.getInstance().getLastMessageFromAll(req.getUser());
-		if (conversations == null) {
-			reply.setStatus(400);
-			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
-		} else if (conversations.size() == 0) {
+		if (conversations.size() == 0) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem nenhumas conversas");
 		} else {
@@ -205,7 +203,6 @@ public class RequestHandler extends Thread {
 		// Obtem nome de ficheiro
 		String filename = req.getFile().getFile().getName();
 		System.out.println("Filename: " + filename);
-		
 		boolean isGroup = false;
 		
 		// formula message
@@ -218,14 +215,13 @@ public class RequestHandler extends Thread {
 		String path = "DATABASE/CONVERSATIONS/";
 		
 		// verifica se eh group
-		if (group != null){
-			if( group.hasMemberOrOwner(req.getUser().getName()) )
-			{
+		if (group != null) {
+			if ( group.hasMemberOrOwner(req.getUser().getName()) ) {
 				System.out.println("Store in group: " + req.getContact());
 				path = path + "GROUP/" + req.getContact();
 				isGroup = true;
 				System.out.println("eh para group");
-			}else{
+			} else {
 				return false;
 			}
 		}
@@ -304,9 +300,7 @@ public class RequestHandler extends Thread {
 	}
 
 	private boolean sendFile(Request req) throws IOException {
-
 		String filename = req.getFile().getFullPath();
-
 		ConversationsProxy cProxy = ConversationsProxy.getInstance();
 		String path = cProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
 

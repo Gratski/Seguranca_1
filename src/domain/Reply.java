@@ -4,9 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 
-
-import client.MyWhats;
-
 /**
  * Esta classe representa uma resposta do servidor para o client
  *
@@ -87,14 +84,12 @@ public class Reply extends NetworkMessage implements Serializable {
 			System.out.println("Description: " + this.message);
 		}
 		//se ok
-		else{
+		else {
 			//se eh -r
-			if(this.conversations != null)
-			{
+			if (this.conversations != null) {
 				
 				//se eh apenas de contact
-				if(conversations.size() == 1)
-				{
+				if (conversations.size() == 1) {
 					ArrayList<Message> messages = conversations.get(0).getMessages();
 					Collections.sort(messages);
 					for (Message message : messages) {
@@ -102,7 +97,7 @@ public class Reply extends NetworkMessage implements Serializable {
 					}
 				}
 				//se eh last de todos os contact
-				else{
+				else {
 					for (Conversation conversation : conversations) {
 						if (conversation.getGroup() != null)
 							System.out.println("Contact: " + conversation.getGroup().getName());

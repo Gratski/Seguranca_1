@@ -13,7 +13,6 @@ public class FilesHandler {
 
 	public boolean send(Connection conn, File file) throws IOException {
 		byte[] byteArr;
-		
 		FileInputStream fs = new FileInputStream(file);
 		
 		//send filesize
@@ -69,7 +68,6 @@ public class FilesHandler {
 			out.write(byteArr, 0, cur);
 			totalRead += cur;
 		}
-		
 		System.out.println("Total Received: " + totalRead);
 		out.close();
 		return totalRead == fileSize ? file : null;
