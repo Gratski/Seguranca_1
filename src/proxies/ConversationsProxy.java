@@ -168,6 +168,7 @@ public class ConversationsProxy extends Proxy {
 
 	public Conversation getConversationBetween(String user, String contact) throws IOException {
 		Group group = GroupsProxy.getInstance().find(contact);
+
 		String path = userHasConversationWith(user, contact);
 		System.out.println("Im here! Path is: " + path);
 		if (path == null)

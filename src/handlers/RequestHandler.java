@@ -147,6 +147,7 @@ public class RequestHandler extends Thread {
 			}
 			break;
 		case "-r":
+
 			switch (req.getSpecs()) {
 			// se eh para obter mensagens de uma conversa
 			case "single_contact":
