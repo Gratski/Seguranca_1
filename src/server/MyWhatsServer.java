@@ -88,7 +88,6 @@ public class MyWhatsServer {
 		}
 	}
 	
-	
 	/**
 	 * Faz validacoes base de seguranca
 	 * @param key
