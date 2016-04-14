@@ -44,12 +44,23 @@ public class MyWhatsServer {
 		boolean createdFolders = dbBuilder.make();
 		if (!createdFolders)
 			System.exit(-1);
-		
+
+
+		// TODO: ALTERAR NO FIM
 		//valida seguranca de sistema
-		SecretKey key = PBEService.getKeyByString("segredo");
+		SecretKey key;
+		String pass = "segredo";
+//		do {
+//			System.out.println("Insert your password:");
+//			Scanner sc = new Scanner(System.in);
+//			pass = sc.nextLine();
+//			if (pass.equals(""))
+//				System.out.println("Invalid password format!");
+//		} while (pass.equals(""));
+
+		key = PBEService.getKeyByString(pass);
 		boolean isSecured = secureSystem(key);
-		if(!isSecured)
-		{
+		if (!isSecured) {
 			System.out.println("System is not secured.");
 			System.out.println("Shutting down.");
 			return;
@@ -92,31 +103,27 @@ public class MyWhatsServer {
 		File f = new File("DATABASE/USERS.mac");
 
 		//se nao tem mac criado, cria
-		if(!f.exists())
-		{
+		if (!f.exists()) {
 			System.out.println("System is not secure yet.");
 			System.out.println("Do you want to make it secure? Y/n");
 			
 			Scanner sc = new Scanner(System.in);
 			String answer = sc.nextLine();
-			if(!answer.equals("Y"))
+			if (!answer.equals("Y"))
 				return false;
-			
-			System.out.println("Insert your password:");
-			key = PBEService.getKeyByString(sc.nextLine());
-			
+
+			System.out.println("Using your password to calculate new MACs..");
 			//criar todas os .mac files necessarios
 			generateAllMacFiles(key);
-			
+			System.out.println("Done!");
 		}
 		//se jah existe
-		else{
+		else {
 			
-			byte[] curMac = MACService.readHashFromFile(new File("DATABASE/USERS.mac"));
+			byte[] curMac = MACService.readHashFromFile(f);
 			return MACService.validateFileMac(new File("DATABASE/USERS"), key, curMac);
 			
 		}
-		
 		return true;
 	}
 	

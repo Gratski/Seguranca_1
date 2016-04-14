@@ -24,16 +24,14 @@ public class MACService {
 	 * @throws InvalidKeyException
 	 */
 	public static byte[] generateFileMac(File f, SecretKey k) throws IOException, NoSuchAlgorithmException, InvalidKeyException{
-		
 		Mac mac = Mac.getInstance("HmacSHA1");
 		mac.init(k);
 		
 		BufferedReader br = new FilesHandler().getReader(f);
 		String line = null;
-		while((line=br.readLine())!=null){
+		while ((line = br.readLine()) != null) {
 			mac.update(line.getBytes());
 		}
-		
 		return mac.doFinal();
 	}
 	
@@ -58,7 +56,7 @@ public class MACService {
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
-	public static boolean validateFileMac(File f, SecretKey key, byte[]hash) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
+	public static boolean validateFileMac(File f, SecretKey key, byte[] hash) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
 		byte[] calcHash = generateFileMac(f, key);
 		return MessageDigest.isEqual(calcHash, hash);
 	}
