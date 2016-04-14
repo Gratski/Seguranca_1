@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.crypto.SecretKey;
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
 
 import handlers.RequestHandler;
 import helpers.DatabaseBuilder;
@@ -63,7 +65,11 @@ public class MyWhatsServer {
 
 		@SuppressWarnings("resource")
 		int port = Integer.parseInt(args[0]);
-		ServerSocket server = new ServerSocket(port);
+		
+		System.setProperty("javax.net.ssl.keyStore", "myServer.keyStore"); 
+		System.setProperty("javax.net.ssl.keyStorePassword", "segredo");
+		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+		ServerSocket server = ssf.createServerSocket(port);
 		server.setReuseAddress(true);
 
 		ExecutorService executor = Executors.newFixedThreadPool(4);

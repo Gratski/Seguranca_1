@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
+
 import builders.RequestBuilder;
-import domain.*;
+import domain.Reply;
+import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
 import validators.InputValidator;
@@ -65,8 +67,11 @@ public class MyWhats {
 			}
 
 			// estabelece ligacao
-			Connection connection = new Connection(
-					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
+			System.setProperty("javax.net.ssl.trustStore", "certificates.trustStore");
+			SocketFactory sf = SSLSocketFactory.getDefault();
+			Socket socket = sf.createSocket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port")));
+			
+			Connection connection = new Connection(socket);
 
 			// send request
 			sendRequest(connection, request);
@@ -82,6 +87,8 @@ public class MyWhats {
 
 		} catch (Exception e) {
 			System.out.println("Aplicação terminada com erro, tente de novo.");
+			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 	}
 
