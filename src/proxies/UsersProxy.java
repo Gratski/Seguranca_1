@@ -115,7 +115,7 @@ public class UsersProxy extends Proxy {
 	 * @require
 	 * 		exists(user)
 	 */
-	public boolean autheticate(User user, SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException {
+	public boolean autheticate(User user) throws InvalidKeyException, NoSuchAlgorithmException {
 		User register = this.users.get(user.getName());
 		byte[] salt = register.getSalt();
 		
@@ -138,8 +138,8 @@ public class UsersProxy extends Proxy {
 	 * @require
 	 * 		!exists(user) && user != null
 	 */
-	public boolean insert(User user, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
-		if (this.users.containsKey(user.getName()) || !validMac(key))
+	public boolean insert(User user) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+		if (this.users.containsKey(user.getName()))
 			return false;
 
 		
@@ -174,10 +174,6 @@ public class UsersProxy extends Proxy {
 			System.out.println("Erro ao escrever no ficheiro USERS");
 			System.out.println(e.fillInStackTrace());
 		}
-		
-		//actualiza mac
-		updateMac(key);
-		
 		return this.users.containsKey(user.getName());
 	}
 	
@@ -223,15 +219,6 @@ public class UsersProxy extends Proxy {
 	 * @throws IOException
 	 */
  	private void updateMac(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
-		//FILES
-		File f = new File("DATABASE/USERS");
-		File fmac = new File("DATABASE/USERS.mac");
-		
-		//gera mac de users file
-		byte[] newMac = MACService.generateFileMac(f, key);
-		String macHexStr = SecUtils.getHex(newMac);
-		BufferedWriter bw = new FilesHandler().getWriter(fmac);
-		bw.write(macHexStr);
-		bw.close();
+		MACService.updateMAC(Proxy.getUsersIndex(), key);
 	}
 }

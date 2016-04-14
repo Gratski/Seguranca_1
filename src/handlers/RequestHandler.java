@@ -21,6 +21,7 @@ import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.Proxy;
 import proxies.UsersProxy;
+import security.MACService;
 
 /**
  * Esta classe representa a entidade que trata de um Request
@@ -111,6 +112,7 @@ public class RequestHandler extends Thread {
 	 * @require req != null
 	 */
 	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+		
 		// autentica se existe, senao cria novo
 		if (!validateUser(req.getUser(), key))
 			return new Reply(400, "User nao autenticado");
@@ -126,14 +128,23 @@ public class RequestHandler extends Thread {
 	 * @param req 	Request a considerar
 	 * @return 		Reply com resposta tratada
 	 * @throws 		IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 *
 	 * @require req != null
      */
-	private Reply executeRequest(Request req, SecretKey key) throws IOException {
+	private Reply executeRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 		Reply reply = new Reply();
 
 		switch (req.getType()) {
 		case "-a":
+			//verifica integridade de ficheiro de groups
+			if(!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
+				//LANCAR EXCEPTION EM DISTO
+				reply.setStatus(400);
+				reply.setMessage("SEGURANCA NOOOOOO GOOOOOOOOD. HIRE JOAO&SIMON NOW!!!");
+				break;
+			}
 			// verifica se o user a adicionar é o próprio
 			if (req.getUser().getName().equals(req.getContact())) {
 				reply.setStatus(400);
@@ -141,10 +152,17 @@ public class RequestHandler extends Thread {
 				break;
 			}
 			synchronized (groupsProxy) {
-				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact());
+				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), key);
 			}
 			break;
 		case "-d":
+			if(!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
+				System.out.println("PATH: " + Proxy.getGroupsIndex());
+				//LANCAR EXCEPTION EM DISTO
+				reply.setStatus(400);
+				reply.setMessage("SEGURANCA NOOOOOO GOOOOOOOOD. HIRE JOAO&SIMON NOW!!!");
+				break;
+			}
 			synchronized (groupsProxy) {
 				reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact());
 			}
@@ -413,9 +431,11 @@ public class RequestHandler extends Thread {
 	 * @param member	Nome de membro a remover de grupo
 	 * @return 			Reply ja tratada para client
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 * @require user != null
      */
-	private Reply removeUserFromGroup(String groupName, User user, String member) throws IOException {
+	private Reply removeUserFromGroup(String groupName, User user, String member) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 		Reply reply = new Reply(200);
 
 		Group group = groupsProxy.find(groupName);
@@ -441,7 +461,7 @@ public class RequestHandler extends Thread {
 		}
 
 		// remove member do group
-		if (!groupsProxy.removeMember(groupName, member)) {
+		if (!groupsProxy.removeMember(groupName, member, key)) {
 			reply.setStatus(400);
 			reply.setMessage("Erro ao remover membro do group");
 			return reply;
@@ -457,9 +477,11 @@ public class RequestHandler extends Thread {
 	 * @param newMember    Nome do novo membro a adicionar a Grupo
 	 * @return	Reply ja tratada para client
      * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 * @require uProxy != null && user != null
      */
-	private Reply addUserToGroup(String groupName, User user, String newMember) throws IOException {
+	private Reply addUserToGroup(String groupName, User user, String newMember, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 
 		// verifica se o user de contacto existe
 		if (!this.userProxy.exists(new User(newMember)))
@@ -474,7 +496,7 @@ public class RequestHandler extends Thread {
 			return new Reply(400, "User " + user.getName() + " is not the owner of group " + groupName);
 
 		// adiciona newMember a group
-		if (!this.groupsProxy.addMember(groupName, newMember))
+		if (!this.groupsProxy.addMember(groupName, newMember, key))
 			return new Reply(400, "O utilizador " + newMember + " ja e membro do grupo " + groupName);
 
 		return new Reply(200);
@@ -495,10 +517,19 @@ public class RequestHandler extends Thread {
 		boolean valid = false;
 		// se user existe
 		if (this.userProxy.exists(user))
-			valid = this.userProxy.autheticate(user, key);
+			valid = this.userProxy.autheticate(user);
 		// se user nao existe
-		else
-			valid = this.userProxy.insert(user, key);
+		else{
+			
+			//valida integridade de ficheiro de users
+			if(!MACService.validateMAC(Proxy.getUsersIndex(), key))
+				return false;
+			//insere
+			valid = this.userProxy.insert(user);
+			//actualiza mac de users file
+			if(valid)
+				MACService.updateMAC(Proxy.getUsersIndex(), key);
+		}
 
 		return valid;
 	}

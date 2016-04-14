@@ -1,6 +1,7 @@
 package security;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -11,6 +12,7 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 
 import helpers.FilesHandler;
+import proxies.Proxy;
 
 public class MACService {
 
@@ -90,10 +92,30 @@ public class MACService {
 	public static boolean validateMAC(String baseURL, SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
 		
 		byte[] genMAC = generateFileMac(new File(baseURL), key);
-		byte[] curMAC = readMACFile(new File(baseURL+".mac"));
+		byte[] curMAC = readMACFile(new File(baseURL+Proxy.getMacFileExtension()));
 		return MessageDigest.isEqual(curMAC, genMAC);
 	}
 
-	
+	/**
+	 * Actualiza o MAC de um dado ficheiro
+	 * @param baseURL, path a conseiderar
+	 * @param key, chave simetrica a utilizar
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 */
+	public static void updateMAC(String baseURL, SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException
+	{
+		//FILES
+		File f = new File(baseURL);
+		File fmac = new File(baseURL+""+Proxy.getMacFileExtension());
+		
+		//gera mac de users file
+		byte[] newMac = MACService.generateFileMac(f, key);
+		String macHexStr = SecUtils.getHex(newMac);
+		BufferedWriter bw = new FilesHandler().getWriter(fmac);
+		bw.write(macHexStr);
+		bw.close();
+	}
 	
 }
