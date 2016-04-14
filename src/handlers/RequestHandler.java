@@ -80,7 +80,13 @@ public class RequestHandler extends Thread {
 			// trata de request
 			reply = parseRequest(clientRequest, key);
 
-		} catch (Exception e) {
+		}catch(SecurityException e){
+			System.out.println("Falha de seguranca.");
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			this.interrupt();
+		}
+		catch (Exception e) {
 			System.out.println("Erro ao processar o pedido.");
 			 e.printStackTrace();
 			this.interrupt();
@@ -136,6 +142,10 @@ public class RequestHandler extends Thread {
 	private Reply executeRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 		Reply reply = new Reply();
 
+		//verifica se a integridade foi comprometida
+		if(!MACService.validateMAC(Proxy.getGroupsIndex(), key))
+			throw new SecurityException("Ficheiro " + Proxy.getGroupsIndex() + " comprometido.");
+		
 		switch (req.getType()) {
 		case "-a":
 			//verifica integridade de ficheiro de groups
