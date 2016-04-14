@@ -19,6 +19,7 @@ import helpers.DatabaseBuilder;
 import helpers.FilesHandler;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
+import proxies.Proxy;
 import proxies.UsersProxy;
 import security.MACService;
 import security.PBEService;
@@ -72,7 +73,7 @@ public class MyWhatsServer {
 			System.out.println("Waiting for connections...");
 			Socket clientSocket = server.accept();
 			System.out.println("Connection accepted!");
-			RequestHandler requestHandler = new RequestHandler(clientSocket, users, groups, conversations);
+			RequestHandler requestHandler = new RequestHandler(key, clientSocket, users, groups, conversations);
 			executor.execute(requestHandler);
 		}
 	}
@@ -89,7 +90,7 @@ public class MyWhatsServer {
 	 */
 	private static boolean secureSystem(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException, InvalidKeySpecException{
 		
-		File f = new File("DATABASE/USERS.mac");
+		File f = new File(Proxy.getUsersIndex()+""+Proxy.getMacFileExtension());
 
 		//se nao tem mac criado, cria
 		if(!f.exists())
@@ -111,10 +112,7 @@ public class MyWhatsServer {
 		}
 		//se jah existe
 		else{
-			
-			byte[] curMac = MACService.readHashFromFile(new File("DATABASE/USERS.mac"));
-			return MACService.validateFileMac(new File("DATABASE/USERS"), key, curMac);
-			
+			return MACService.validateMAC(Proxy.getUsersIndex(), key);
 		}
 		
 		return true;
@@ -123,8 +121,8 @@ public class MyWhatsServer {
 	private static void generateAllMacFiles(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
 		
 		//FILES
-		File f = new File("DATABASE/USERS");
-		File fmac = new File("DATABASE/USERS.mac");
+		File f = new File(Proxy.getUsersIndex());
+		File fmac = new File(Proxy.getUsersIndex()+""+Proxy.getMacFileExtension());
 		
 		//gera mac de users file
 		byte[] mac = MACService.generateFileMac(f, key);
@@ -134,15 +132,13 @@ public class MyWhatsServer {
 		bw.close();
 		
 		//gera mac de groups file
-		f = new File("DATABASE/GROUPS");
-		fmac = new File("DATABASE/GROUPS.mac");
+		f = new File(Proxy.getGroupsIndex());
+		fmac = new File(Proxy.getGroupsIndex()+""+Proxy.getMacFileExtension());
 		mac = MACService.generateFileMac(f, key);
 		macHexStr = SecUtils.getHex(mac);
 		bw = new FilesHandler().getWriter(fmac);
 		bw.write(macHexStr);
 		bw.close();
-		
-		//gera mac de public keys
 		
 	}
 }

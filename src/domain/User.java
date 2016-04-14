@@ -10,8 +10,9 @@ import java.io.Serializable;
 public class User implements Serializable {
 
 	private String name;
-	private String password;
-
+	private byte[] password;
+	private byte[] salt;
+	
 	/**
 	 * Constructor
 	 *
@@ -27,9 +28,15 @@ public class User implements Serializable {
 	 * @param name Nome de utilizador
 	 * @param password Password de utilizador
      */
-	public User(String name, String password){
+	public User(String name, byte[] password){
 		this.name = name;
 		this.password = password;
+	}
+	
+	public User(String name, byte[] password, byte[] salt){
+		this.name = name;
+		this.password = password;
+		this.salt = salt;
 	}
 
 	/**
@@ -46,7 +53,7 @@ public class User implements Serializable {
 	 *
 	 * @return actual password
      */
-	public String getPassword(){
+	public byte[] getPassword(){
 		return this.password;
 	}
 
@@ -57,5 +64,17 @@ public class User implements Serializable {
 		sb.append(", password='").append(password).append('\'');
 		sb.append('}');
 		return sb.toString();
+	}
+	
+	public void setSalt(byte[] salt){
+		this.salt = salt;
+	}
+
+	public void setPassword(byte[] pass){
+		this.password = pass;
+	}
+	
+	public byte[] getSalt() {
+		return this.salt;
 	}
 }

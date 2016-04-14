@@ -3,9 +3,18 @@ package handlers;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-import domain.*;
+import javax.crypto.SecretKey;
+
+import domain.Conversation;
+import domain.Group;
+import domain.Message;
+import domain.Reply;
+import domain.Request;
+import domain.User;
 import helpers.Connection;
 import helpers.FilesHandler;
 import proxies.ConversationsProxy;
@@ -25,7 +34,8 @@ public class RequestHandler extends Thread {
 	private UsersProxy userProxy;
 	private GroupsProxy groupsProxy;
 	private ConversationsProxy convProxy;
-
+	private SecretKey key;
+	
 	/**
 	 * Constructor
 	 *
@@ -36,12 +46,13 @@ public class RequestHandler extends Thread {
 	 *
      * @throws IOException
      */
-	public RequestHandler(Socket clientSocket, UsersProxy userProxy, GroupsProxy groupsProxy,
+	public RequestHandler(SecretKey key, Socket clientSocket, UsersProxy userProxy, GroupsProxy groupsProxy,
 			ConversationsProxy conversationsProxy) throws IOException {
 		this.connection = new Connection(clientSocket);
 		this.userProxy = userProxy;
 		this.groupsProxy = groupsProxy;
 		this.convProxy = conversationsProxy;
+		this.key = key;
 	}
 
 	/**
@@ -66,7 +77,7 @@ public class RequestHandler extends Thread {
 		// Tratamento de request
 		try {
 			// trata de request
-			reply = parseRequest(clientRequest);
+			reply = parseRequest(clientRequest, key);
 
 		} catch (Exception e) {
 			System.out.println("Erro ao processar o pedido.");
@@ -94,16 +105,18 @@ public class RequestHandler extends Thread {
 	 * 
 	 * @param req 	Request a ser considerado
 	 * @return 		Reply com a resposta devida para o client
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 *
 	 * @require req != null
 	 */
-	Reply parseRequest(Request req) throws IOException {
+	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 		// autentica se existe, senao cria novo
-		if (!validateUser(req.getUser()))
+		if (!validateUser(req.getUser(), key))
 			return new Reply(400, "User nao autenticado");
 
 		// executa o request
-		return executeRequest(req);
+		return executeRequest(req, key);
 	}
 
 
@@ -116,7 +129,7 @@ public class RequestHandler extends Thread {
 	 *
 	 * @require req != null
      */
-	private Reply executeRequest(Request req) throws IOException {
+	private Reply executeRequest(Request req, SecretKey key) throws IOException {
 		Reply reply = new Reply();
 
 		switch (req.getType()) {
@@ -473,16 +486,19 @@ public class RequestHandler extends Thread {
 	 *
 	 * @param user	User a considerar
      * @return	true se sucesso, false caso contrario
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
+	 * @throws IOException 
 	 * @require user != null && uProxy != null
      */
-	private boolean validateUser(User user) {
+	private boolean validateUser(User user, SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
 		boolean valid = false;
 		// se user existe
 		if (this.userProxy.exists(user))
-			valid = this.userProxy.autheticate(user);
+			valid = this.userProxy.autheticate(user, key);
 		// se user nao existe
 		else
-			valid = this.userProxy.insert(user);
+			valid = this.userProxy.insert(user, key);
 
 		return valid;
 	}
