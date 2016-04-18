@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import javax.crypto.SecretKey;
+import javax.net.ServerSocketFactory;
+import javax.net.ssl.SSLServerSocketFactory;
 
 import handlers.RequestHandler;
 import helpers.DatabaseBuilder;
@@ -57,7 +59,8 @@ public class MyWhatsServer {
 //			if (pass.equals(""))
 //				System.out.println("Invalid password format!");
 //		} while (pass.equals(""));
-
+		System.setProperty("javax.net.ssl.keyStore", "./myServer.keyStore");
+		System.setProperty("javax.net.ssl.keyStorePassword", "secconf");
 		key = PBEService.getKeyByString(pass);
 		boolean isSecured = secureSystem(key);
 		if (!isSecured) {
@@ -65,7 +68,7 @@ public class MyWhatsServer {
 			System.out.println("Shutting down.");
 			return;
 		}
-		
+
 		//obtain singletons
 		GroupsProxy groups = GroupsProxy.getInstance();
 		UsersProxy users = UsersProxy.getInstance();
@@ -73,7 +76,9 @@ public class MyWhatsServer {
 
 		@SuppressWarnings("resource")
 		int port = Integer.parseInt(args[0]);
-		ServerSocket server = new ServerSocket(port);
+		// TODO: RETIRAR keystore no fim, colocar na linha de comandos
+		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault( );
+		ServerSocket server = ssf.createServerSocket(port);
 		server.setReuseAddress(true);
 
 		ExecutorService executor = Executors.newFixedThreadPool(4);

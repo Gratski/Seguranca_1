@@ -1,11 +1,12 @@
 package client;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
 import java.util.HashMap;
 
 import builders.RequestBuilder;
@@ -13,6 +14,10 @@ import domain.*;
 import helpers.Connection;
 import helpers.FilesHandler;
 import validators.InputValidator;
+
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Esta classe representa o client
@@ -65,8 +70,11 @@ public class MyWhats {
 			}
 
 			// estabelece ligacao
-			Connection connection = new Connection(
-					new Socket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port"))));
+			// TODO: RETIRAR keystore no fim, colocar na linha de comandos
+			System.setProperty("javax.net.ssl.trustStore", "./myClient.keyStore");
+			SocketFactory sf = SSLSocketFactory.getDefault( );
+			Socket socket = sf.createSocket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port")));
+			Connection connection = new Connection(socket);
 
 			// send request
 			sendRequest(connection, request);
@@ -81,6 +89,7 @@ public class MyWhats {
 			connection.destroy();
 
 		} catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Aplicação terminada com erro, tente de novo.");
 		}
 	}
