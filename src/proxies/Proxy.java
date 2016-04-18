@@ -19,6 +19,7 @@ public class Proxy {
 
 	protected static final String FILES_FOLDER = "FILES/";
 	protected static final String MESSAGE_FILE_EXTENSION = ".msg";
+	protected static final String MAC_FILE_EXTENSION = ".mac";
 
 	public static String getDATABASE() {
 		return DATABASE;
@@ -54,5 +55,9 @@ public class Proxy {
 
 	public static String getMessageFileExtension() {
 		return MESSAGE_FILE_EXTENSION;
+	}
+	
+	public static String getMacFileExtension(){
+		return MAC_FILE_EXTENSION;
 	}
 }

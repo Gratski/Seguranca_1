@@ -6,10 +6,19 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+
 import domain.User;
+import helpers.FilesHandler;
+import security.MACService;
+import security.SecUtils;
 
 /**
  * Esta classe é responsável por persistir os Users num ficheiro
@@ -64,9 +73,11 @@ public class UsersProxy extends Proxy {
 		String line = null;
 		while ((line = br.readLine()) != null) {
 			String[] arr = line.split(":");
-			if (arr.length < 2)
+			if (arr.length < 3)
 				continue;
-			User u = new User(arr[0], arr[1]);
+			byte[] salt = SecUtils.hexStringToByteArray(arr[1]);
+			byte[] password = SecUtils.hexStringToByteArray(arr[2]);
+			User u = new User(arr[0], password, salt );
 			
 			//add to users
 			this.users.put(u.getName(), u);
@@ -99,30 +110,60 @@ public class UsersProxy extends Proxy {
 	 * 		User a ser autenticado
 	 * @return
 	 * 		true se valid, false caso contrario
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 * @require
 	 * 		exists(user)
 	 */
-	public boolean autheticate(User user) {
+	public boolean autheticate(User user) throws InvalidKeyException, NoSuchAlgorithmException {
 		User register = this.users.get(user.getName());
-		return register.getPassword().equals(user.getPassword());
+		byte[] salt = register.getSalt();
+		
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		md.update(user.getPassword());
+		md.update(":".getBytes());
+		md.update(salt);
+		byte[] genHash = md.digest();
+		
+		return MessageDigest.isEqual(register.getPassword(), genHash);
 	}
 	
 	/**
 	 * Insere um novo utilizador no ficheiro e em memoria
 	 * @param user
 	 * 		User a ser inserido
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
+	 * @throws IOException 
 	 * @require
 	 * 		!exists(user) && user != null
 	 */
-	public boolean insert(User user) {
+	public boolean insert(User user) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
 		if (this.users.containsKey(user.getName()))
 			return false;
 
+		
+		user.setSalt(SecUtils.generateRandomSalt(8));
+		
+		//gera hash de password
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		md.update(user.getPassword());
+		md.update(":".getBytes());
+		md.update(user.getSalt());
+		
+		user.setPassword(md.digest());
+		
+		//converte para bytes
+		String passStr = SecUtils.getHex(user.getPassword());
+		String saltStr = SecUtils.getHex(user.getSalt());
+		
 		System.out.println("Registo de novo User: " + user.toString());
 		StringBuilder sb = new StringBuilder();
 		sb.append(user.getName());
 		sb.append(":");
-		sb.append(user.getPassword());
+		sb.append(saltStr);
+		sb.append(":");
+		sb.append(passStr);
 		sb.append("\n");
 		try {
 			//escreve em ficheiro de users
@@ -156,5 +197,28 @@ public class UsersProxy extends Proxy {
 	public void reload() throws IOException {
 		this.users = new HashMap<>();
 		init();
+	}
+	
+	/**
+	 * Valid MAC de users file
+	 * @param key, chave simetrica a ser utilizada
+	 * @return true se nao comprometido, false caso contrario
+	 * @throws IOException
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 */
+	private boolean validMac(SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException{
+		return MACService.validateMAC(Proxy.getUsersIndex(), key);
+	}
+	
+	/**
+	 * Actualiza MAC de users file
+	 * @param key, chave simetrica a ser utilizada
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 */
+ 	private void updateMac(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
+		MACService.updateMAC(Proxy.getUsersIndex(), key);
 	}
 }

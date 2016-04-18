@@ -9,3 +9,4 @@ ProjectSC.iml
 */.DS_Store
 *.iml
 /final/
+/tests/*

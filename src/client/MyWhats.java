@@ -9,8 +9,12 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.util.HashMap;
 
+import javax.net.SocketFactory;
+import javax.net.ssl.SSLSocketFactory;
+
 import builders.RequestBuilder;
-import domain.*;
+import domain.Reply;
+import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
 import validators.InputValidator;
@@ -70,7 +74,8 @@ public class MyWhats {
 			}
 
 			// estabelece ligacao
-			SocketFactory sf = SSLSocketFactory.getDefault( );
+			System.setProperty("javax.net.ssl.trustStore", "certificates.trustStore");
+			SocketFactory sf = SSLSocketFactory.getDefault();
 			Socket socket = sf.createSocket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port")));
 			Connection connection = new Connection(socket);
 
@@ -87,8 +92,9 @@ public class MyWhats {
 			connection.destroy();
 
 		} catch (Exception e) {
-			e.printStackTrace();
 			System.out.println("Aplicação terminada com erro, tente de novo.");
+			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 	}
 

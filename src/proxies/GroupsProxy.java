@@ -4,13 +4,20 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+
 import builders.FileStreamBuilder;
 import domain.Group;
 import domain.User;
+import helpers.FilesHandler;
+import security.MACService;
+import security.SecUtils;
 
 /**
  * Esta classe representa a entidade responsavel
@@ -194,14 +201,17 @@ public class GroupsProxy extends Proxy {
 	 * 		novo membro a ser adicionado ao group
 	 * @return
 	 * 		true se adicionou, false caso contrario
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 * @require
 	 * 		exists(groupName)
 	 */
-	public boolean addMember(String groupName, String member) throws IOException {
+	public boolean addMember(String groupName, String member, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 		if ( !this.groups.get(groupName).addMember(member) )
 			return false;
 		
 		updateFile();
+		updateMAC(key);
 		return true; 
 	}
 	
@@ -221,8 +231,10 @@ public class GroupsProxy extends Proxy {
 	 * @requires
 	 * 		exists(groupName)
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 */
-	public boolean removeMember(String groupName, String member) throws IOException {
+	public boolean removeMember(String groupName, String member, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
 		Group g = this.groups.get(groupName);
 		//apagar grupo e suas mensagens
 		if ( g.getOwner().equals(member) ) {
@@ -238,6 +250,7 @@ public class GroupsProxy extends Proxy {
 			}
 		}
 		updateFile();
+		updateMAC(key);
 		return true;
 	}
 
@@ -287,5 +300,21 @@ public class GroupsProxy extends Proxy {
 		BufferedWriter writer = FileStreamBuilder.makeWriter(GROUPS_INDEX, false);
 		writer.write(sb.toString());
 		writer.close();
+	}
+
+	private boolean validMAC(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException
+	{
+		return MACService.validateMAC(Proxy.getGroupsIndex(), key);
+	}
+	
+	/**
+	 * Actualiza MAC de users file
+	 * @param key, chave simetrica a ser utilizada
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 */
+ 	private void updateMAC(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
+		MACService.updateMAC(Proxy.getGroupsIndex(), key);
 	}
 }

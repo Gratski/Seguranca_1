@@ -32,6 +32,6 @@ public class UserBuilder {
 			} while (!InputValidator.validPassword(password) || password.split(" ").length > 1);
 			sc.close();
 		}
-		return new User(input.get("username"), password);
+		return new User(input.get("username"), password.getBytes());
 	}
 }
