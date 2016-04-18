@@ -70,8 +70,6 @@ public class MyWhats {
 			}
 
 			// estabelece ligacao
-			// TODO: RETIRAR keystore no fim, colocar na linha de comandos
-			System.setProperty("javax.net.ssl.trustStore", "./myClient.keyStore");
 			SocketFactory sf = SSLSocketFactory.getDefault( );
 			Socket socket = sf.createSocket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port")));
 			Connection connection = new Connection(socket);

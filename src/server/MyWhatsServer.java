@@ -59,8 +59,6 @@ public class MyWhatsServer {
 //			if (pass.equals(""))
 //				System.out.println("Invalid password format!");
 //		} while (pass.equals(""));
-		System.setProperty("javax.net.ssl.keyStore", "./myServer.keyStore");
-		System.setProperty("javax.net.ssl.keyStorePassword", "secconf");
 		key = PBEService.getKeyByString(pass);
 		boolean isSecured = secureSystem(key);
 		if (!isSecured) {
