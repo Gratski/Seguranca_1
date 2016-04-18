@@ -1,12 +1,9 @@
 package client;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
 import java.util.HashMap;
 
 import javax.net.SocketFactory;
@@ -18,10 +15,6 @@ import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
 import validators.InputValidator;
-
-import javax.net.SocketFactory;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Esta classe representa o client
@@ -60,7 +53,7 @@ public class MyWhats {
 				System.exit(-1);
 			}
 
-			//validate request before send
+			// validate request before send
 			if (request.getUser().getName().equals(request.getContact()) && !request.getType().equals("-d")) {
 				if (request.getType().equals("-m") || request.getType().equals("-f")) {
 					System.out.println("O destinatário nao pode ser o remetente.");

@@ -16,7 +16,7 @@ public class PBEService {
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeySpecException
 	 */
-	public static SecretKey getKeyByString(String str) throws NoSuchAlgorithmException, InvalidKeySpecException{
+	public static SecretKey getKeyByString(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
 		PBEKeySpec param = new PBEKeySpec(str.toCharArray());
 		SecretKeyFactory skf = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
 		return skf.generateSecret(param);

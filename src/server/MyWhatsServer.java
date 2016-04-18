@@ -130,7 +130,7 @@ public class MyWhatsServer {
 		return true;
 	}
 	
-	private static void generateAllMacFiles(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
+	private static void generateAllMacFiles(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
 		
 		//FILES
 		File f = new File(Proxy.getUsersIndex());

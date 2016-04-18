@@ -10,6 +10,10 @@ grant codeBase "file:bin${/}-" {
   permission java.io.FilePermission ".${/}*", "write";
 
   // KeyStore
-  permission java.util.PropertyPermission "javax.net.ssl.trustStore", "read, write"
-  permission java.util.PropertyPermission "javax.net.ssl.trustStorePassword", "read, write"
+  permission java.util.PropertyPermission "javax.net.ssl.trustStore", "read, write";
+  permission java.util.PropertyPermission "javax.net.ssl.trustStorePassword", "read, write";
+};
+
+grant codeBase "file:${java.home}${/}lib${/}ext${/}*" {
+    permission java.security.AllPermission;
 };
