@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -27,11 +26,11 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import builders.RequestBuilder;
-import domain.NetworkMessage;
 import domain.Reply;
 import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
+import security.CipheredKey;
 import security.CipheredMessage;
 import security.GenericSignature;
 import security.KeyWrapper;
@@ -157,7 +156,7 @@ public class MyWhats {
 		Reply reply = (Reply) conn.getInputStream().readObject();
 		switch(req.getType()){
 		case "-m":
-			//reply = (Reply) conn.getInputStream().readObject();
+			reply = executeSendMessage(conn, req);
 			break;
 		case "-f":
 			if(reply.hasError())
@@ -188,63 +187,78 @@ public class MyWhats {
 			break;
 		}
 		
-		
-		
-		/*
-		//chave simetrica gerada
-		Key key = SecUtils.generateSymetricKey();
-		ArrayList<String> names = null;
-		ArrayList<Certificate> certificates = null;
-		
-		//se eh para enviar message
-		if(isMessage(req.getType()) || isFileUpload(req.getType())){
-			
-			//Obtem certificados de users
-			Map<String, Certificate> members = (HashMap<String, Certificate>) conn.getInputStream().readObject();
-			names =  new ArrayList<>(Arrays.asList((String[]) members.keySet().toArray()));
-			certificates = new ArrayList<>(Arrays.asList((Certificate[]) members.values().toArray()));
-			
-			//adiciona o certificado do current user e seu nome
-			names.add(req.getUser().getName());
-			certificates.add(req.getUser().getCertificate());
-			
-			//generate content signature
-			GenericSignature gs = null;
-			if(isMessage(req.getType())){
-				gs = GenericSignature.createGenericMessageSignature( 
-						req.getUser().getPrivateKey(), req.getMessage().getBody().getBytes());
-			}else{
-				gs = GenericSignature.createGenericFileSignature(
-						req.getUser().getPrivateKey(), req.getFile().getFile());
-			}
-			
-			//send it to server
-			conn.getOutputStream().writeObject(new NetworkMessage(gs));
-			
-			//cipher message and send
-			Cipher c = Cipher.getInstance("AES");
-			c.init(Cipher.ENCRYPT_MODE, key);
-			byte[] ciphered;
-			if(isMessage(req.getType())){
-				ciphered = c.doFinal(req.getMessage().getBody().getBytes());
-				CipheredMessage cm = new CipheredMessage(req.getContact(), ciphered);
-				conn.getOutputStream().writeObject(cm);
-			}
-			
-			//se eh upload de ficheiro
-			else{
-				
-			}
-			
-		}
-		*/
-		
-		
-		//send key to all members including me
-		//sendKeyToAll(conn, names, certificates, key);
 		return reply;
 	}
 
+	private static Reply executeSendMessage(Connection conn, Request req) throws ClassNotFoundException, IOException{
+		
+		//receber contact list de server ou erro
+		Reply reply = (Reply) conn.getInputStream().readObject();
+		Map<String, Certificate> members = reply.getMembers();
+		
+		//assinar e enviar sintese de mensagem a enviar
+		GenericSignature gs = GenericSignature.createGenericMessageSignature(
+				req.getUser().getPrivateKey(), req.getMessage().getBody().getBytes());
+		conn.getOutputStream().writeObject(gs);
+		reply = (Reply) conn.getInputStream().readObject();
+		if(reply.hasError())
+			return new Reply(400, "Erro ao enviar mensagem");
+		
+		//gerar chave simetrica K AES
+		Key key = SecUtils.generateSymetricKey();
+		
+		//enviar mensagem cifrada com K
+		Cipher c = Cipher.getInstance("AES");
+		c.init(Cipher.ENCRYPT_MODE, key);
+		byte[] cipheredMsg = c.doFinal(req.getMessage().getBody().getBytes());
+		CipheredMessage cm = new CipheredMessage(req.getContact(), cipheredMsg);
+		conn.getOutputStream().writeObject(cm);
+		reply = (Reply) conn.getInputStream().readObject();
+		if(reply.hasError())
+			return new Reply(400, "Erro ao enviar mensagem");
+		
+		//cifrad K para cada user com a sua publica
+		ArrayList<CipheredKey> keys = cipherAllKeys(members, key);
+		
+		//cifra para si tambem
+		KeyWrapper kw = new KeyWrapper(req.getUser().getCertificate().getPublicKey());
+		kw.wrap(key);
+		CipheredKey ck = new CipheredKey(req.getUser().getName(), kw.getWrappedKey());
+		keys.add(ck);
+		
+		//envia chave cifrada com com chaves publicas para o servidor
+		conn.getOutputStream().writeObject(keys);
+		reply = (Reply) conn.getInputStream().readObject();
+		
+		return reply;
+	}
+	
+	/**
+	 * Cifra uma chave com varias chaves publicas
+	 * @param members, membros para quem a chave key eh cifrada
+	 * @param key, chave a cifrar
+	 * @return lista com chaves cifradas
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws IllegalBlockSizeException
+	 */
+	private static ArrayList<CipheredKey> cipherAllKeys(Map<String, Certificate> members, Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
+		ArrayList<CipheredKey> keys = new ArrayList<>();
+		ArrayList<String> names = new ArrayList<>(Arrays.asList(((String[])members.keySet().toArray())));
+		KeyWrapper kw = null;
+		for(int i = 0; i < names.size(); i++)
+		{
+			String to = names.get(i);
+			Certificate cert = members.get(to);
+			kw = new KeyWrapper(cert.getPublicKey());
+			kw.wrap(key);
+			CipheredKey ck = new CipheredKey(to, kw.getWrappedKey());
+			keys.add(ck);
+		}
+		return keys;
+	}
+	
 	/**
 	 * Verifica se uma mensagem eh do type send Message
 	 * @param type, tipo da mensagem a ser analisado
