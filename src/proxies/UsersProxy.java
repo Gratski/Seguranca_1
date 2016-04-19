@@ -75,8 +75,8 @@ public class UsersProxy extends Proxy {
 			String[] arr = line.split(":");
 			if (arr.length < 3)
 				continue;
-			byte[] salt = SecUtils.hexStringToByteArray(arr[1]);
-			byte[] password = SecUtils.hexStringToByteArray(arr[2]);
+			byte[] salt = SecUtils.getStringHex(arr[1]);
+			byte[] password = SecUtils.getStringHex(arr[2]);
 			User u = new User(arr[0], password, salt );
 			
 			//add to users
@@ -154,8 +154,8 @@ public class UsersProxy extends Proxy {
 		user.setPassword(md.digest());
 		
 		//converte para bytes
-		String passStr = SecUtils.getHex(user.getPassword());
-		String saltStr = SecUtils.getHex(user.getSalt());
+		String passStr = SecUtils.getHexString(user.getPassword());
+		String saltStr = SecUtils.getHexString(user.getSalt());
 		
 		System.out.println("Registo de novo User: " + user.toString());
 		StringBuilder sb = new StringBuilder();

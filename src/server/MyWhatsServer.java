@@ -132,7 +132,7 @@ public class MyWhatsServer {
 		
 		//gera mac de users file
 		byte[] mac = MACService.generateFileMac(f, key);
-		String macHexStr = SecUtils.getHex(mac);
+		String macHexStr = SecUtils.getHexString(mac);
 		BufferedWriter bw = new FilesHandler().getWriter(fmac);
 		bw.write(macHexStr);
 		bw.close();
@@ -141,7 +141,7 @@ public class MyWhatsServer {
 		f = new File(Proxy.getGroupsIndex());
 		fmac = new File(Proxy.getGroupsIndex()+""+Proxy.getMacFileExtension());
 		mac = MACService.generateFileMac(f, key);
-		macHexStr = SecUtils.getHex(mac);
+		macHexStr = SecUtils.getHexString(mac);
 		bw = new FilesHandler().getWriter(fmac);
 		bw.write(macHexStr);
 		bw.close();

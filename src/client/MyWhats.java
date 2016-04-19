@@ -1,9 +1,16 @@
 package client;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.Signature;
+import java.security.cert.Certificate;
 import java.util.HashMap;
 
 import javax.net.SocketFactory;
@@ -14,6 +21,7 @@ import domain.Reply;
 import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
+import security.SecUtils;
 import validators.InputValidator;
 
 /**
@@ -40,10 +48,42 @@ public class MyWhats {
 				System.out.println("Parametros mal formed");
 				System.exit(-1);
 			}
-
+			
+			Signature sig = Signature.getInstance("MD5WithRSA");
+			
 			// parse input
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
+			//create keyStore if needed
+			
+			File ksFile = new File(parsedInput.get("username") +".keyStore");
+			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+			Certificate cert = null;
+			PrivateKey privateKey = null;
+			if(!ksFile.exists())
+			{
+				//criar
+				ks.load(null, parsedInput.get("password").toCharArray());
+				KeyPair keyPair = SecUtils.generateKeyPair();
+				cert = SecUtils.generateCertificate(parsedInput.get("username"), keyPair.getPublic(), keyPair.getPrivate());
+				Certificate[] chain = new Certificate[1];
+				chain[0] = cert;
+				ks.setKeyEntry(parsedInput.get("username"), keyPair.getPrivate(), parsedInput.get("password").toCharArray(), chain);
+				FileOutputStream fos = new FileOutputStream(parsedInput.get("username")+".keyStore");
+				ks.store(fos, parsedInput.get("password").toCharArray());
+				fos.close();
+				
+			}else{
+				
+				FileInputStream fis = new FileInputStream(ksFile);
+				ks.load(fis, parsedInput.get("password").toCharArray());
+				cert = ks.getCertificate(parsedInput.get("username"));
+				privateKey = (PrivateKey) ks.getKey(parsedInput.get("username"), parsedInput.get("password").toCharArray());
+			}
+			
+			
+			
+			
 			// create request obj
 			Request request = null;
 			try {

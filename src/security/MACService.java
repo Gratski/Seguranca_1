@@ -61,7 +61,7 @@ public class MACService {
 	 */
 	public static byte[] readMACFile(File f) throws IOException{
 		BufferedReader br = new FilesHandler().getReader(f);
-		return SecUtils.hexStringToByteArray(br.readLine());
+		return SecUtils.getStringHex(br.readLine());
 	}
 	
 	/**
@@ -112,7 +112,7 @@ public class MACService {
 		
 		//gera mac de users file
 		byte[] newMac = MACService.generateFileMac(f, key);
-		String macHexStr = SecUtils.getHex(newMac);
+		String macHexStr = SecUtils.getHexString(newMac);
 		BufferedWriter bw = new FilesHandler().getWriter(fmac);
 		bw.write(macHexStr);
 		bw.close();
