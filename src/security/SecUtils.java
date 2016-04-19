@@ -19,7 +19,12 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.Random;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.Mac;
+import javax.crypto.NoSuchPaddingException;
 import javax.xml.bind.DatatypeConverter;
 
 import sun.security.x509.AlgorithmId;
@@ -53,7 +58,7 @@ public class SecUtils {
 	 * @throws NoSuchAlgorithmException
 	 */
 	public static Key generateSymetricKey() throws NoSuchAlgorithmException{
-		KeyGenerator kg = KeyGenerator.getInstance("DES");
+		KeyGenerator kg = KeyGenerator.getInstance("AES");
 		return kg.generateKey();
 	}
 	
@@ -135,6 +140,8 @@ public class SecUtils {
 		keyPairGen.initialize(1028);
 		return keyPairGen.generateKeyPair();
 	}
+	
+	
 	
 	private static CertificateValidity getDefaultCertificateValidity(){
 		Date from = new Date();

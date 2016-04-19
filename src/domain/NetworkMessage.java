@@ -2,6 +2,8 @@ package domain;
 
 import java.io.Serializable;
 
+import security.GenericSignature;
+
 /**
  * Esta classe representa a entidade que encapsula
  * a informacao de uma mensagem a ser transmitida
@@ -13,6 +15,7 @@ public class NetworkMessage implements Serializable {
 
 	private String type;
 	private User user;
+	private GenericSignature signature;
 
 	/**
 	 * Constructor
@@ -21,6 +24,10 @@ public class NetworkMessage implements Serializable {
 	 */
 	public NetworkMessage(){
 		this.user = null;
+	}
+	
+	public NetworkMessage(GenericSignature gs){
+		this.signature = signature;
 	}
 
 	/**
@@ -42,6 +49,14 @@ public class NetworkMessage implements Serializable {
 	}
 
 	/**
+	 * 
+	 * @param gs
+	 */
+	public void setSignature(GenericSignature gs){
+		this.signature = gs;
+	}
+	
+	/**
 	 * Obtem o tipo
 	 *
 	 * @return String type
@@ -57,5 +72,9 @@ public class NetworkMessage implements Serializable {
      */
 	public User getUser(){
 		return this.user;
+	}
+	
+	public GenericSignature getSignature(){
+		return this.signature;
 	}
 }

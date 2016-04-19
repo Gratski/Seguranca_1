@@ -1,0 +1,80 @@
+package security;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
+import javax.crypto.NoSuchPaddingException;
+
+public class GenericSignature implements Serializable{
+
+	private final static String ALGORITHM = "SHA-356";
+	
+	private final byte[] signature;
+	private final PublicKey publicKey;
+	
+	public GenericSignature(byte[] hash){
+		this.signature = hash;
+		this.publicKey = null;
+	}
+	public GenericSignature(byte[] hash, PublicKey key){
+		this.signature = hash;
+		this.publicKey = key;
+	}
+	
+	public byte[] getSignature(){
+		return this.signature;
+	}
+	
+	public PublicKey getPublicKey(){
+		return this.publicKey;
+	}
+	
+	public static GenericSignature createGenericMessageSignature(PrivateKey pkey, byte[] content) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
+
+		//gera sintese da mensagem
+		MessageDigest md = getMessageDigest();
+		byte[] hash = md.digest(content);
+		
+		//assina cifra da mensagem
+		Cipher c = Cipher.getInstance(ALGORITHM);
+		c.init(Cipher.ENCRYPT_MODE, pkey);
+		c.update(hash);
+		GenericSignature gs = new GenericSignature(c.doFinal());
+		return gs;
+	}
+	
+	public static GenericSignature createGenericFileSignature(PrivateKey privateKey, File file) throws NoSuchAlgorithmException, IOException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		
+		//gerar sintese de ficheiro
+		MessageDigest md = getMessageDigest();
+		byte[] hash = new byte[16];
+		int sent = 0;
+		FileInputStream fis = new FileInputStream(file);
+		while((sent=fis.read(hash))>0){
+			md.update(hash, 0, sent);
+		}
+		hash = md.digest();
+		
+		//assinar sintese de ficheiro
+		Cipher c = Cipher.getInstance(ALGORITHM);
+		c.init(Cipher.ENCRYPT_MODE, privateKey);
+		c.update(hash);
+		GenericSignature gs = new GenericSignature(c.doFinal());
+		return gs;
+	}
+	
+	private static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{
+		return MessageDigest.getInstance(ALGORITHM);
+	}
+}

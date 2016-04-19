@@ -27,11 +27,13 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import builders.RequestBuilder;
+import domain.NetworkMessage;
 import domain.Reply;
 import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
 import security.CipheredMessage;
+import security.GenericSignature;
 import security.KeyWrapper;
 import security.MessageKey;
 import security.SecUtils;
@@ -125,10 +127,8 @@ public class MyWhats {
 			Connection connection = new Connection(socket);
 
 			// send request
-			sendRequest(connection, request);
+			Reply reply = sendRequest(connection, request);
 			
-			// get reply
-			Reply reply = receiveReply(connection);
 			
 			// Imprime server reply
 			reply.prettyPrint(request.getUser());
@@ -148,94 +148,101 @@ public class MyWhats {
 	 * 
 	 * @param conn Connection to be considered
 	 * @param req Request to be considered
-	 * @throws IOException
-	 * @throws ClassNotFoundException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws IllegalBlockSizeException 
-	 * @throws NoSuchPaddingException 
-	 * @throws InvalidKeyException 
-	 * @throws BadPaddingException 
+	 * @throws Exception 
 	 * @require conn != null && req != null && conn.getOutputStream != null
 	 */
-	public static void sendRequest(Connection conn, Request req) throws IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	public static Reply sendRequest(Connection conn, Request req) throws Exception {
 		// send base request
 		conn.getOutputStream().writeObject(req);
+		Reply reply = (Reply) conn.getInputStream().readObject();
+		switch(req.getType()){
+		case "-m":
+			//reply = (Reply) conn.getInputStream().readObject();
+			break;
+		case "-f":
+			if(reply.hasError())
+				reply = new Reply(400, "Erro ao enviar ficheiro");
+			else
+			{
+				FilesHandler fHandler = new FilesHandler();
+				fHandler.send(conn, new File(req.getFile().getFullPath()));
+				reply = (Reply) conn.getInputStream().readObject();
+			}
+			
+			break;
+		case "-r":
+			if(req.getSpecs().equals("download"))
+			{
+				if(reply.hasError())
+					reply = new Reply(400, "Erro ao enviar ficheiro");
+				else
+				{
+					File downloaded = new FilesHandler().receive(conn, ".", req.getFile().getFullPath());
+					if (downloaded == null)
+						reply = new Reply(400, "Erro ao descarregar ficheiro.");
+					else
+						reply = new Reply(200, "Ficheiro descarregado.");
+				}
+			}
+			
+			break;
+		}
+		
+		
+		
+		/*
+		//chave simetrica gerada
+		Key key = SecUtils.generateSymetricKey();
+		ArrayList<String> names = null;
+		ArrayList<Certificate> certificates = null;
 		
 		//se eh para enviar message
-		if(isMessage(req.getType())){
+		if(isMessage(req.getType()) || isFileUpload(req.getType())){
 			
 			//Obtem certificados de users
 			Map<String, Certificate> members = (HashMap<String, Certificate>) conn.getInputStream().readObject();
-			ArrayList<String> names =  new ArrayList<>(Arrays.asList((String[]) members.keySet().toArray()));
-			ArrayList<Certificate> certificates = new ArrayList<>(Arrays.asList((Certificate[]) members.values().toArray()));
+			names =  new ArrayList<>(Arrays.asList((String[]) members.keySet().toArray()));
+			certificates = new ArrayList<>(Arrays.asList((Certificate[]) members.values().toArray()));
 			
 			//adiciona o certificado do current user e seu nome
 			names.add(req.getUser().getName());
 			certificates.add(req.getUser().getCertificate());
 			
-			//generate Simetric Key
-			Key key = SecUtils.generateSymetricKey();
-			
-			//send key to all members including me
-			for(int i = 0; i < names.size(); i++){
-				KeyWrapper kw = new KeyWrapper(certificates.get(i).getPublicKey());
-				kw.wrap(key);
-				conn.getOutputStream()
-				.writeObject(new MessageKey(names.get(i), kw.getWrappedKey()));
+			//generate content signature
+			GenericSignature gs = null;
+			if(isMessage(req.getType())){
+				gs = GenericSignature.createGenericMessageSignature( 
+						req.getUser().getPrivateKey(), req.getMessage().getBody().getBytes());
+			}else{
+				gs = GenericSignature.createGenericFileSignature(
+						req.getUser().getPrivateKey(), req.getFile().getFile());
 			}
 			
-			//send ciphered message
-			Cipher c = Cipher.getInstance("DES");
+			//send it to server
+			conn.getOutputStream().writeObject(new NetworkMessage(gs));
+			
+			//cipher message and send
+			Cipher c = Cipher.getInstance("AES");
 			c.init(Cipher.ENCRYPT_MODE, key);
-			byte[]msgStr = c.doFinal(req.getMessage().getBody().getBytes());
-			CipheredMessage cm = new CipheredMessage(req.getContact(), msgStr);
-			conn.getOutputStream().writeObject(cm);
-		}
-		
-		//se a operacao inclui ficheiros
-		if ( isFileOperation(req) ) {
-			//obtem autorizacao para enviar/receber ficheiro
-			try {
-				Reply auth = (Reply) conn.getInputStream().readObject();
-				//se nao autorizado
-				if (auth.getStatus() != 200) {
-					upload_error = true;
-					return;
-				}
-			} catch (ClassNotFoundException e) {
-				throw new IOException();
+			byte[] ciphered;
+			if(isMessage(req.getType())){
+				ciphered = c.doFinal(req.getMessage().getBody().getBytes());
+				CipheredMessage cm = new CipheredMessage(req.getContact(), ciphered);
+				conn.getOutputStream().writeObject(cm);
 			}
-		}
-
-		//se a operacao inclui ficheiros e tem autorizacao
-		switch (req.getType()) {
-		//caso especial para upload
-		case "-f":
-			FilesHandler fHandler = new FilesHandler();
-			try {
-				//enviar file
-				fHandler.send(conn, new File(req.getFile().getFullPath()));
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			break;
 			
-		//caso especial para download
-		case "-r":
-			//se file download
-			if (req.getSpecs().equals("download")) {
-				try {
-					File downloaded = new FilesHandler().receive(conn, ".", req.getFile().getFullPath());
-					if (downloaded == null)
-						System.out.println("Erro ao descarregar ficheiro");
-					else
-						System.out.println("Descarregamento efectuado");
-
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+			//se eh upload de ficheiro
+			else{
+				
 			}
+			
 		}
+		*/
+		
+		
+		//send key to all members including me
+		//sendKeyToAll(conn, names, certificates, key);
+		return reply;
 	}
 
 	/**
@@ -244,7 +251,7 @@ public class MyWhats {
 	 * @return true se eh mensagem, false caso contrario
 	 */
 	private static boolean isMessage(String type){
-		return type.equals("-m") ? true : false;
+		return type.equals("-m");
 	}
 	
 	/**
@@ -259,6 +266,10 @@ public class MyWhats {
 		return ( type.equals("-f") || ( type.equals("-r") && req.getSpecs().equals("download") ) );
 	}
 
+	private static boolean isFileUpload(String type){
+		return type.equals("-f");
+	}
+	
 	/**
 	 * Recebe um objecto Reply do servidor
 	 * 
@@ -285,5 +296,18 @@ public class MyWhats {
 				return new Reply(400, "");
 			}
 		}
+	}
+
+	
+	private static void sendKeyToAll(Connection conn, ArrayList<String> names, 
+			ArrayList<Certificate> certs, Key key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
+		
+		for(int i = 0; i < names.size(); i++){
+			KeyWrapper kw = new KeyWrapper(certs.get(i).getPublicKey());
+			kw.wrap(key);
+			conn.getOutputStream()
+			.writeObject(new MessageKey(names.get(i), kw.getWrappedKey()));
+		}
+		
 	}
 }
