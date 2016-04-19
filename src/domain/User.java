@@ -1,6 +1,8 @@
 package domain;
 
 import java.io.Serializable;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
 
 /**
  * Esta classe representa a entidade Utilizador
@@ -12,6 +14,8 @@ public class User implements Serializable {
 	private String name;
 	private byte[] password;
 	private byte[] salt;
+	private transient PrivateKey privateKey;
+	private Certificate certificate;
 	
 	/**
 	 * Constructor
@@ -57,6 +61,34 @@ public class User implements Serializable {
 		return this.password;
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
+	public Certificate getCertificate(){
+		return this.certificate;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public PrivateKey getPrivateKey(){
+		return this.privateKey;
+	}
+	
+	public void setPrivateKey(PrivateKey k){
+		this.privateKey = k;
+	}
+	
+	/**
+	 * 
+	 * @param cert
+	 */
+	public void setCertificate(Certificate cert){
+		this.certificate = cert;
+	}
+	
 	@Override
 	public String toString() {
 		final StringBuffer sb = new StringBuffer("User{");

@@ -6,13 +6,23 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -21,6 +31,9 @@ import domain.Reply;
 import domain.Request;
 import helpers.Connection;
 import helpers.FilesHandler;
+import security.CipheredMessage;
+import security.KeyWrapper;
+import security.MessageKey;
 import security.SecUtils;
 import validators.InputValidator;
 
@@ -81,13 +94,12 @@ public class MyWhats {
 				privateKey = (PrivateKey) ks.getKey(parsedInput.get("username"), parsedInput.get("password").toCharArray());
 			}
 			
-			
-			
-			
 			// create request obj
 			Request request = null;
 			try {
 				request = RequestBuilder.make(parsedInput);
+				request.getUser().setCertificate(cert);
+				request.getUser().setPrivateKey(privateKey);
 			} catch (FileNotFoundException e) {
 				System.out.println("Ficheiro não encontrado");
 				System.exit(-1);
@@ -138,12 +150,49 @@ public class MyWhats {
 	 * @param conn Connection to be considered
 	 * @param req Request to be considered
 	 * @throws IOException
+	 * @throws ClassNotFoundException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws IllegalBlockSizeException 
+	 * @throws NoSuchPaddingException 
+	 * @throws InvalidKeyException 
+	 * @throws BadPaddingException 
 	 * @require conn != null && req != null && conn.getOutputStream != null
 	 */
-	public static void sendRequest(Connection conn, Request req) throws IOException {
+	public static void sendRequest(Connection conn, Request req) throws IOException, ClassNotFoundException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		// send base request
 		conn.getOutputStream().writeObject(req);
-
+		
+		//se eh para enviar message
+		if(isMessage(req.getType())){
+			
+			//Obtem certificados de users
+			Map<String, Certificate> members = (HashMap<String, Certificate>) conn.getInputStream().readObject();
+			ArrayList<String> names =  new ArrayList<>(Arrays.asList((String[]) members.keySet().toArray()));
+			ArrayList<Certificate> certificates = new ArrayList<>(Arrays.asList((Certificate[]) members.values().toArray()));
+			
+			//adiciona o certificado do current user e seu nome
+			names.add(req.getUser().getName());
+			certificates.add(req.getUser().getCertificate());
+			
+			//generate Simetric Key
+			Key key = SecUtils.generateSymetricKey();
+			
+			//send key to all members including me
+			for(int i = 0; i < names.size(); i++){
+				KeyWrapper kw = new KeyWrapper(certificates.get(i).getPublicKey());
+				kw.wrap(key);
+				conn.getOutputStream()
+				.writeObject(new MessageKey(names.get(i), kw.getWrappedKey()));
+			}
+			
+			//send ciphered message
+			Cipher c = Cipher.getInstance("DES");
+			c.init(Cipher.ENCRYPT_MODE, key);
+			byte[]msgStr = c.doFinal(req.getMessage().getBody().getBytes());
+			CipheredMessage cm = new CipheredMessage(req.getContact(), msgStr);
+			conn.getOutputStream().writeObject(cm);
+		}
+		
 		//se a operacao inclui ficheiros
 		if ( isFileOperation(req) ) {
 			//obtem autorizacao para enviar/receber ficheiro
@@ -190,6 +239,15 @@ public class MyWhats {
 		}
 	}
 
+	/**
+	 * Verifica se uma mensagem eh do type send Message
+	 * @param type, tipo da mensagem a ser analisado
+	 * @return true se eh mensagem, false caso contrario
+	 */
+	private static boolean isMessage(String type){
+		return type.equals("-m") ? true : false;
+	}
+	
 	/**
 	 * Verifica se a operacao envolve ficheiros
 	 *

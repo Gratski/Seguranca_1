@@ -3,6 +3,7 @@ package security;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStoreException;
@@ -18,6 +19,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.Random;
 
+import javax.crypto.KeyGenerator;
 import javax.xml.bind.DatatypeConverter;
 
 import sun.security.x509.AlgorithmId;
@@ -43,6 +45,18 @@ public class SecUtils {
 		return DatatypeConverter.printHexBinary(raw);
 	}
 	  
+	
+	
+	/**
+	 * Gera chave simetrica
+	 * @return chave simetrica gerada
+	 * @throws NoSuchAlgorithmException
+	 */
+	public static Key generateSymetricKey() throws NoSuchAlgorithmException{
+		KeyGenerator kg = KeyGenerator.getInstance("DES");
+		return kg.generateKey();
+	}
+	
 	/**
 	 * Converte uma string hexadecimal em array de bytes
 	 * @param s, string a considerar
