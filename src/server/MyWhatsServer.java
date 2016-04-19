@@ -47,17 +47,27 @@ public class MyWhatsServer {
 		boolean createdFolders = dbBuilder.make();
 		if (!createdFolders)
 			System.exit(-1);
-		
+
+
+		// TODO: ALTERAR NO FIM
 		//valida seguranca de sistema
-		SecretKey key = PBEService.getKeyByString("segredo");
+		SecretKey key;
+		String pass = "segredo";
+//		do {
+//			System.out.println("Insert your password:");
+//			Scanner sc = new Scanner(System.in);
+//			pass = sc.nextLine();
+//			if (pass.equals(""))
+//				System.out.println("Invalid password format!");
+//		} while (pass.equals(""));
+		key = PBEService.getKeyByString(pass);
 		boolean isSecured = secureSystem(key);
-		if(!isSecured)
-		{
+		if (!isSecured) {
 			System.out.println("System is not secured.");
 			System.out.println("Shutting down.");
 			return;
 		}
-		
+
 		//obtain singletons
 		GroupsProxy groups = GroupsProxy.getInstance();
 		UsersProxy users = UsersProxy.getInstance();
@@ -65,8 +75,9 @@ public class MyWhatsServer {
 
 		@SuppressWarnings("resource")
 		int port = Integer.parseInt(args[0]);
-		
-		System.setProperty("javax.net.ssl.keyStore", "myServer.keyStore"); 
+
+		// TODO: RETIRAR keystore no fim, colocar na linha de comandos
+		System.setProperty("javax.net.ssl.keyStore", "myServer.keyStore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "segredo");
 		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 		ServerSocket server = ssf.createServerSocket(port);
@@ -84,7 +95,6 @@ public class MyWhatsServer {
 		}
 	}
 	
-	
 	/**
 	 * Faz validacoes base de seguranca
 	 * @param key
@@ -99,32 +109,28 @@ public class MyWhatsServer {
 		File f = new File(Proxy.getUsersIndex()+""+Proxy.getMacFileExtension());
 
 		//se nao tem mac criado, cria
-		if(!f.exists())
-		{
+		if (!f.exists()) {
 			System.out.println("System is not secure yet.");
 			System.out.println("Do you want to make it secure? Y/n");
 			
 			Scanner sc = new Scanner(System.in);
 			String answer = sc.nextLine();
-			if(!answer.equals("Y"))
+			if (!answer.equals("Y"))
 				return false;
-			
-			System.out.println("Insert your password:");
-			key = PBEService.getKeyByString(sc.nextLine());
-			
+
+			System.out.println("Using your password to calculate new MACs..");
 			//criar todas os .mac files necessarios
 			generateAllMacFiles(key);
-			
+			System.out.println("Done!");
 		}
 		//se jah existe
-		else{
+		else {
 			return MACService.validateMAC(Proxy.getUsersIndex(), key);
 		}
-		
 		return true;
 	}
 	
-	private static void generateAllMacFiles(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
+	private static void generateAllMacFiles(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
 		
 		//FILES
 		File f = new File(Proxy.getUsersIndex());

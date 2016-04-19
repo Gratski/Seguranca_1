@@ -105,7 +105,7 @@ public class MyWhats {
 				System.exit(-1);
 			}
 
-			//validate request before send
+			// validate request before send
 			if (request.getUser().getName().equals(request.getContact()) && !request.getType().equals("-d")) {
 				if (request.getType().equals("-m") || request.getType().equals("-f")) {
 					System.out.println("O destinatário nao pode ser o remetente.");
@@ -122,7 +122,6 @@ public class MyWhats {
 			System.setProperty("javax.net.ssl.trustStore", "certificates.trustStore");
 			SocketFactory sf = SSLSocketFactory.getDefault();
 			Socket socket = sf.createSocket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port")));
-			
 			Connection connection = new Connection(socket);
 
 			// send request

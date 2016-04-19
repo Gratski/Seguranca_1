@@ -1,11 +1,19 @@
 grant codeBase "file:bin${/}-" {
-  //Socket
+  // Socket
   permission java.net.SocketPermission "*:23456", "connect, resolve";
 
-  //Runtime
+  // Runtime
   permission java.lang.RuntimePermission "exitVM.*";
 
-  //Files
+  // Files
   permission java.io.FilePermission "<<ALL FILES>>", "read";
   permission java.io.FilePermission ".${/}*", "write";
+
+  // KeyStore
+  permission java.util.PropertyPermission "javax.net.ssl.trustStore", "read, write";
+  permission java.util.PropertyPermission "javax.net.ssl.trustStorePassword", "read, write";
+};
+
+grant codeBase "file:${java.home}${/}lib${/}ext${/}*" {
+    permission java.security.AllPermission;
 };

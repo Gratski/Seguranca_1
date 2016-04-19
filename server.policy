@@ -13,7 +13,9 @@ grant codeBase "file:bin${/}-" {
   permission java.util.PropertyPermission "user.dir", "read";
   permission java.io.FilePermission ".${/}DATABASE", "read, write";
   permission java.io.FilePermission ".${/}DATABASE/USERS", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/USERS.mac", "read, write";
   permission java.io.FilePermission ".${/}DATABASE/GROUPS", "read, write";
+  permission java.io.FilePermission ".${/}DATABASE/GROUPS.mac", "read, write";
 
   permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS", "read, write";
   permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/INDEX", "read, write";
@@ -26,4 +28,11 @@ grant codeBase "file:bin${/}-" {
 
   permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/GROUP", "read, write";
   permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/GROUP/-", "read, write";
+
+  permission java.util.PropertyPermission "javax.net.ssl.keyStore", "read, write";
+  permission java.util.PropertyPermission "javax.net.ssl.keyStorePassword", "read, write";
+};
+
+grant codeBase "file:${java.home}${/}lib${/}ext${/}*" {
+    permission java.security.AllPermission;
 };
