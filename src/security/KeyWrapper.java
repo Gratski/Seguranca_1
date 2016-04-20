@@ -17,7 +17,7 @@ public class KeyWrapper {
 	private byte[]wrappedKey;
 	
 	public KeyWrapper(Key key){
-		this.key =key;
+		this.key = key;
 	}
 	public KeyWrapper(byte[] key){
 		this.wrappedKey = key;

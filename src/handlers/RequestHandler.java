@@ -3,9 +3,10 @@ package handlers;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -19,8 +20,10 @@ import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.Proxy;
 import proxies.UsersProxy;
+import security.CipheredKey;
 import security.CipheredMessage;
 import security.MACService;
+import security.SecUtils;
 
 /**
  * Esta classe representa a entidade que trata de um Request
@@ -116,7 +119,7 @@ public class RequestHandler extends Thread {
 	 *
 	 * @require req != null
 	 */
-	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, KeyStoreException, NoSuchProviderException, SignatureException {
 		
 		// autentica se existe, senao cria novo
 		if (!validateUser(req.getUser(), key))
@@ -395,6 +398,7 @@ public class RequestHandler extends Thread {
 			}
 
 			User contact = this.userProxy.find(req.getMessage().getTo());
+			System.out.println("CERT" + contact.getCertificate());
 			mapToSend.put(contact.getName(), contact.getCertificate());
 		}
 
@@ -415,27 +419,36 @@ public class RequestHandler extends Thread {
 			reply.setMessage("Erro ao receber assinatura, depois de enviar nomes e certificados");
 			return reply;
 		}
-		// TODO GRAVAR SIGNATURE .sig
-
-
 
 		// Receber mensagem cifrada
-		CipheredMessage cipherMessage;
+		Message cipherMessage;
 		try {
-			cipherMessage = (CipheredMessage) this.connection.getInputStream().readObject();
+			cipherMessage = (Message) this.connection.getInputStream().readObject();
 			this.connection.getOutputStream().writeObject(new Reply(200));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
-			System.out.println("Erro ao receber ciphermessage, depois de enviar assinatura");
+			System.out.println("Erro ao receber cipherMessage, depois de enviar assinatura");
 			reply.setStatus(400);
-			reply.setMessage("Erro ao receber ciphermessage, depois de enviar assinatura");
+			reply.setMessage("Erro ao receber cipherMessage, depois de enviar assinatura");
 			return reply;
 		}
 
-
 		// Receber lista de Ks cifrados
+		ArrayList<CipheredKey> cipheredKeys;
+		try {
+			cipheredKeys = (ArrayList<CipheredKey>) this.connection.getInputStream().readObject();
+			this.connection.getOutputStream().writeObject(new Reply(200));
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Erro ao receber cipheredKeys");
+			reply.setStatus(400);
+			reply.setMessage("Erro ao receber cipheredKeys");
+			return reply;
+		}
 
-
+		// TODO CRIAR PASTA COM PARA NOVA MENSAGEM
+		// TODO GRAVAR SIGNATURE .sig NA PASTA
+		// TODO GRAVAR CHAVES CIFRADAS NA PASTA
 
 		return reply;
 
@@ -595,21 +608,25 @@ public class RequestHandler extends Thread {
 	 * @throws IOException 
 	 * @require user != null && uProxy != null
      */
-	private boolean validateUser(User user, SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
+	private boolean validateUser(User user, SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException, InvalidKeySpecException, CertificateException, SignatureException, KeyStoreException, NoSuchProviderException {
 		boolean valid = false;
 		// se user existe
 		if (this.userProxy.exists(user))
 			valid = this.userProxy.autheticate(user);
 		// se user nao existe
-		else{
+		else {
 			
 			//valida integridade de ficheiro de users
 			if(!MACService.validateMAC(Proxy.getUsersIndex(), key))
 				return false;
 			//insere
 			valid = this.userProxy.insert(user);
+
+			// Cria keystore com certificado
+			KeyPair keyPair = SecUtils.generateKeyPair();
+			SecUtils.createCertificate(new File("server-" + user.getName() + ".keyStore"), user.getCertificate(), keyPair.getPrivate(), user.getName(), "segredo");
 			//actualiza mac de users file
-			if(valid)
+			if (valid)
 				MACService.updateMAC(Proxy.getUsersIndex(), key);
 		}
 

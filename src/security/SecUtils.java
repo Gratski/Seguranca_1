@@ -1,18 +1,10 @@
 package security;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.SignatureException;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
@@ -85,7 +77,6 @@ public class SecUtils {
 	
 	/**
 	 * Cria um novo certificado
-	 * @param password
 	 * @return
 	 * @throws KeyStoreException
 	 * @throws NoSuchAlgorithmException
@@ -149,5 +140,15 @@ public class SecUtils {
 		CertificateValidity validity = new CertificateValidity(from, to);
 		return validity;
 	}
-	
+
+	public static void createCertificate(File ksFile, Certificate cert, PrivateKey privateKey, String username, String password) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
+		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+		Certificate[] chain = new Certificate[1];
+		chain[0] = cert;
+		ks.load(null, password.toCharArray());
+		ks.setKeyEntry(username, privateKey, password.toCharArray(), chain);
+		FileOutputStream fos = new FileOutputStream(ksFile);
+		ks.store(fos, password.toCharArray());
+		fos.close();
+	}
 }

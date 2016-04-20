@@ -145,7 +145,7 @@ public class MyWhatsServer {
 		
 		//gera mac de groups file
 		f = new File(Proxy.getGroupsIndex());
-		fmac = new File(Proxy.getGroupsIndex()+""+Proxy.getMacFileExtension());
+		fmac = new File(Proxy.getGroupsIndex() + "" + Proxy.getMacFileExtension());
 		mac = MACService.generateFileMac(f, key);
 		macHexStr = SecUtils.getHexString(mac);
 		bw = new FilesHandler().getWriter(fmac);

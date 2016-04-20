@@ -6,18 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.InvalidKeyException;
-import java.security.Key;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.Signature;
+import java.security.*;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -27,6 +18,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import builders.RequestBuilder;
+import domain.Message;
 import domain.NetworkMessage;
 import domain.Reply;
 import domain.Request;
@@ -72,28 +64,27 @@ public class MyWhats {
 
 			//create keyStore if needed
 			
-			File ksFile = new File(parsedInput.get("username") +".keyStore");
+			File ksFile = new File(parsedInput.get("username") + ".keyStore");
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			Certificate cert = null;
 			PrivateKey privateKey = null;
+			PublicKey publicKey = null;
 			if(!ksFile.exists())
 			{
 				//criar
-				ks.load(null, parsedInput.get("password").toCharArray());
-				KeyPair keyPair = SecUtils.generateKeyPair();
-				cert = SecUtils.generateCertificate(parsedInput.get("username"), keyPair.getPublic(), keyPair.getPrivate());
-				Certificate[] chain = new Certificate[1];
-				chain[0] = cert;
-				ks.setKeyEntry(parsedInput.get("username"), keyPair.getPrivate(), parsedInput.get("password").toCharArray(), chain);
-				FileOutputStream fos = new FileOutputStream(parsedInput.get("username")+".keyStore");
-				ks.store(fos, parsedInput.get("password").toCharArray());
-				fos.close();
-				
-			}else{
-				
+//				ks.load(null, parsedInput.get("password").toCharArray());
+//				KeyPair keyPair = SecUtils.generateKeyPair();
+//				privateKey = keyPair.getPrivate();
+//				publicKey = keyPair.getPublic();
+//				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
+//				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
+
+			} else {
+
 				FileInputStream fis = new FileInputStream(ksFile);
 				ks.load(fis, parsedInput.get("password").toCharArray());
 				cert = ks.getCertificate(parsedInput.get("username"));
+				System.out.println("Foi buscar Certificate");
 				privateKey = (PrivateKey) ks.getKey(parsedInput.get("username"), parsedInput.get("password").toCharArray());
 			}
 			
@@ -101,6 +92,7 @@ public class MyWhats {
 			Request request = null;
 			try {
 				request = RequestBuilder.make(parsedInput);
+				System.out.println("CERT: " + cert);
 				request.getUser().setCertificate(cert);
 				request.getUser().setPrivateKey(privateKey);
 			} catch (FileNotFoundException e) {
@@ -212,11 +204,8 @@ public class MyWhats {
 		Reply reply = (Reply) conn.getInputStream().readObject();
 		switch (req.getType()) {
 		case "-m":
-			if(reply.hasError())
-				reply = new Reply(400, "Erro ao receber certificados");
-			else {
+			if (!reply.hasError())
 				reply = executeSendMessage(conn, req, reply);
-			}
 			break;
 		case "-f":
 			if (reply.hasError())
@@ -248,7 +237,7 @@ public class MyWhats {
 		return reply;
 	}
 
-	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) throws ClassNotFoundException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) throws ClassNotFoundException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		
 		//receber contact list de server ou error
 		Map<String, Certificate> members = reply.getCertificates();
@@ -266,14 +255,12 @@ public class MyWhats {
 		if (reply.hasError())
 			return reply;
 		
-		//gerar chave simetrica K AES
-		Key key = SecUtils.generateSymetricKey();
-		
 		//enviar mensagem cifrada com K
+		Key key = SecUtils.generateSymetricKey();
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, key);
 		byte[] cipheredMsg = c.doFinal(req.getMessage().getBody().getBytes());
-		CipheredMessage cm = new CipheredMessage(req.getContact(), cipheredMsg);
+		Message cm = new Message(req.getContact(), SecUtils.getHexString(cipheredMsg));
 		conn.getOutputStream().writeObject(cm);
 
 		reply = (Reply) conn.getInputStream().readObject();
@@ -288,11 +275,10 @@ public class MyWhats {
 		kw.wrap(key);
 		CipheredKey ck = new CipheredKey(req.getUser().getName(), kw.getWrappedKey());
 		keys.add(ck);
-		
 		//envia chave cifrada com com chaves publicas para o servidor
 		conn.getOutputStream().writeObject(keys);
+
 		reply = (Reply) conn.getInputStream().readObject();
-		
 		return reply;
 	}
 	
@@ -308,12 +294,21 @@ public class MyWhats {
 	 */
 	private static ArrayList<CipheredKey> cipherAllKeys(Map<String, Certificate> members, Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
 		ArrayList<CipheredKey> keys = new ArrayList<>();
-		ArrayList<String> names = new ArrayList<>(Arrays.asList(((String[])members.keySet().toArray())));
+
+		Set<String> set = members.keySet();
+		String[] names = set.toArray(new String[set.size()]);
+		System.out.println("SIZE: " + members.size());
+		System.out.println("SIZE: " + names.length);
+
 		KeyWrapper kw = null;
-		for(int i = 0; i < names.size(); i++)
+		for(int i = 0; i < names.length; i++)
 		{
-			String to = names.get(i);
+			System.out.println("MEMBER: " + names[i]);
+			String to = names[i];
 			Certificate cert = members.get(to);
+			System.out.println("CERT IN: " + cert);
+			System.out.println("PUBLIC KEY FROM CERT: " + cert.getPublicKey());
+
 			kw = new KeyWrapper(cert.getPublicKey());
 			kw.wrap(key);
 			CipheredKey ck = new CipheredKey(to, kw.getWrappedKey());
