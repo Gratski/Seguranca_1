@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
@@ -35,7 +37,7 @@ import validators.InputValidator;
  */
 public class MyWhatsServer {
 	
-	public static void main(String[] args) throws NumberFormatException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
+	public static void main(String[] args) throws NumberFormatException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, KeyStoreException, CertificateException {
 
 		if (!InputValidator.validServerInput(args)) {
 			System.out.println("Parâmetros mal formados");

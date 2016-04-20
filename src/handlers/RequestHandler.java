@@ -618,15 +618,20 @@ public class RequestHandler extends Thread {
 			if (!MACService.validateMAC(Proxy.getUsersIndex(), key))
 				return false;
 			//insere
-			valid = this.userProxy.insert(user);
+			String password = this.userProxy.insert(user); 
+			valid = password != null;
 
-			// Cria keystore com certificado
-			KeyPair keyPair = SecUtils.generateKeyPair();
-			SecUtils.createCertificate(new File("server-" + user.getName() + ".keyStore"), user.getCertificate(),
-					keyPair.getPrivate(), user.getName(), SecUtils.getHexString(user.getPassword()));
 			//actualiza mac de users file
-			if (valid)
+			if (valid){
+				
+				// Cria keystore com certificado
+				KeyPair keyPair = SecUtils.generateKeyPair();
+				SecUtils.createCertificate(new File("server-" + user.getName() + ".keyStore"), user.getCertificate(),
+						keyPair.getPrivate(), user.getName(), password);
+				
 				MACService.updateMAC(Proxy.getUsersIndex(), key);
+			}
+			
 		}
 
 		return valid;

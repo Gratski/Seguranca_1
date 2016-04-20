@@ -20,6 +20,8 @@ public class Proxy {
 	protected static final String FILES_FOLDER = "FILES/";
 	protected static final String MESSAGE_FILE_EXTENSION = ".msg";
 	protected static final String MAC_FILE_EXTENSION = ".mac";
+	
+	protected static final String HASH_ALGORITHM = "SHA-256";
 
 	public static String getDATABASE() {
 		return DATABASE;

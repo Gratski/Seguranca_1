@@ -139,7 +139,10 @@ public class SecUtils {
 		return validity;
 	}
 
-	public static void createCertificate(File ksFile, Certificate cert, PrivateKey privateKey, String username, String password) throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, InvalidKeySpecException {
+	public static void createCertificate(File ksFile, Certificate cert, PrivateKey privateKey, 
+			String username, String password) throws KeyStoreException, CertificateException, 
+	NoSuchAlgorithmException, IOException, SignatureException, NoSuchProviderException, 
+	InvalidKeyException, InvalidKeySpecException {
 		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 		Certificate[] chain = new Certificate[1];
 		chain[0] = cert;

@@ -3,20 +3,22 @@ package proxies;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 
 import domain.User;
-import helpers.FilesHandler;
 import security.MACService;
 import security.SecUtils;
 
@@ -40,8 +42,11 @@ public class UsersProxy extends Proxy {
 	 * Cria um Map e popula-o através do ficheiro de users (se existir)
 	 *
 	 * @throws IOException
+	 * @throws CertificateException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws KeyStoreException 
      */
-	private UsersProxy() throws IOException {
+	private UsersProxy() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 		this.users = new HashMap<>();
 		this.init();
 	}
@@ -51,8 +56,11 @@ public class UsersProxy extends Proxy {
 	 *
 	 * @return usersProxy para ser usado para persistir Users
 	 * @throws IOException
+	 * @throws CertificateException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws KeyStoreException 
      */
-	public static UsersProxy getInstance() throws IOException {
+	public static UsersProxy getInstance() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 		if (instance == null)
 			instance = new UsersProxy();
 		return instance;
@@ -63,8 +71,11 @@ public class UsersProxy extends Proxy {
 	 * Abre streams de escrita em USERS
 	 *
 	 * @throws IOException
+	 * @throws KeyStoreException 
+	 * @throws CertificateException 
+	 * @throws NoSuchAlgorithmException 
 	 */
-	private void init() throws IOException {
+	private void init() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 		File file = new File(USERS_INDEX);
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
@@ -78,6 +89,11 @@ public class UsersProxy extends Proxy {
 			byte[] salt = SecUtils.getStringHex(arr[1]);
 			byte[] password = SecUtils.getStringHex(arr[2]);
 			User u = new User(arr[0], password, salt );
+			
+			//obter certificado
+			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+			ks.load(new FileInputStream("server-"+arr[0]+".keyStore"), arr[2].toCharArray());
+			u.setCertificate(ks.getCertificate(arr[0]));
 			
 			//add to users
 			this.users.put(u.getName(), u);
@@ -119,7 +135,7 @@ public class UsersProxy extends Proxy {
 		User register = this.users.get(user.getName());
 		byte[] salt = register.getSalt();
 		
-		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
 		md.update(user.getPassword());
 		md.update(":".getBytes());
 		md.update(salt);
@@ -138,9 +154,9 @@ public class UsersProxy extends Proxy {
 	 * @require
 	 * 		!exists(user) && user != null
 	 */
-	public boolean insert(User user) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+	public String insert(User user) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
 		if (this.users.containsKey(user.getName()))
-			return false;
+			return null;
 
 		
 		user.setSalt(SecUtils.generateRandomSalt(8));
@@ -174,7 +190,7 @@ public class UsersProxy extends Proxy {
 			System.out.println("Erro ao escrever no ficheiro USERS");
 			System.out.println(e.fillInStackTrace());
 		}
-		return this.users.containsKey(user.getName());
+		return this.users.containsKey(user.getName()) ? passStr : null;
 	}
 	
 	/**
@@ -193,8 +209,11 @@ public class UsersProxy extends Proxy {
 	 * reloads from the Users file
 	 *
 	 * @throws IOException
+	 * @throws CertificateException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws KeyStoreException 
      */
-	public void reload() throws IOException {
+	public void reload() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
 		this.users = new HashMap<>();
 		init();
 	}

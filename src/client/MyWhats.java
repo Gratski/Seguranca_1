@@ -72,12 +72,12 @@ public class MyWhats {
 			if(!ksFile.exists())
 			{
 				//criar
-//				ks.load(null, parsedInput.get("password").toCharArray());
-//				KeyPair keyPair = SecUtils.generateKeyPair();
-//				privateKey = keyPair.getPrivate();
-//				publicKey = keyPair.getPublic();
-//				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
-//				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
+				ks.load(null, parsedInput.get("password").toCharArray());
+				KeyPair keyPair = SecUtils.generateKeyPair();
+				privateKey = keyPair.getPrivate();
+				publicKey = keyPair.getPublic();
+				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
+				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
 
 			} else {
 
