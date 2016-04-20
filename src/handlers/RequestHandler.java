@@ -68,10 +68,10 @@ public class RequestHandler extends Thread {
 		// Obter request
 		try {
 			clientRequest = (Request) this.connection.getInputStream().readObject();
-		} catch(Exception e){
-			try{
+		} catch(Exception e) {
+			try {
 				this.connection.destroy();
-			}catch(Exception ex){
+			} catch(Exception ex) {
 				this.interrupt();
 			}
 			this.interrupt();
@@ -82,13 +82,12 @@ public class RequestHandler extends Thread {
 			// trata de request
 			reply = parseRequest(clientRequest, key);
 
-		}catch(SecurityException e){
+		} catch(SecurityException e) {
 			System.out.println("Falha de seguranca.");
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 			this.interrupt();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			System.out.println("Erro ao processar o pedido.");
 			 e.printStackTrace();
 			this.interrupt();
@@ -120,7 +119,6 @@ public class RequestHandler extends Thread {
 	 * @require req != null
 	 */
 	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, KeyStoreException, NoSuchProviderException, SignatureException {
-		
 		// autentica se existe, senao cria novo
 		if (!validateUser(req.getUser(), key))
 			return new Reply(400, "User nao autenticado");
@@ -398,7 +396,6 @@ public class RequestHandler extends Thread {
 			}
 
 			User contact = this.userProxy.find(req.getMessage().getTo());
-			System.out.println("CERT" + contact.getCertificate());
 			mapToSend.put(contact.getName(), contact.getCertificate());
 		}
 
@@ -450,6 +447,7 @@ public class RequestHandler extends Thread {
 		// TODO GRAVAR SIGNATURE .sig NA PASTA
 		// TODO GRAVAR CHAVES CIFRADAS NA PASTA
 
+		System.out.println("Pronto para gravar mensagem!");
 		return reply;
 
 
@@ -617,14 +615,15 @@ public class RequestHandler extends Thread {
 		else {
 			
 			//valida integridade de ficheiro de users
-			if(!MACService.validateMAC(Proxy.getUsersIndex(), key))
+			if (!MACService.validateMAC(Proxy.getUsersIndex(), key))
 				return false;
 			//insere
 			valid = this.userProxy.insert(user);
 
 			// Cria keystore com certificado
 			KeyPair keyPair = SecUtils.generateKeyPair();
-			SecUtils.createCertificate(new File("server-" + user.getName() + ".keyStore"), user.getCertificate(), keyPair.getPrivate(), user.getName(), "segredo");
+			SecUtils.createCertificate(new File("server-" + user.getName() + ".keyStore"), user.getCertificate(),
+					keyPair.getPrivate(), user.getName(), SecUtils.getHexString(user.getPassword()));
 			//actualiza mac de users file
 			if (valid)
 				MACService.updateMAC(Proxy.getUsersIndex(), key);

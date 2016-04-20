@@ -10,8 +10,8 @@ import javax.crypto.NoSuchPaddingException;
 
 public class KeyWrapper {
 
-	private static final String ALG = "DES";
-	private static final String CIPHER_ALG = "PBEWithMD5AndDES";
+	private static final String ALG = "RSA";
+	private static final String CIPHER_ALG = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 	
 	private Key key;
 	private byte[]wrappedKey;
@@ -19,6 +19,7 @@ public class KeyWrapper {
 	public KeyWrapper(Key key){
 		this.key = key;
 	}
+
 	public KeyWrapper(byte[] key){
 		this.wrappedKey = key;
 	}
@@ -26,6 +27,7 @@ public class KeyWrapper {
 	public byte[] getWrappedKey(){
 		return this.wrappedKey;
 	}
+
 	public Key getKey(){
 		return this.key;
 	}

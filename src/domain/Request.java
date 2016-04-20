@@ -139,6 +139,14 @@ public class Request extends NetworkMessage implements Serializable {
 	}
 
 	/**
+	 * Verifica se é uma operação de upload de ficheiro
+	 * @return True se for uma operação de upload, false caso contrário
+     */
+	public Boolean isFileUpload(){
+		return this.type.equals("-f");
+	}
+
+	/**
 	 * Override de toString
 	 *
 	 * @return

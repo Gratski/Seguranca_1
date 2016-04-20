@@ -84,7 +84,6 @@ public class MyWhats {
 				FileInputStream fis = new FileInputStream(ksFile);
 				ks.load(fis, parsedInput.get("password").toCharArray());
 				cert = ks.getCertificate(parsedInput.get("username"));
-				System.out.println("Foi buscar Certificate");
 				privateKey = (PrivateKey) ks.getKey(parsedInput.get("username"), parsedInput.get("password").toCharArray());
 			}
 			
@@ -92,7 +91,6 @@ public class MyWhats {
 			Request request = null;
 			try {
 				request = RequestBuilder.make(parsedInput);
-				System.out.println("CERT: " + cert);
 				request.getUser().setCertificate(cert);
 				request.getUser().setPrivateKey(privateKey);
 			} catch (FileNotFoundException e) {
@@ -267,14 +265,12 @@ public class MyWhats {
 		if (reply.hasError())
 			return reply;
 		
+		// Coloca-se a si também na lista
+		members.put(req.getUser().getName(), req.getUser().getCertificate());
+
 		//cifrar K para cada user com a sua publica
 		ArrayList<CipheredKey> keys = cipherAllKeys(members, key);
-		
-		//cifra para si tambem
-		KeyWrapper kw = new KeyWrapper(req.getUser().getCertificate().getPublicKey());
-		kw.wrap(key);
-		CipheredKey ck = new CipheredKey(req.getUser().getName(), kw.getWrappedKey());
-		keys.add(ck);
+
 		//envia chave cifrada com com chaves publicas para o servidor
 		conn.getOutputStream().writeObject(keys);
 
@@ -294,20 +290,14 @@ public class MyWhats {
 	 */
 	private static ArrayList<CipheredKey> cipherAllKeys(Map<String, Certificate> members, Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
 		ArrayList<CipheredKey> keys = new ArrayList<>();
-
 		Set<String> set = members.keySet();
 		String[] names = set.toArray(new String[set.size()]);
-		System.out.println("SIZE: " + members.size());
-		System.out.println("SIZE: " + names.length);
 
 		KeyWrapper kw = null;
-		for(int i = 0; i < names.length; i++)
-		{
-			System.out.println("MEMBER: " + names[i]);
+		for (int i = 0; i < names.length; i++) {
+			System.out.println("Cifrar K com publica de: " + names[i]);
 			String to = names[i];
 			Certificate cert = members.get(to);
-			System.out.println("CERT IN: " + cert);
-			System.out.println("PUBLIC KEY FROM CERT: " + cert.getPublicKey());
 
 			kw = new KeyWrapper(cert.getPublicKey());
 			kw.wrap(key);
@@ -316,32 +306,7 @@ public class MyWhats {
 		}
 		return keys;
 	}
-	
-	/**
-	 * Verifica se uma mensagem eh do type send Message
-	 * @param type, tipo da mensagem a ser analisado
-	 * @return true se eh mensagem, false caso contrario
-	 */
-	private static boolean isMessage(String type){
-		return type.equals("-m");
-	}
-	
-	/**
-	 * Verifica se a operacao envolve ficheiros
-	 *
-	 * @param req Request a considerar
-	 * @return true se opracao de ficheiros, false caso contrario
-	 * @require req != null
-     */
-	private static boolean isFileOperation(Request req){
-		String type = req.getType();
-		return ( type.equals("-f") || ( type.equals("-r") && req.getSpecs().equals("download") ) );
-	}
 
-	private static boolean isFileUpload(String type){
-		return type.equals("-f");
-	}
-	
 	/**
 	 * Recebe um objecto Reply do servidor
 	 * 
@@ -370,7 +335,6 @@ public class MyWhats {
 		}
 	}
 
-	
 	private static void sendKeyToAll(Connection conn, ArrayList<String> names, 
 			ArrayList<Certificate> certs, Key key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
 		

@@ -43,7 +43,7 @@ public class GenericSignature implements Serializable{
 		byte[] hash = md.digest(content);
 		
 		//assina cifra da mensagem
-		Signature signature = Signature.getInstance("SHA256WithRSA");
+		Signature signature = Signature.getInstance("SHA256withRSA");
 		signature.initSign(pkey);
 		signature.update(hash);
 		GenericSignature gs = new GenericSignature(signature.sign());

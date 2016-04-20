@@ -90,7 +90,7 @@ public class SecUtils {
 	public static Certificate generateCertificate(String filename, PublicKey publicKey, PrivateKey privateKey) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeySpecException, InvalidKeyException, NoSuchProviderException, SignatureException{
 		
 		X509CertInfo certInfo = new X509CertInfo();
-		X500Name owner = new X500Name("CN="+filename);
+		X500Name owner = new X500Name("CN=" + filename);
 		BigInteger serialNumber = new BigInteger(64, new SecureRandom());
 		CertificateValidity certValidity = getDefaultCertificateValidity();
 		
@@ -110,8 +110,8 @@ public class SecUtils {
 		certificate.sign(privateKey, "MD5WithRSA");
 		
 		//actualizacao algorithm
-		System.out.println("SENT: "+X509CertImpl.ALG_ID);
-		usedAlgorithm = (AlgorithmId) certificate.get(X509CertImpl.NAME+"."+X509CertImpl.ALG_ID);
+		System.out.println("SENT: " + X509CertImpl.ALG_ID);
+		usedAlgorithm = (AlgorithmId) certificate.get(X509CertImpl.NAME + "." + X509CertImpl.ALG_ID);
 		certInfo.set(CertificateAlgorithmId.NAME + "." + CertificateAlgorithmId.ALGORITHM, usedAlgorithm);
 		
 		//reassinar algorithm
@@ -128,12 +128,10 @@ public class SecUtils {
 	 */
 	public static KeyPair generateKeyPair() throws NoSuchAlgorithmException{
 		KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
-		keyPairGen.initialize(1028);
+		keyPairGen.initialize(2048);
 		return keyPairGen.generateKeyPair();
 	}
-	
-	
-	
+
 	private static CertificateValidity getDefaultCertificateValidity(){
 		Date from = new Date();
 		Date to = new Date(from.getTime() + 10 * 86400000l);
