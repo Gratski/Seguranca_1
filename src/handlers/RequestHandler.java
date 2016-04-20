@@ -19,6 +19,7 @@ import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.Proxy;
 import proxies.UsersProxy;
+import security.CipheredMessage;
 import security.MACService;
 
 /**
@@ -402,17 +403,35 @@ public class RequestHandler extends Thread {
 		reply.setCertificates(mapToSend);
 		this.connection.getOutputStream().writeObject(reply);
 
-
 		// Receber assinatura digital
-		NetworkMessage clientNetworkMessage;
+		NetworkMessage messageWithSignature;
 		try {
-			clientNetworkMessage = (NetworkMessage) this.connection.getInputStream().readObject();
+			messageWithSignature = (NetworkMessage) this.connection.getInputStream().readObject();
+			this.connection.getOutputStream().writeObject(new Reply(200));
 		} catch (ClassNotFoundException e) {
-			System.out.println("Erro ao receber request, depois de enviar nomes e certificados");
 			e.printStackTrace();
+			System.out.println("Erro ao receber assinatura, depois de enviar nomes e certificados");
+			reply.setStatus(400);
+			reply.setMessage("Erro ao receber assinatura, depois de enviar nomes e certificados");
+			return reply;
 		}
+		// TODO GRAVAR SIGNATURE .sig
+
+
 
 		// Receber mensagem cifrada
+		CipheredMessage cipherMessage;
+		try {
+			cipherMessage = (CipheredMessage) this.connection.getInputStream().readObject();
+			this.connection.getOutputStream().writeObject(new Reply(200));
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.out.println("Erro ao receber ciphermessage, depois de enviar assinatura");
+			reply.setStatus(400);
+			reply.setMessage("Erro ao receber ciphermessage, depois de enviar assinatura");
+			return reply;
+		}
+
 
 		// Receber lista de Ks cifrados
 
