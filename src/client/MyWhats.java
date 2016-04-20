@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -156,7 +157,7 @@ public class MyWhats {
 		Reply reply = (Reply) conn.getInputStream().readObject();
 		switch(req.getType()){
 		case "-m":
-			reply = executeSendMessage(conn, req);
+			reply = executeSendMessage(conn, req, reply);
 			break;
 		case "-f":
 			if(reply.hasError())
@@ -190,10 +191,9 @@ public class MyWhats {
 		return reply;
 	}
 
-	private static Reply executeSendMessage(Connection conn, Request req) throws ClassNotFoundException, IOException{
+	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) throws ClassNotFoundException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
 		
-		//receber contact list de server ou erro
-		Reply reply = (Reply) conn.getInputStream().readObject();
+		//receber contact list de server ou error
 		Map<String, Certificate> members = reply.getMembers();
 		
 		//assinar e enviar sintese de mensagem a enviar
