@@ -29,8 +29,12 @@ grant codeBase "file:bin${/}-" {
   permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/GROUP", "read, write";
   permission java.io.FilePermission ".${/}DATABASE/CONVERSATIONS/GROUP/-", "read, write";
 
+  // KeyStore
   permission java.util.PropertyPermission "javax.net.ssl.keyStore", "read, write";
   permission java.util.PropertyPermission "javax.net.ssl.keyStorePassword", "read, write";
+
+  // Certificates
+  permission java.lang.RuntimePermission "accessClassInPackage.sun.security.x509", "read";
 };
 
 grant codeBase "file:${java.home}${/}lib${/}ext${/}*" {

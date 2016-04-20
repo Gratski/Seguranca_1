@@ -5,16 +5,14 @@ import java.io.IOException;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 
 import javax.crypto.SecretKey;
 
-import domain.Conversation;
-import domain.Group;
-import domain.Message;
-import domain.Reply;
-import domain.Request;
-import domain.User;
+import domain.*;
 import helpers.Connection;
 import helpers.FilesHandler;
 import proxies.ConversationsProxy;
@@ -370,20 +368,21 @@ public class RequestHandler extends Thread {
      */
 	private Reply executeSendMessage(Request req) throws IOException {
 		Reply reply = new Reply();
-		Group group = this.groupsProxy.find(req.getMessage().getTo());
 
 		// verifica se o user de destino nao eh o proprio autor
 		if (req.getUser().getName().equals(req.getMessage().getTo())) {
 			reply.setStatus(400);
 			reply.setMessage("with yourself..? o.O");
-		} else if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
+			return reply;
+		}
 
-			boolean inserted = this.convProxy.insertGroupMessage(req.getMessage());
-			if (!inserted) {
-				reply.setStatus(400);
-				reply.setMessage("Erro ao enviar mensagem");
-			} else
-				reply.setStatus(200);
+		HashMap<String, Certificate> mapToSend = new HashMap<>();
+		Group group = this.groupsProxy.find(req.getMessage().getTo());
+		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
+			Collection<User> members = group.getMembers();
+			for (User user : members) {
+				mapToSend.put(user.getName(), user.getCertificate());
+			}
 		}
 		// se nao e para um group
 		else {
@@ -393,10 +392,64 @@ public class RequestHandler extends Thread {
 				reply.setMessage("Destinatário inexistente");
 				return reply;
 			}
-			this.convProxy.insertPrivateMessage(req.getMessage());
-			reply.setStatus(200);
+
+			User contact = this.userProxy.find(req.getMessage().getTo());
+			mapToSend.put(contact.getName(), contact.getCertificate());
 		}
+
+		// Envia certificados e nomes
+		reply.setStatus(200);
+		reply.setCertificates(mapToSend);
+		this.connection.getOutputStream().writeObject(reply);
+
+
+		// Receber assinatura digital
+		NetworkMessage clientNetworkMessage;
+		try {
+			clientNetworkMessage = (NetworkMessage) this.connection.getInputStream().readObject();
+		} catch (ClassNotFoundException e) {
+			System.out.println("Erro ao receber request, depois de enviar nomes e certificados");
+			e.printStackTrace();
+		}
+
+		// Receber mensagem cifrada
+
+		// Receber lista de Ks cifrados
+
+
+
 		return reply;
+
+
+
+		/////////// OLD BUILD - to be updated
+//		Group group = this.groupsProxy.find(req.getMessage().getTo());
+//
+//		// verifica se o user de destino nao eh o proprio autor
+//		if (req.getUser().getName().equals(req.getMessage().getTo())) {
+//			reply.setStatus(400);
+//			reply.setMessage("with yourself..? o.O");
+//		} else if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
+//
+//			boolean inserted = this.convProxy.insertGroupMessage(req.getMessage());
+//			if (!inserted) {
+//				reply.setStatus(400);
+//				reply.setMessage("Erro ao enviar mensagem");
+//			} else
+//				reply.setStatus(200);
+//		}
+//		// se nao e para um group
+//		else {
+//			// verifica se destinatario existe
+//			if (!this.userProxy.exists(new User(req.getMessage().getTo()))) {
+//				reply.setStatus(400);
+//				reply.setMessage("Destinatário inexistente");
+//				return reply;
+//			}
+//			this.convProxy.insertPrivateMessage(req.getMessage());
+//			reply.setStatus(200);
+//		}
+//		return reply;
 	}
 
 	/**

@@ -162,20 +162,28 @@ public class MyWhats {
 		conn.getOutputStream().writeObject(req);
 		
 		//se eh para enviar message
-		if(isMessage(req.getType())){
-			
+		if(req.isMessage()){
+
 			//Obtem certificados de users
-			Map<String, Certificate> members = (HashMap<String, Certificate>) conn.getInputStream().readObject();
+			Reply reply = (Reply) conn.getInputStream().readObject();
+
+			// Se tem erro
+			if (reply.hasError()) {
+				// mandar reply para cima
+				// return reply;
+			}
+
+			Map<String, Certificate> members = reply.getCertificates();
 			ArrayList<String> names =  new ArrayList<>(Arrays.asList((String[]) members.keySet().toArray()));
 			ArrayList<Certificate> certificates = new ArrayList<>(Arrays.asList((Certificate[]) members.values().toArray()));
-			
+
 			//adiciona o certificado do current user e seu nome
 			names.add(req.getUser().getName());
 			certificates.add(req.getUser().getCertificate());
-			
+
 			//generate Simetric Key
 			Key key = SecUtils.generateSymetricKey();
-			
+
 			//send key to all members including me
 			for(int i = 0; i < names.size(); i++){
 				KeyWrapper kw = new KeyWrapper(certificates.get(i).getPublicKey());
@@ -183,7 +191,7 @@ public class MyWhats {
 				conn.getOutputStream()
 				.writeObject(new MessageKey(names.get(i), kw.getWrappedKey()));
 			}
-			
+
 			//send ciphered message
 			Cipher c = Cipher.getInstance("DES");
 			c.init(Cipher.ENCRYPT_MODE, key);
@@ -191,9 +199,9 @@ public class MyWhats {
 			CipheredMessage cm = new CipheredMessage(req.getContact(), msgStr);
 			conn.getOutputStream().writeObject(cm);
 		}
-		
+
 		//se a operacao inclui ficheiros
-		if ( isFileOperation(req) ) {
+		if ( req.isFileOperation() ) {
 			//obtem autorizacao para enviar/receber ficheiro
 			try {
 				Reply auth = (Reply) conn.getInputStream().readObject();
@@ -237,28 +245,7 @@ public class MyWhats {
 			}
 		}
 	}
-
-	/**
-	 * Verifica se uma mensagem eh do type send Message
-	 * @param type, tipo da mensagem a ser analisado
-	 * @return true se eh mensagem, false caso contrario
-	 */
-	private static boolean isMessage(String type){
-		return type.equals("-m") ? true : false;
-	}
 	
-	/**
-	 * Verifica se a operacao envolve ficheiros
-	 *
-	 * @param req Request a considerar
-	 * @return true se opracao de ficheiros, false caso contrario
-	 * @require req != null
-     */
-	private static boolean isFileOperation(Request req){
-		String type = req.getType();
-		return ( type.equals("-f") || ( type.equals("-r") && req.getSpecs().equals("download") ) );
-	}
-
 	/**
 	 * Recebe um objecto Reply do servidor
 	 * 

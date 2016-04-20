@@ -121,6 +121,24 @@ public class Request extends NetworkMessage implements Serializable {
 	}
 
 	/**
+	 * Verifica se uma mensagem eh do type send Message
+	 * @return true se eh mensagem, false caso contrario
+	 */
+	public Boolean isMessage() {
+		return this.type.equals("-m");
+	}
+
+	/**
+	 * Verifica se a operacao envolve ficheiros
+	 *
+	 * @return true se opracao de ficheiros, false caso contrario
+	 * @require req != null
+	 */
+	public Boolean isFileOperation() {
+		return ( this.type.equals("-f") || ( this.type.equals("-r") && this.specification.equals("download") ) );
+	}
+
+	/**
 	 * Override de toString
 	 *
 	 * @return

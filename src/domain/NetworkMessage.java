@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 public class NetworkMessage implements Serializable {
 
-	private String type;
+	protected String type;
 	private User user;
 
 	/**

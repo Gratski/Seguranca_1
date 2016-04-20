@@ -1,8 +1,10 @@
 package domain;
 
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 /**
  * Esta classe representa uma resposta do servidor para o client
@@ -14,6 +16,7 @@ public class Reply extends NetworkMessage implements Serializable {
 	private ArrayList<Conversation> conversations;
 	private int status;
 	private String message;
+	private HashMap<String, Certificate> certificates;
 
 	/**
 	 * Constructor
@@ -22,6 +25,24 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.conversations = null;
 		this.status = 0;
 		this.message = null;
+		this.certificates = null;
+	}
+
+	/**
+	 * Getter para nomes e certificados
+	 *
+	 * @return Hashmap com nomes de users e os seus certificados
+     */
+	public HashMap<String, Certificate> getCertificates() {
+		return this.certificates;
+	}
+
+	/**
+	 * Getter para nomes e certificados
+	 *
+	 */
+	public void setCertificates(HashMap<String, Certificate> certificates) {
+		this.certificates = certificates;
 	}
 
 	/**

@@ -12,6 +12,9 @@ grant codeBase "file:bin${/}-" {
   // KeyStore
   permission java.util.PropertyPermission "javax.net.ssl.trustStore", "read, write";
   permission java.util.PropertyPermission "javax.net.ssl.trustStorePassword", "read, write";
+
+  // Certificates
+  permission java.lang.RuntimePermission "accessClassInPackage.sun.security.x509", "read";
 };
 
 grant codeBase "file:${java.home}${/}lib${/}ext${/}*" {
