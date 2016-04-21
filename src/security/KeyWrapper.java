@@ -14,7 +14,7 @@ public class KeyWrapper {
 	private static final String CIPHER_ALG = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
 	
 	private Key key;
-	private byte[]wrappedKey;
+	private byte[] wrappedKey;
 	
 	public KeyWrapper(Key key){
 		this.key = key;

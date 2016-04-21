@@ -148,7 +148,6 @@ public class Reply extends NetworkMessage implements Serializable {
 		//se ok
 		else {
 			//se eh -r
-			System.out.println("É SUPOSTO ESTARMOS AQUI");
 			if (this.conversations != null) {
 				//se eh apenas de contact
 				if (this.getType().equals("single") && this.conversations.size() == 1) {
