@@ -51,8 +51,9 @@ public class MessagesProxy extends Proxy {
 	 * 		Mensagem a ser registada
 	 * @return
 	 * 		true se registou, false caso contrario
+	 * @throws IOException 
 	 */
-	public boolean persist(String path, String fname, Message msg, Map<String, CipheredKey> keys, GenericSignature sign ) {
+	public boolean persist(String path, String fname, Message msg, Map<String, CipheredKey> keys, GenericSignature sign ) throws IOException {
 		File dir = new File(path + "/" + fname);
 		if(!dir.exists())
 			dir.mkdirs();
@@ -61,79 +62,35 @@ public class MessagesProxy extends Proxy {
 		File file = new File(path + "/" + fname + "/" + "body" + MESSAGE_FILE_EXTENSION);
 		if (file.exists())
 			return false;
-		try {
-			file.createNewFile();
-			FileWriter fw = new FileWriter(file);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			bw.write(toStoreFormat(msg));
-			bw.close();
-			fw.close();
-		} catch(Exception e) {
-			e.printStackTrace();
-			System.out.println("Erro ao persistir mensagem em " + path);
-			return false;
-		}
+		writeToFile(file, toStoreFormat(msg));
 		
 		//grava assinatura
 		file = new File(path + "/" + fname + "/" + "signature.sign");
 		if(file.exists())
 			return false;
-		try {
-			file.createNewFile();
-			FileWriter fw = new FileWriter(file);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			bw.write(SecUtils.getHexString(sign.getSignature()));
-			bw.close();
-			fw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		//grava autor
-		file = new File(path + "/" + fname + "/" +"author");
-		if(file.exists())
-			return false;
-		try {
-			file.createNewFile();
-			FileWriter fw = new FileWriter(file);
-			BufferedWriter bw = new BufferedWriter(fw);
-			
-			bw.write(msg.getFrom());
-			bw.close();
-			fw.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		writeToFile(file, SecUtils.getHexString(sign.getSignature()));
 		
 		//grava chaves
 		Set<String> chaves = keys.keySet();
 		Iterator<String> it = chaves.iterator();
-		try {
-			while(it.hasNext()){
-				String name = it.next();
-				CipheredKey key = keys.get(name);
-				file = new File(path + "/" + fname + "/"+name+".key");
-				file.createNewFile();
-				FileWriter fw = new FileWriter(file);
-				BufferedWriter bw = new BufferedWriter(fw);
-				
-				bw.write(SecUtils.getHexString(key.getKey()));
-				bw.close();
-				fw.close();
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		while(it.hasNext()){
+			String name = it.next();
+			CipheredKey key = keys.get(name);
+			file = new File(path + "/" + fname + "/"+name+".key");
+			writeToFile(file, SecUtils.getHexString(key.getKey()));
 		}
-		
 		
 		return true;
 	}
 
+	private void writeToFile(File f, String content) throws IOException{
+		FileWriter fw = new FileWriter(f);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(content);
+		bw.close();
+		fw.close();
+	}
+	
 	/**
 	 * Private message that has the format in which to store the message in the file
 	 * @param msg

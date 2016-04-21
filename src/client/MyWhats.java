@@ -225,6 +225,7 @@ public class MyWhats {
 		c.init(Cipher.ENCRYPT_MODE, key);
 		byte[] cipheredMsg = c.doFinal(req.getMessage().getBody().getBytes());
 		Message cm = new Message(req.getUser().getName(), req.getContact(), SecUtils.getHexString(cipheredMsg));
+		cm.setType("-t");
 		conn.getOutputStream().writeObject(cm);
 
 		reply = (Reply) conn.getInputStream().readObject();
