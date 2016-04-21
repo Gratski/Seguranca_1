@@ -70,7 +70,7 @@ public class GenericSignature implements Serializable{
 		return gs;
 	}
 	
-	private static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{
+	public static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{
 		return MessageDigest.getInstance(ALGORITHM);
 	}
 }

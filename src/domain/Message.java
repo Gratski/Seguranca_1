@@ -133,6 +133,10 @@ public class Message implements Serializable, Comparable {
 		System.out.println(getHumanDateString());
 	}
 
+	public void setBody(String body){
+		this.body = body;
+	}
+	
 	/**
 	 * Obtem data
 	 *

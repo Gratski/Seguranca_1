@@ -44,4 +44,10 @@ public class KeyWrapper {
 		this.key = c.unwrap(this.wrappedKey, ALG, Cipher.PRIVATE_KEY);
 	}
 	
+	public void unwrapSymmetric(Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException{
+		Cipher c = Cipher.getInstance("AES");
+		c.init(Cipher.UNWRAP_MODE, key);
+		this.key = c.unwrap(this.wrappedKey, ALG, Cipher.PRIVATE_KEY);
+	}
+	
 }
