@@ -17,6 +17,7 @@ public class Message implements Serializable, Comparable {
 	private String from, to, body, type;
 	private Date timestamp;
 	private GenericSignature signature;
+	private byte[] key;
 
 	/**
 	 * Constructor
@@ -43,6 +44,14 @@ public class Message implements Serializable, Comparable {
 		this.to = null;
 		this.body = body;
 		this.timestamp = null;
+	}
+
+	public byte[] getKey() {
+		return key;
+	}
+
+	public void setKey(byte[] key) {
+		this.key = key;
 	}
 
 	public GenericSignature getSignature() {

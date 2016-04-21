@@ -74,13 +74,12 @@ public class MyWhats {
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
 			//create keyStore if needed
-			File ksFile = new File("keys/clients/"+parsedInput.get("username") + ".keyStore");
+			File ksFile = new File("keys/clients/" + parsedInput.get("username") + ".keyStore");
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			Certificate cert = null;
 			PrivateKey privateKey = null;
 			PublicKey publicKey = null;
-			if(!ksFile.exists())
-			{
+			if (!ksFile.exists()) {
 //				//criar
 //				ks.load(null, parsedInput.get("password").toCharArray());
 //				KeyPair keyPair = SecUtils.generateKeyPair();
@@ -131,7 +130,9 @@ public class MyWhats {
 			Reply reply = sendRequest(connection, request);
 			
 			// Imprime server reply
+			System.out.println("É SUPOSTO ESTARMOS AQUI 1");
 			reply.prettyPrint(request.getUser());
+			System.out.println("É SUPOSTO ESTARMOS AQUI 3");
 
 			// Fecha connection
 			connection.destroy();

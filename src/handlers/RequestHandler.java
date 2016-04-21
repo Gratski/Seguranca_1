@@ -17,6 +17,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
 import domain.Conversation;
@@ -129,7 +132,7 @@ public class RequestHandler extends Thread {
 	 *
 	 * @require req != null
 	 */
-	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, KeyStoreException, NoSuchProviderException, SignatureException {
+	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, KeyStoreException, NoSuchProviderException, SignatureException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
 		// autentica se existe, senao cria novo
 		if (!validateUser(req.getUser(), key))
 			return new Reply(400, "User nao autenticado");
@@ -137,7 +140,6 @@ public class RequestHandler extends Thread {
 		// executa o request
 		return executeRequest(req, key);
 	}
-
 
 	/**
 	 * Executa o request
@@ -150,7 +152,7 @@ public class RequestHandler extends Thread {
 	 *
 	 * @require req != null
      */
-	private Reply executeRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+	private Reply executeRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
 		Reply reply = new Reply();
 
 		//verifica se a integridade foi comprometida
@@ -277,7 +279,7 @@ public class RequestHandler extends Thread {
 	 * @throws IOException
 	 * @require req != null && req.getUser() != null
      */
-	private Reply getConversation(Request req) throws IOException {
+	private Reply getConversation(Request req) throws IOException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
 		Reply reply = new Reply();
 
 		//obtem a conversacao entre user e contacto
@@ -287,6 +289,7 @@ public class RequestHandler extends Thread {
 		if (conversation == null) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
+			System.out.println(reply);
 		} else {
 			reply.setStatus(200);
 			reply.setType("single");

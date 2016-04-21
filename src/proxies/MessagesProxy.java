@@ -58,25 +58,25 @@ public class MessagesProxy extends Proxy {
 		if(!dir.exists())
 			dir.mkdirs();
 		
-		//grava mensagem
+		// grava mensagem
 		File file = new File(path + "/" + fname + "/" + "body" + MESSAGE_FILE_EXTENSION);
 		if (file.exists())
 			return false;
 		writeToFile(file, toStoreFormat(msg));
 		
-		//grava assinatura
+		// grava assinatura
 		file = new File(path + "/" + fname + "/" + "signature.sign");
-		if(file.exists())
+		if (file.exists())
 			return false;
 		writeToFile(file, SecUtils.getHexString(sign.getSignature()));
 		
-		//grava chaves
+		// grava chaves
 		Set<String> chaves = keys.keySet();
 		Iterator<String> it = chaves.iterator();
-		while(it.hasNext()){
+		while (it.hasNext()) {
 			String name = it.next();
 			CipheredKey key = keys.get(name);
-			file = new File(path + "/" + fname + "/"+name+".key");
+			file = new File(path + "/" + fname + "/" + name + ".key");
 			writeToFile(file, SecUtils.getHexString(key.getKey()));
 		}
 		

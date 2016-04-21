@@ -5,6 +5,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
@@ -16,6 +18,11 @@ import domain.Message;
 import domain.User;
 import security.CipheredKey;
 import security.GenericSignature;
+import security.SecUtils;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 /**
  * Esta classe representa o responsavel pelo acesso e manutencao
@@ -230,12 +237,14 @@ public class ConversationsProxy extends Proxy {
 	 * 		se houver algum erro
 	 * @throws IOException
      */
-	public Conversation getConversationBetween(String user, String contact) throws IOException {
+	public Conversation getConversationBetween(String user, String contact) throws IOException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
 		Group group = GroupsProxy.getInstance().find(contact);
 		String path = userHasConversationWith(user, contact);
+		System.out.println("PATH entre: " + user + " e " + contact);
 		if (path == null)
 			return null;
 
+		System.out.println("PATH SUPOSTO: " + path);
 		File f = new File(path);
 		int messagesNum = 0;
 		try {
@@ -254,7 +263,7 @@ public class ConversationsProxy extends Proxy {
 		}
 
 		for (int i = 1; i <= messagesNum; i++) {
-			File f2 = new File(path + "/" + i + MESSAGE_FILE_EXTENSION);
+			File f2 = new File(path + "/" + i + "/" + "body" + MESSAGE_FILE_EXTENSION);
 			FileReader fr = new FileReader(f2);
 			BufferedReader br = new BufferedReader(fr);
 			String line;
@@ -265,13 +274,12 @@ public class ConversationsProxy extends Proxy {
 				String timeInMilliseconds = split[0];
 				String from = split[1];
 				String type = split[2];
-
-				split = line.split(type);
-				String messageBody = split[1];
+				String messageBody = split[3];
 
 				message = new Message(from, messageBody);
 				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
-				message.setSignature();
+				message.setSignature(GenericSignature.readSignatureFromFile(path + "/" + i + "/" + "signature.sig"));
+				message.setKey(SecUtils.readKeyFromFile(path + "/" + i + "/" + user + ".key"));
 				conversation.addMessage(message);
 			} else {
 				br.close();

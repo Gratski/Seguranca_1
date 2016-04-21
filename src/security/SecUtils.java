@@ -1,8 +1,6 @@
 package security;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.cert.Certificate;
@@ -151,5 +149,13 @@ public class SecUtils {
 		FileOutputStream fos = new FileOutputStream(ksFile);
 		ks.store(fos, password.toCharArray());
 		fos.close();
+	}
+
+	public static byte[] readKeyFromFile(String path) throws IOException {
+		File fileKey = new File(path);
+		BufferedReader bis = new BufferedReader(new FileReader(fileKey));
+		String keyAsString = bis.readLine();
+		bis.close();
+		return SecUtils.getStringHex(keyAsString);
 	}
 }

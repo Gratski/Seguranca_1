@@ -1,9 +1,8 @@
 package security;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.Serializable;
+import com.sun.tools.doclets.internal.toolkit.util.DocFinder;
+
+import java.io.*;
 import java.security.*;
 
 import javax.crypto.BadPaddingException;
@@ -65,6 +64,13 @@ public class GenericSignature implements Serializable{
 		c.init(Cipher.ENCRYPT_MODE, privateKey);
 		c.update(hash);
 		return new GenericSignature(c.doFinal());
+	}
+
+	public static GenericSignature readSignatureFromFile(String path) throws NoSuchAlgorithmException, IOException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+		BufferedReader bis = new BufferedReader(new FileReader(path));
+		String signatureAsString = bis.readLine();
+		bis.close();
+		return new GenericSignature(SecUtils.getStringHex(signatureAsString));
 	}
 	
 	private static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{
