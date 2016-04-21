@@ -3,12 +3,24 @@ package client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.util.*;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -22,10 +34,10 @@ import domain.Message;
 import domain.NetworkMessage;
 import domain.Reply;
 import domain.Request;
+import domain.User;
 import helpers.Connection;
 import helpers.FilesHandler;
 import security.CipheredKey;
-import security.CipheredMessage;
 import security.GenericSignature;
 import security.KeyWrapper;
 import security.MessageKey;
@@ -70,13 +82,13 @@ public class MyWhats {
 			PublicKey publicKey = null;
 			if(!ksFile.exists())
 			{
-				//criar
-				ks.load(null, parsedInput.get("password").toCharArray());
-				KeyPair keyPair = SecUtils.generateKeyPair();
-				privateKey = keyPair.getPrivate();
-				publicKey = keyPair.getPublic();
-				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
-				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
+//				//criar
+//				ks.load(null, parsedInput.get("password").toCharArray());
+//				KeyPair keyPair = SecUtils.generateKeyPair();
+//				privateKey = keyPair.getPrivate();
+//				publicKey = keyPair.getPublic();
+//				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
+//				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
 
 			} else {
 
@@ -173,9 +185,7 @@ public class MyWhats {
 						reply = new Reply(200, "Ficheiro descarregado.");
 				}
 			}else{
-				
-				reply = executeReceiveMessages(conn, req);
-				
+				reply = executeReceiveMessages(conn, req);	
 			}
 			
 			break;
@@ -184,6 +194,7 @@ public class MyWhats {
 		return reply;
 	}
 
+	
 	private static Reply executeReceiveMessages(Connection conn, Request req) {
 		
 		//obtem a lista de conversations
@@ -204,7 +215,9 @@ public class MyWhats {
 	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) throws ClassNotFoundException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		
 		//receber contact list de server ou error
-		Map<String, Certificate> members = reply.getCertificates();
+		//TODO -> Substituir por get 
+		String[] names = reply.getCertificates();
+		Map<String, Certificate> members = getCertificates(names);
 		
 		//assinar e enviar assinatura de mensagem a enviar
 		GenericSignature gs = GenericSignature.createGenericMessageSignature(
@@ -314,4 +327,22 @@ public class MyWhats {
 		}
 		
 	}
+	
+	
+	private static Map<String, Certificate> getCertificates(String[] aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
+		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+		ks.load(new FileInputStream(user.getName()+".keyStore"), new String(user.getPassword()).toCharArray());
+		
+		Map<String, Certificate> certs = new HashMap<String, Certificate>();
+		for(int i = 0; i < aliases.length; i++)
+		{
+			Certificate cert = ks.getCertificate(aliases[i]);
+			certs.put(aliases[i], cert);
+		}
+		
+		Certificate cert = ks.getCertificate(user.getName());
+		certs.put(user.getName(), cert);
+		return certs;
+	}
+	
 }
