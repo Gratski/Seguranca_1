@@ -271,6 +271,7 @@ public class ConversationsProxy extends Proxy {
 
 				message = new Message(from, messageBody);
 				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
+				message.setSignature();
 				conversation.addMessage(message);
 			} else {
 				br.close();

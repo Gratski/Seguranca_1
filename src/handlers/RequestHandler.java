@@ -390,12 +390,12 @@ public class RequestHandler extends Thread {
 			return reply;
 		}
 
-		HashMap<String, Certificate> mapToSend = new HashMap<>();
+		ArrayList<String> membersToSend = new ArrayList<>();
 		Group group = this.groupsProxy.find(req.getMessage().getTo());
 		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
 			Collection<User> members = group.getMembers();
 			for (User user : members) {
-				mapToSend.put(user.getName(), user.getCertificate());
+				membersToSend.add(user.getName());
 			}
 		}
 		// se nao e para um group
@@ -408,12 +408,12 @@ public class RequestHandler extends Thread {
 			}
 
 			User contact = this.userProxy.find(req.getMessage().getTo());
-			mapToSend.put(contact.getName(), contact.getCertificate());
+			membersToSend.add(contact.getName());
 		}
 
 		// Envia certificados e nomes
 		reply.setStatus(200);
-		reply.setCertificates(mapToSend);
+		reply.setMembers(membersToSend);
 		this.connection.getOutputStream().writeObject(reply);
 
 		// Receber assinatura digital
@@ -455,25 +455,22 @@ public class RequestHandler extends Thread {
 			return reply;
 		}
 
-		// TODO CRIAR PASTA COM PARA NOVA MENSAGEM
-		// TODO GRAVAR SIGNATURE .sig NA PASTA
-		
-		// TODO GRAVAR CHAVES CIFRADAS NA PASTA
+
 		//se eh para group
 		boolean inserted = false;
-		if(group != null)
-		{
+		if (group != null) {
 			inserted = 
 					this.convProxy.insertGroupMessage(cipherMessage, cipheredKeys, 
 							messageWithSignature.getSignature());
 		}
 		//se eh para private
-		else{
+		else {
 			inserted = this.convProxy.insertPrivateMessage(cipherMessage, cipheredKeys,
 					messageWithSignature.getSignature());
 		}
 		
-		System.out.println("Pronto para gravar mensagem!");
+		System.out.println("Gravou mensagem!");
+		reply.setStatus(200);
 		return reply;
 
 
@@ -649,12 +646,6 @@ public class RequestHandler extends Thread {
 
 			//actualiza mac de users file
 			if (valid){
-				
-				// Cria keystore com certificado
-				KeyPair keyPair = SecUtils.generateKeyPair();
-				SecUtils.createCertificate(new File("server-" + user.getName() + ".keyStore"), user.getCertificate(),
-						keyPair.getPrivate(), user.getName(), password);
-				
 				MACService.updateMAC(Proxy.getUsersIndex(), key);
 			}
 			

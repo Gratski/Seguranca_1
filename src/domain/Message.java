@@ -1,6 +1,9 @@
 package domain;
 
+import security.GenericSignature;
+
 import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.Comparator;
 import java.util.Date;
 
@@ -13,6 +16,7 @@ public class Message implements Serializable, Comparable {
 
 	private String from, to, body, type;
 	private Date timestamp;
+	private GenericSignature signature;
 
 	/**
 	 * Constructor
@@ -39,6 +43,14 @@ public class Message implements Serializable, Comparable {
 		this.to = null;
 		this.body = body;
 		this.timestamp = null;
+	}
+
+	public GenericSignature getSignature() {
+		return signature;
+	}
+
+	public void setSignature(GenericSignature signature) {
+		this.signature = signature;
 	}
 
 	/**

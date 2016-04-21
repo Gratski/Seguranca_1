@@ -46,18 +46,16 @@ public class GenericSignature implements Serializable{
 		Signature signature = Signature.getInstance("SHA256withRSA");
 		signature.initSign(pkey);
 		signature.update(hash);
-		GenericSignature gs = new GenericSignature(signature.sign());
-		return gs;
+		return new GenericSignature(signature.sign());
 	}
 	
 	public static GenericSignature createGenericFileSignature(PrivateKey privateKey, File file) throws NoSuchAlgorithmException, IOException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
-		
 		//gerar sintese de ficheiro
 		MessageDigest md = getMessageDigest();
 		byte[] hash = new byte[16];
 		int sent = 0;
 		FileInputStream fis = new FileInputStream(file);
-		while((sent=fis.read(hash))>0){
+		while ((sent = fis.read(hash)) > 0) {
 			md.update(hash, 0, sent);
 		}
 		hash = md.digest();
@@ -66,8 +64,7 @@ public class GenericSignature implements Serializable{
 		Cipher c = Cipher.getInstance(ALGORITHM);
 		c.init(Cipher.ENCRYPT_MODE, privateKey);
 		c.update(hash);
-		GenericSignature gs = new GenericSignature(c.doFinal());
-		return gs;
+		return new GenericSignature(c.doFinal());
 	}
 	
 	private static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{

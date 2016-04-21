@@ -16,7 +16,7 @@ public class Reply extends NetworkMessage implements Serializable {
 	private ArrayList<Conversation> conversations;
 	private int status;
 	private String message;
-	private HashMap<String, Certificate> certificates;
+	private ArrayList<String> members;
 
 	/**
 	 * Constructor
@@ -25,24 +25,15 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.conversations = null;
 		this.status = 0;
 		this.message = null;
-		this.certificates = null;
+		this.members = null;
 	}
 
-	/**
-	 * Getter para nomes e certificados
-	 *
-	 * @return Hashmap com nomes de users e os seus certificados
-     */
-	public HashMap<String, Certificate> getCertificates() {
-		return this.certificates;
+	public ArrayList<String> getMembers() {
+		return members;
 	}
 
-	/**
-	 * Getter para nomes e certificados
-	 *
-	 */
-	public void setCertificates(HashMap<String, Certificate> certificates) {
-		this.certificates = certificates;
+	public void setMembers(ArrayList<String> members) {
+		this.members = members;
 	}
 
 	/**
