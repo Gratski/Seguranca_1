@@ -90,11 +90,6 @@ public class UsersProxy extends Proxy {
 			byte[] password = SecUtils.getStringHex(arr[2]);
 			User u = new User(arr[0], password, salt );
 			
-			//obter certificado
-			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-			ks.load(new FileInputStream("server-"+arr[0]+".keyStore"), arr[2].toCharArray());
-			u.setCertificate(ks.getCertificate(arr[0]));
-			
 			//add to users
 			this.users.put(u.getName(), u);
 		}

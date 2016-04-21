@@ -3,12 +3,23 @@ package client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.util.*;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -22,10 +33,10 @@ import domain.Message;
 import domain.NetworkMessage;
 import domain.Reply;
 import domain.Request;
+import domain.User;
 import helpers.Connection;
 import helpers.FilesHandler;
 import security.CipheredKey;
-import security.CipheredMessage;
 import security.GenericSignature;
 import security.KeyWrapper;
 import security.MessageKey;
@@ -63,20 +74,20 @@ public class MyWhats {
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
 			//create keyStore if needed
-			File ksFile = new File(parsedInput.get("username") + ".keyStore");
+			File ksFile = new File("keys/clients/"+parsedInput.get("username") + ".keyStore");
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			Certificate cert = null;
 			PrivateKey privateKey = null;
 			PublicKey publicKey = null;
 			if(!ksFile.exists())
 			{
-				//criar
-				ks.load(null, parsedInput.get("password").toCharArray());
-				KeyPair keyPair = SecUtils.generateKeyPair();
-				privateKey = keyPair.getPrivate();
-				publicKey = keyPair.getPublic();
-				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
-				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
+//				//criar
+//				ks.load(null, parsedInput.get("password").toCharArray());
+//				KeyPair keyPair = SecUtils.generateKeyPair();
+//				privateKey = keyPair.getPrivate();
+//				publicKey = keyPair.getPublic();
+//				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
+//				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
 
 			} else {
 
@@ -111,7 +122,7 @@ public class MyWhats {
 			}
 
 			// estabelece ligacao
-			System.setProperty("javax.net.ssl.trustStore", "certificates.trustStore");
+			System.setProperty("javax.net.ssl.trustStore", "keys/certificates.trustStore");
 			SocketFactory sf = SSLSocketFactory.getDefault();
 			Socket socket = sf.createSocket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port")));
 			Connection connection = new Connection(socket);
@@ -145,6 +156,8 @@ public class MyWhats {
 		conn.getOutputStream().writeObject(req);
 
 		Reply reply = (Reply) conn.getInputStream().readObject();
+		if(reply == null)
+			System.out.println("Its null");
 		switch (req.getType()) {
 		case "-m":
 			if (!reply.hasError())
@@ -173,9 +186,7 @@ public class MyWhats {
 						reply = new Reply(200, "Ficheiro descarregado.");
 				}
 			}else{
-				
-				reply = executeReceiveMessages(conn, req);
-				
+				reply = executeReceiveMessages(conn, req);	
 			}
 			
 			break;
@@ -184,6 +195,7 @@ public class MyWhats {
 		return reply;
 	}
 
+	
 	private static Reply executeReceiveMessages(Connection conn, Request req) {
 		
 		//obtem a lista de conversations
@@ -201,10 +213,16 @@ public class MyWhats {
 		return null;
 	}
 
-	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) throws ClassNotFoundException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) 
+			throws ClassNotFoundException, IOException, IllegalBlockSizeException, 
+			NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, 
+			InvalidKeyException, SignatureException, CertificateException, 
+			KeyStoreException {
 		
 		//receber contact list de server ou error
-		Map<String, Certificate> members = reply.getCertificates();
+		//TODO -> Substituir por get 
+		ArrayList<String> names = reply.getNames();
+		Map<String, Certificate> members = getCertificates(names, req.getUser());
 		
 		//assinar e enviar assinatura de mensagem a enviar
 		GenericSignature gs = GenericSignature.createGenericMessageSignature(
@@ -314,4 +332,22 @@ public class MyWhats {
 		}
 		
 	}
+	
+	
+	private static Map<String, Certificate> getCertificates(ArrayList<String> aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
+		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+		ks.load(new FileInputStream("keys/clients/"+user.getName()+".keyStore"), new String(user.getPassword()).toCharArray());
+		
+		Map<String, Certificate> certs = new HashMap<String, Certificate>();
+		for(int i = 0; i < aliases.size(); i++)
+		{
+			Certificate cert = ks.getCertificate(aliases.get(i));
+			certs.put(aliases.get(i), cert);
+		}
+		
+		Certificate cert = ks.getCertificate(user.getName());
+		certs.put(user.getName(), cert);
+		return certs;
+	}
+	
 }
