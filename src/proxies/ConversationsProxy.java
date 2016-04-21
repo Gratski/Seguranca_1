@@ -14,6 +14,8 @@ import domain.Conversation;
 import domain.Group;
 import domain.Message;
 import domain.User;
+import security.CipheredKey;
+import security.GenericSignature;
 
 /**
  * Esta classe representa o responsavel pelo acesso e manutencao
@@ -303,7 +305,7 @@ public class ConversationsProxy extends Proxy {
 	 *
 	 * @throws IOException
 	 */
-	public boolean insertGroupMessage(Message msg) throws IOException {
+	public boolean insertGroupMessage(Message msg, Map<String, CipheredKey> keys, GenericSignature sign) throws IOException {
 		//criar pasta de group
 		File file = new File(CONVERSATIONS_GROUP + msg.getTo());
 		
@@ -312,7 +314,7 @@ public class ConversationsProxy extends Proxy {
 		boolean res = MessagesProxy.getInstance().persist(
 				CONVERSATIONS_GROUP + msg.getTo(),
 				"" + file.list().length,
-				msg);
+				msg, keys, sign);
 		return res;
 	}
 
@@ -358,7 +360,7 @@ public class ConversationsProxy extends Proxy {
 	 * 		msg != null
 	 * @throws IOException
 	 */
-	public boolean insertPrivateMessage(Message msg) throws IOException {
+	public boolean insertPrivateMessage(Message msg, Map<String, CipheredKey> keys, GenericSignature sign) throws IOException {
 		String folder = null;
 		if ( (folder = this.getConversationID(msg.getFrom(), msg.getTo())) == null)
 			if ((folder = this.add(msg.getFrom(), msg.getTo())) == null)
@@ -373,7 +375,7 @@ public class ConversationsProxy extends Proxy {
 			return false;
 		
 		//cria file de mensagem
-		return MessagesProxy.getInstance().persist(CONVERSATIONS_PRIVATE + folder, "" + file.list().length, msg);
+		return MessagesProxy.getInstance().persist(CONVERSATIONS_PRIVATE + folder, "" + file.list().length, msg, keys, sign);
 	}
 
 	/**

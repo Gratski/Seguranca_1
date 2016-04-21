@@ -63,7 +63,6 @@ public class MyWhats {
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
 			//create keyStore if needed
-			
 			File ksFile = new File(parsedInput.get("username") + ".keyStore");
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			Certificate cert = null;
@@ -145,60 +144,6 @@ public class MyWhats {
 		// send base request
 		conn.getOutputStream().writeObject(req);
 
-		//se eh para enviar message
-//		if (req.isMessage()) {
-//
-//			//Obtem certificados de users
-//			Reply reply = (Reply) conn.getInputStream().readObject();
-//
-//			// Se tem erro
-//			if (reply.hasError()) {
-//				// mandar reply para cima
-//				// return reply;
-//			}
-//
-//			Map<String, Certificate> members = reply.getCertificates();
-//			ArrayList<String> names =  new ArrayList<>(Arrays.asList((String[]) members.keySet().toArray()));
-//			ArrayList<Certificate> certificates = new ArrayList<>(Arrays.asList((Certificate[]) members.values().toArray()));
-//
-//			//adiciona o certificado do current user e seu nome
-//			names.add(req.getUser().getName());
-//			certificates.add(req.getUser().getCertificate());
-//
-//			//generate Simetric Key
-//			Key key = SecUtils.generateSymetricKey();
-//
-//			//send key to all members including me
-//			for(int i = 0; i < names.size(); i++){
-//				KeyWrapper kw = new KeyWrapper(certificates.get(i).getPublicKey());
-//				kw.wrap(key);
-//				conn.getOutputStream()
-//						.writeObject(new MessageKey(names.get(i), kw.getWrappedKey()));
-//			}
-//
-//			//send ciphered message
-//			Cipher c = Cipher.getInstance("DES");
-//			c.init(Cipher.ENCRYPT_MODE, key);
-//			byte[]msgStr = c.doFinal(req.getMessage().getBody().getBytes());
-//			CipheredMessage cm = new CipheredMessage(req.getContact(), msgStr);
-//			conn.getOutputStream().writeObject(cm);
-//		}
-//
-//		//se a operacao inclui ficheiros
-//		if ( req.isFileOperation() ) {
-//			//obtem autorizacao para enviar/receber ficheiro
-//			try {
-//				Reply auth = (Reply) conn.getInputStream().readObject();
-//				//se nao autorizado
-//				if (auth.getStatus() != 200) {
-//					upload_error = true;
-//					return;
-//				}
-//			} catch (ClassNotFoundException e) {
-//				throw new IOException();
-//			}
-//		}
-
 		Reply reply = (Reply) conn.getInputStream().readObject();
 		switch (req.getType()) {
 		case "-m":
@@ -227,12 +172,33 @@ public class MyWhats {
 					else
 						reply = new Reply(200, "Ficheiro descarregado.");
 				}
+			}else{
+				
+				reply = executeReceiveMessages(conn, req);
+				
 			}
 			
 			break;
 		}
 		
 		return reply;
+	}
+
+	private static Reply executeReceiveMessages(Connection conn, Request req) {
+		
+		//obtem a lista de conversations
+		
+		//para cada conversation
+		///para cada mensagem
+		///obter sintese S de mensagem
+		///obter chave K
+		///decifrar chave K com minha chave privada
+		///decifrar mensagem
+		///gerar sintese de mensagem
+		///comparar sintese de mensagem com sintese S
+		
+		
+		return null;
 	}
 
 	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) throws ClassNotFoundException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
@@ -258,7 +224,7 @@ public class MyWhats {
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, key);
 		byte[] cipheredMsg = c.doFinal(req.getMessage().getBody().getBytes());
-		Message cm = new Message(req.getContact(), SecUtils.getHexString(cipheredMsg));
+		Message cm = new Message(req.getUser().getName(), req.getContact(), SecUtils.getHexString(cipheredMsg));
 		conn.getOutputStream().writeObject(cm);
 
 		reply = (Reply) conn.getInputStream().readObject();
@@ -269,7 +235,7 @@ public class MyWhats {
 		members.put(req.getUser().getName(), req.getUser().getCertificate());
 
 		//cifrar K para cada user com a sua publica
-		ArrayList<CipheredKey> keys = cipherAllKeys(members, key);
+		Map<String, CipheredKey> keys = cipherAllKeys(members, key);
 
 		//envia chave cifrada com com chaves publicas para o servidor
 		conn.getOutputStream().writeObject(keys);
@@ -288,8 +254,8 @@ public class MyWhats {
 	 * @throws NoSuchPaddingException
 	 * @throws IllegalBlockSizeException
 	 */
-	private static ArrayList<CipheredKey> cipherAllKeys(Map<String, Certificate> members, Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
-		ArrayList<CipheredKey> keys = new ArrayList<>();
+	private static Map<String, CipheredKey> cipherAllKeys(Map<String, Certificate> members, Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
+		Map<String, CipheredKey> keys = new HashMap<>();
 		Set<String> set = members.keySet();
 		String[] names = set.toArray(new String[set.size()]);
 
@@ -302,7 +268,8 @@ public class MyWhats {
 			kw = new KeyWrapper(cert.getPublicKey());
 			kw.wrap(key);
 			CipheredKey ck = new CipheredKey(to, kw.getWrappedKey());
-			keys.add(ck);
+			
+			keys.put(names[i], ck);
 		}
 		return keys;
 	}

@@ -3,17 +3,29 @@ package handlers;
 import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
-import java.security.*;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 
-import domain.*;
+import domain.Conversation;
+import domain.Group;
+import domain.Message;
+import domain.NetworkMessage;
+import domain.Reply;
+import domain.Request;
+import domain.User;
 import helpers.Connection;
 import helpers.FilesHandler;
 import proxies.ConversationsProxy;
@@ -21,7 +33,6 @@ import proxies.GroupsProxy;
 import proxies.Proxy;
 import proxies.UsersProxy;
 import security.CipheredKey;
-import security.CipheredMessage;
 import security.MACService;
 import security.SecUtils;
 
@@ -342,9 +353,10 @@ public class RequestHandler extends Thread {
 		//envia mensagem
 		boolean ok = true;
 		if (isGroup)
-			ok = this.convProxy.insertGroupMessage(req.getMessage());
+			//TODO -> Alterar isto para guardar sintese e chaves K
+			ok = this.convProxy.insertGroupMessage(req.getMessage(), null, null);
 		else
-			ok = this.convProxy.insertPrivateMessage(req.getMessage());
+			ok = this.convProxy.insertPrivateMessage(req.getMessage(), null, null);
 		
 		//envia feedback ao user
 		if (ok)
@@ -431,9 +443,9 @@ public class RequestHandler extends Thread {
 		}
 
 		// Receber lista de Ks cifrados
-		ArrayList<CipheredKey> cipheredKeys;
+		Map<String, CipheredKey> cipheredKeys;
 		try {
-			cipheredKeys = (ArrayList<CipheredKey>) this.connection.getInputStream().readObject();
+			cipheredKeys = (Map<String, CipheredKey>) this.connection.getInputStream().readObject();
 			this.connection.getOutputStream().writeObject(new Reply(200));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -445,8 +457,22 @@ public class RequestHandler extends Thread {
 
 		// TODO CRIAR PASTA COM PARA NOVA MENSAGEM
 		// TODO GRAVAR SIGNATURE .sig NA PASTA
+		
 		// TODO GRAVAR CHAVES CIFRADAS NA PASTA
-
+		//se eh para group
+		boolean inserted = false;
+		if(group != null)
+		{
+			inserted = 
+					this.convProxy.insertGroupMessage(cipherMessage, cipheredKeys, 
+							messageWithSignature.getSignature());
+		}
+		//se eh para private
+		else{
+			inserted = this.convProxy.insertPrivateMessage(cipherMessage, cipheredKeys,
+					messageWithSignature.getSignature());
+		}
+		
 		System.out.println("Pronto para gravar mensagem!");
 		return reply;
 
