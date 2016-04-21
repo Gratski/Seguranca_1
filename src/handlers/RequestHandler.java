@@ -390,12 +390,12 @@ public class RequestHandler extends Thread {
 			return reply;
 		}
 
-		HashMap<String, Certificate> mapToSend = new HashMap<>();
+		ArrayList<String> names = new ArrayList<>();
 		Group group = this.groupsProxy.find(req.getMessage().getTo());
 		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
 			Collection<User> members = group.getMembers();
 			for (User user : members) {
-				mapToSend.put(user.getName(), user.getCertificate());
+				names.add(user.getName());
 			}
 		}
 		// se nao e para um group
@@ -408,12 +408,12 @@ public class RequestHandler extends Thread {
 			}
 
 			User contact = this.userProxy.find(req.getMessage().getTo());
-			mapToSend.put(contact.getName(), contact.getCertificate());
+			names.add(contact.getName());
 		}
 
 		// Envia certificados e nomes
 		reply.setStatus(200);
-		reply.setCertificates(mapToSend);
+		reply.setNames(names);
 		this.connection.getOutputStream().writeObject(reply);
 
 		// Receber assinatura digital
@@ -651,9 +651,9 @@ public class RequestHandler extends Thread {
 			if (valid){
 				
 				// Cria keystore com certificado
-				KeyPair keyPair = SecUtils.generateKeyPair();
-				SecUtils.createCertificate(new File("server-" + user.getName() + ".keyStore"), user.getCertificate(),
-						keyPair.getPrivate(), user.getName(), password);
+//				KeyPair keyPair = SecUtils.generateKeyPair();
+//				SecUtils.createCertificate(new File("keys/server/" + user.getName() + ".keyStore"), user.getCertificate(),
+//						keyPair.getPrivate(), user.getName(), password);
 				
 				MACService.updateMAC(Proxy.getUsersIndex(), key);
 			}

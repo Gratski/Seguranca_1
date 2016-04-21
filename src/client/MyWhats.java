@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.Key;
-import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -75,7 +74,7 @@ public class MyWhats {
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
 			//create keyStore if needed
-			File ksFile = new File(parsedInput.get("username") + ".keyStore");
+			File ksFile = new File("keys/clients/"+parsedInput.get("username") + ".keyStore");
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 			Certificate cert = null;
 			PrivateKey privateKey = null;
@@ -123,7 +122,7 @@ public class MyWhats {
 			}
 
 			// estabelece ligacao
-			System.setProperty("javax.net.ssl.trustStore", "certificates.trustStore");
+			System.setProperty("javax.net.ssl.trustStore", "keys/certificates.trustStore");
 			SocketFactory sf = SSLSocketFactory.getDefault();
 			Socket socket = sf.createSocket(parsedInput.get("ip"), Integer.parseInt(parsedInput.get("port")));
 			Connection connection = new Connection(socket);
@@ -157,6 +156,8 @@ public class MyWhats {
 		conn.getOutputStream().writeObject(req);
 
 		Reply reply = (Reply) conn.getInputStream().readObject();
+		if(reply == null)
+			System.out.println("Its null");
 		switch (req.getType()) {
 		case "-m":
 			if (!reply.hasError())
@@ -212,12 +213,16 @@ public class MyWhats {
 		return null;
 	}
 
-	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) throws ClassNotFoundException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) 
+			throws ClassNotFoundException, IOException, IllegalBlockSizeException, 
+			NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, 
+			InvalidKeyException, SignatureException, CertificateException, 
+			KeyStoreException {
 		
 		//receber contact list de server ou error
 		//TODO -> Substituir por get 
-		String[] names = reply.getCertificates();
-		Map<String, Certificate> members = getCertificates(names);
+		ArrayList<String> names = reply.getNames();
+		Map<String, Certificate> members = getCertificates(names, req.getUser());
 		
 		//assinar e enviar assinatura de mensagem a enviar
 		GenericSignature gs = GenericSignature.createGenericMessageSignature(
@@ -329,15 +334,15 @@ public class MyWhats {
 	}
 	
 	
-	private static Map<String, Certificate> getCertificates(String[] aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
+	private static Map<String, Certificate> getCertificates(ArrayList<String> aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
 		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(new FileInputStream(user.getName()+".keyStore"), new String(user.getPassword()).toCharArray());
+		ks.load(new FileInputStream("keys/clients/"+user.getName()+".keyStore"), new String(user.getPassword()).toCharArray());
 		
 		Map<String, Certificate> certs = new HashMap<String, Certificate>();
-		for(int i = 0; i < aliases.length; i++)
+		for(int i = 0; i < aliases.size(); i++)
 		{
-			Certificate cert = ks.getCertificate(aliases[i]);
-			certs.put(aliases[i], cert);
+			Certificate cert = ks.getCertificate(aliases.get(i));
+			certs.put(aliases.get(i), cert);
 		}
 		
 		Certificate cert = ks.getCertificate(user.getName());

@@ -143,7 +143,7 @@ public class SecUtils {
 			String username, String password) throws KeyStoreException, CertificateException, 
 	NoSuchAlgorithmException, IOException, SignatureException, NoSuchProviderException, 
 	InvalidKeyException, InvalidKeySpecException {
-		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+		KeyStore ks = KeyStore.getInstance("JCEKS");
 		Certificate[] chain = new Certificate[1];
 		chain[0] = cert;
 		ks.load(null, password.toCharArray());

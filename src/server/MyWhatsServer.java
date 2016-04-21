@@ -79,7 +79,7 @@ public class MyWhatsServer {
 		int port = Integer.parseInt(args[0]);
 
 		// TODO: RETIRAR keystore no fim, colocar na linha de comandos
-		System.setProperty("javax.net.ssl.keyStore", "myServer.keyStore");
+		System.setProperty("javax.net.ssl.keyStore", "keys/server/server.keyStore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "segredo");
 		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
 		ServerSocket server = ssf.createServerSocket(port);
