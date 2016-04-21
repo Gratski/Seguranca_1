@@ -141,9 +141,6 @@ public class MyWhats {
 		conn.getOutputStream().writeObject(req);
 
 		Reply reply = (Reply) conn.getInputStream().readObject();
-		if(reply == null)
-			System.out.println("Its null");
-
 		if (reply.hasError())
 			return reply;
 
@@ -153,8 +150,12 @@ public class MyWhats {
 			break;
 		case "-f":
 			FilesHandler fHandler = new FilesHandler();
-			fHandler.send(conn, new File(req.getFile().getFullPath()));
-			reply = (Reply) conn.getInputStream().readObject();
+			boolean sent = fHandler.send(conn, reply.getNames(), 
+					req.getUser(), new File(req.getFile().getFullPath()));
+			if(!sent)
+				reply = new Reply(400, "Erro ao enviar ficheiro.");
+			else
+				reply = (Reply) conn.getInputStream().readObject();
 			break;
 		case "-r":
 			if (req.getSpecs().equals("download")) {
@@ -317,7 +318,7 @@ public class MyWhats {
 	 * @throws NoSuchPaddingException
 	 * @throws IllegalBlockSizeException
 	 */
-	private static Map<String, CipheredKey> cipherAllKeys(Map<String, Certificate> members, Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
+	public static Map<String, CipheredKey> cipherAllKeys(Map<String, Certificate> members, Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
 		Map<String, CipheredKey> keys = new HashMap<>();
 		Set<String> set = members.keySet();
 		String[] names = set.toArray(new String[set.size()]);
@@ -376,7 +377,7 @@ public class MyWhats {
 	 * @throws IOException
 	 * @throws KeyStoreException
 	 */
-	private static Map<String, Certificate> getCertificates(ArrayList<String> aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
+	public static Map<String, Certificate> getCertificates(ArrayList<String> aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
 		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 		ks.load(new FileInputStream("keys/clients/"+user.getName()+".keyStore"), new String(user.getPassword()).toCharArray());
 		

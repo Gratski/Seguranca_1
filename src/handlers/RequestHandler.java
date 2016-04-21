@@ -149,10 +149,13 @@ public class RequestHandler extends Thread {
 	 * @throws 		IOException
 	 * @throws NoSuchAlgorithmException 
 	 * @throws InvalidKeyException 
+	 * @throws KeyStoreException 
+	 * @throws CertificateException 
+	 * @throws SignatureException 
 	 *
 	 * @require req != null
      */
-	private Reply executeRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
+	private Reply executeRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException, SignatureException, CertificateException, KeyStoreException {
 		Reply reply = new Reply();
 
 		//verifica se a integridade foi comprometida
@@ -514,10 +517,18 @@ public class RequestHandler extends Thread {
 	 * @param req Request a ser considerado
 	 * @return	true se com sucesso, false caso contrario
 	 * @throws IOException
+	 * @throws KeyStoreException 
+	 * @throws CertificateException 
+	 * @throws SignatureException 
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
+	 * @throws NoSuchPaddingException 
+	 * @throws NoSuchAlgorithmException 
+	 * @throws InvalidKeyException 
 	 * @require req != null && req.getFile() != null
 	 * 			req.getUser() != null
      */
-	private boolean sendFile(Request req) throws IOException {
+	private boolean sendFile(Request req) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, CertificateException, KeyStoreException {
 		String filename = req.getFile().getFullPath();
 		String path = this.convProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
 
@@ -539,7 +550,7 @@ public class RequestHandler extends Thread {
 			return false;
 
 		// devolve o resultado do envio do file
-		return new FilesHandler().send(this.connection, file);
+		return new FilesHandler().send(this.connection, null, req.getUser(), file);
 	}
 
 	/**
