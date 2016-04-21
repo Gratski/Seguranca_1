@@ -65,7 +65,7 @@ public class MessagesProxy extends Proxy {
 		writeToFile(file, toStoreFormat(msg));
 		
 		// grava assinatura
-		file = new File(path + "/" + fname + "/" + "signature.sign");
+		file = new File(path + "/" + fname + "/" + "signature.sig");
 		if (file.exists())
 			return false;
 		writeToFile(file, SecUtils.getHexString(sign.getSignature()));

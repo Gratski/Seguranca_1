@@ -73,7 +73,7 @@ public class GenericSignature implements Serializable{
 		return new GenericSignature(SecUtils.getStringHex(signatureAsString));
 	}
 	
-	private static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{
+	public static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{
 		return MessageDigest.getInstance(ALGORITHM);
 	}
 }

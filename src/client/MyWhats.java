@@ -9,6 +9,7 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -29,6 +30,7 @@ import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
 import builders.RequestBuilder;
+import domain.Conversation;
 import domain.Message;
 import domain.NetworkMessage;
 import domain.Reply;
@@ -39,7 +41,6 @@ import helpers.FilesHandler;
 import security.CipheredKey;
 import security.GenericSignature;
 import security.KeyWrapper;
-import security.MessageKey;
 import security.SecUtils;
 import validators.InputValidator;
 
@@ -73,28 +74,13 @@ public class MyWhats {
 			// parse input
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
 
-			//create keyStore if needed
+			//obter certificado e private key
 			File ksFile = new File("keys/clients/" + parsedInput.get("username") + ".keyStore");
+			FileInputStream fis = new FileInputStream(ksFile);
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-			Certificate cert = null;
-			PrivateKey privateKey = null;
-			PublicKey publicKey = null;
-			if (!ksFile.exists()) {
-//				//criar
-//				ks.load(null, parsedInput.get("password").toCharArray());
-//				KeyPair keyPair = SecUtils.generateKeyPair();
-//				privateKey = keyPair.getPrivate();
-//				publicKey = keyPair.getPublic();
-//				cert = SecUtils.generateCertificate(parsedInput.get("username"), publicKey, privateKey);
-//				SecUtils.createCertificate(ksFile, cert, privateKey, parsedInput.get("username"), parsedInput.get("password"));
-
-			} else {
-
-				FileInputStream fis = new FileInputStream(ksFile);
-				ks.load(fis, parsedInput.get("password").toCharArray());
-				cert = ks.getCertificate(parsedInput.get("username"));
-				privateKey = (PrivateKey) ks.getKey(parsedInput.get("username"), parsedInput.get("password").toCharArray());
-			}
+			ks.load(fis, parsedInput.get("password").toCharArray());
+			Certificate cert = ks.getCertificate(parsedInput.get("username")); 
+			PrivateKey privateKey = (PrivateKey) ks.getKey(parsedInput.get("username"), parsedInput.get("password").toCharArray());
 			
 			// create request obj
 			Request request = null;
@@ -130,9 +116,7 @@ public class MyWhats {
 			Reply reply = sendRequest(connection, request);
 			
 			// Imprime server reply
-			System.out.println("É SUPOSTO ESTARMOS AQUI 1");
 			reply.prettyPrint(request.getUser());
-			System.out.println("É SUPOSTO ESTARMOS AQUI 3");
 
 			// Fecha connection
 			connection.destroy();
@@ -159,61 +143,114 @@ public class MyWhats {
 		Reply reply = (Reply) conn.getInputStream().readObject();
 		if(reply == null)
 			System.out.println("Its null");
+
+		if (reply.hasError())
+			return reply;
+
 		switch (req.getType()) {
 		case "-m":
-			if (!reply.hasError())
-				reply = executeSendMessage(conn, req, reply);
+			reply = executeSendMessage(conn, req, reply);
 			break;
 		case "-f":
-			if (reply.hasError())
-				reply = new Reply(400, "Erro ao enviar ficheiro");
-			else {
-				FilesHandler fHandler = new FilesHandler();
-				fHandler.send(conn, new File(req.getFile().getFullPath()));
-				reply = (Reply) conn.getInputStream().readObject();
-			}
-			
+			FilesHandler fHandler = new FilesHandler();
+			fHandler.send(conn, new File(req.getFile().getFullPath()));
+			reply = (Reply) conn.getInputStream().readObject();
 			break;
 		case "-r":
 			if (req.getSpecs().equals("download")) {
-				if (reply.hasError())
-					reply = new Reply(400, "Erro ao receber ficheiro");
+				File downloaded = new FilesHandler().receive(conn, ".", req.getFile().getFullPath());
+				if (downloaded == null)
+					reply = new Reply(400, "Erro ao descarregar ficheiro.");
 				else
-				{
-					File downloaded = new FilesHandler().receive(conn, ".", req.getFile().getFullPath());
-					if (downloaded == null)
-						reply = new Reply(400, "Erro ao descarregar ficheiro.");
-					else
-						reply = new Reply(200, "Ficheiro descarregado.");
-				}
-			}else{
-				reply = executeReceiveMessages(conn, req);	
+					reply = new Reply(200, "Ficheiro descarregado.");
+			} else {
+				reply = executeReceiveMessages(reply, conn, req);
 			}
 			
 			break;
 		}
-		
 		return reply;
 	}
 
 	
-	private static Reply executeReceiveMessages(Connection conn, Request req) {
+	private static Reply executeReceiveMessages(Reply reply, Connection conn, Request req) throws ClassNotFoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, CertificateException, KeyStoreException {
 		
-		//obtem a lista de conversations
+		//obtem private key de user
+		PrivateKey privateKey = req.getUser().getPrivateKey();
 		
+		//obtem a lista de conversation
+		ArrayList<Conversation> convs = reply.getConversations();
+		int i = 0;
+		int j;
 		//para cada conversation
-		///para cada mensagem
-		///obter sintese S de mensagem
-		///obter chave K
-		///decifrar chave K com minha chave privada
-		///decifrar mensagem
-		///gerar sintese de mensagem
-		///comparar sintese de mensagem com sintese S
-		
-		
-		return null;
+		for (Conversation conv : convs)
+		{	
+			j = 0;
+			for (Message msg : conv.getMessages())
+			{
+				//obtem key
+				KeyWrapper kw = new KeyWrapper(msg.getKey());
+				kw.unwrap(privateKey);
+				Key curKey = kw.getKey();
+				
+				//decifra mensagem
+				Cipher c = Cipher.getInstance("AES");
+				c.init(Cipher.DECRYPT_MODE, curKey);
+				c.update(SecUtils.getStringHex(msg.getBody()));
+				String body = new String(c.doFinal());
+				
+				//obtem public key de sender
+				ArrayList<String> names = new ArrayList<>();
+				names.add(msg.getFrom());
+				PublicKey publicKey = getCertificates(names, req.getUser()).get(msg.getFrom()).getPublicKey();
+				
+				//decifra sintese
+				byte[] sig = msg.getSignature().getSignature();
+				c = Cipher.getInstance("RSA");
+				c.init(Cipher.DECRYPT_MODE, publicKey);
+				byte[] hash = c.doFinal(sig);
+				
+				//valida sintese
+				boolean valid;
+				MessageDigest md = GenericSignature.getMessageDigest();
+				byte[] receivedHash = md.digest(body.getBytes());
+				valid = MessageDigest.isEqual(hash, receivedHash);
+				
+				
+				if (valid){
+					msg.setBody(body);
+					System.out.println("BODY: " + body);
+				}
+				else {
+					convs.get(i).getMessages().remove(j);
+					System.out.println("EXCLUDED!");
+				}
+				
+				j++;
+			}
+			i++;
+		}
+		reply.setConversations(convs);
+		return reply;
 	}
 
+	/**
+	 * Envia uma mensagem para o servidor
+	 * @param conn, conexao a base de dados
+	 * @param req, request a considerar
+	 * @param reply, reply que obteve inicialmente
+	 * @return
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 * @throws IllegalBlockSizeException
+	 * @throws NoSuchPaddingException
+	 * @throws BadPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws SignatureException
+	 * @throws CertificateException
+	 * @throws KeyStoreException
+	 */
 	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) 
 			throws ClassNotFoundException, IOException, IllegalBlockSizeException, 
 			NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, 
@@ -321,20 +358,18 @@ public class MyWhats {
 			}
 		}
 	}
-
-	private static void sendKeyToAll(Connection conn, ArrayList<String> names, 
-			ArrayList<Certificate> certs, Key key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException{
-		
-		for(int i = 0; i < names.size(); i++){
-			KeyWrapper kw = new KeyWrapper(certs.get(i).getPublicKey());
-			kw.wrap(key);
-			conn.getOutputStream()
-			.writeObject(new MessageKey(names.get(i), kw.getWrappedKey()));
-		}
-		
-	}
 	
-	
+	/**
+	 * Obtem o certificado de utilizadores dada uma lista de nomes
+	 * @param aliases, nomes dos utilizadores
+	 * @param user, user de session
+	 * @return lista com nomes e certificados
+	 * @throws NoSuchAlgorithmException
+	 * @throws CertificateException
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws KeyStoreException
+	 */
 	private static Map<String, Certificate> getCertificates(ArrayList<String> aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
 		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
 		ks.load(new FileInputStream("keys/clients/"+user.getName()+".keyStore"), new String(user.getPassword()).toCharArray());
