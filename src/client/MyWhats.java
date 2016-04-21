@@ -182,14 +182,20 @@ public class MyWhats {
 		ArrayList<Conversation> convs = reply.getConversations();
 		int i = 0;
 		int j;
+		System.out.println("SIZE: " + convs.size());
 		//para cada conversation
 		for (Conversation conv : convs)
 		{	
 			j = 0;
 			for (Message msg : conv.getMessages())
 			{
+				System.out.println("ENTROU");
 				//obtem key
 				KeyWrapper kw = new KeyWrapper(msg.getKey());
+				if(privateKey == null)
+					System.out.println("NULL");
+				else
+					System.out.println(privateKey);
 				kw.unwrap(privateKey);
 				Key curKey = kw.getKey();
 				
@@ -215,8 +221,8 @@ public class MyWhats {
 				MessageDigest md = GenericSignature.getMessageDigest();
 				byte[] receivedHash = md.digest(body.getBytes());
 				valid = MessageDigest.isEqual(hash, receivedHash);
-				
-				
+				System.out.println("=====================");
+				System.out.println(body);
 				if (valid){
 					msg.setBody(body);
 					System.out.println("BODY: " + body);

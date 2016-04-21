@@ -1,7 +1,5 @@
 package security;
 
-import com.sun.tools.doclets.internal.toolkit.util.DocFinder;
-
 import java.io.*;
 import java.security.*;
 

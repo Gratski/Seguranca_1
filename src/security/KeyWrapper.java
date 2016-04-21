@@ -3,6 +3,7 @@ package security;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
 
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -33,15 +34,16 @@ public class KeyWrapper {
 	}
 	
 	public void wrap(Key key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException{
-		Cipher c = Cipher.getInstance(CIPHER_ALG);
+		Cipher c = Cipher.getInstance(ALG);
 		c.init(Cipher.WRAP_MODE, this.key);
 		this.wrappedKey = c.wrap(key);
 	}
 	
-	public void unwrap(Key key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException{
-		Cipher c = Cipher.getInstance(CIPHER_ALG);
+	public void unwrap(PrivateKey key) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException{
+		Cipher c = Cipher.getInstance(ALG);
 		c.init(Cipher.UNWRAP_MODE, key);
-		this.key = c.unwrap(this.wrappedKey, ALG, Cipher.PRIVATE_KEY);
+		
+		this.key = c.unwrap(this.wrappedKey, "AES", Cipher.SECRET_KEY);
 	}
 	
 	public void unwrapSymmetric(Key key) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException{
