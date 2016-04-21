@@ -12,8 +12,6 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 
 
 
-
-recebe pedido
-envia contacts e certificates para o cliente
-recebe assinatura digital, guardar em .sig
-recebe as chaves cifradas a guardar para cada user
+TODO:
+- Servidor não pode distribuir chaves, é para ser manualmente
+- Cifrar todo o conteúdo da mensagem
