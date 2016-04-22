@@ -34,12 +34,10 @@ public class GenericSignature implements Serializable{
 	}
 	
 	public static GenericSignature createGenericMessageSignature(PrivateKey pkey, byte[] content) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
-
 		//gera sintese da mensagem
 		MessageDigest md = getMessageDigest();
 		byte[] hash = md.digest(content);
-		System.out.println("SINTESE CRIADA: " + hash.toString());
-		
+
 		//assina cifra da mensagem
 		Signature signature = Signature.getInstance("SHA256withRSA");
 		signature.initSign(pkey);

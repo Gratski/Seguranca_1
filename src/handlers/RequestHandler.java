@@ -289,8 +289,6 @@ public class RequestHandler extends Thread {
 		Conversation conversation = this.convProxy.getConversationBetween(req.getUser().getName(),
 				req.getContact());
 
-		System.out.println("SIZE OF CONVERSATIONS :" + conversation.getMessages().size());
-
 		if (conversation == null) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());

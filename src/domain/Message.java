@@ -174,6 +174,8 @@ public class Message implements Serializable, Comparable {
 		sb.append(" ");
 		sb.append(date.getHours());
 		sb.append(":");
+		if (date.getMinutes() < 10)
+			sb.append(0);
 		sb.append(date.getMinutes());
 		return sb.toString();
 	}

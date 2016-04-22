@@ -174,7 +174,7 @@ public class MyWhats {
 	}
 
 	
-	private static Reply executeReceiveMessages(Reply reply, Connection conn, Request req) throws ClassNotFoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, CertificateException, KeyStoreException {
+	private static Reply executeReceiveMessages(Reply reply, Connection conn, Request req) throws ClassNotFoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, CertificateException, KeyStoreException, SignatureException {
 		
 		//obtem private key de user
 		PrivateKey privateKey = req.getUser().getPrivateKey();
@@ -185,12 +185,12 @@ public class MyWhats {
 		int j = 0;
 
 		//para cada conversation
+		System.out.println("Numero de conversas: " + convs.size());
 		for (Conversation conv : convs)
 		{
+			System.out.println("Numero de mensagens: " + conv.getMessages().size());
 			for (Message msg : conv.getMessages())
 			{
-				System.out.println("SIZE: " + conv.getMessages().size());
-				System.out.println("ENTROU");
 				//obtem key
 				KeyWrapper kw = new KeyWrapper(msg.getKey());
 				kw.unwrap(privateKey);
@@ -201,33 +201,27 @@ public class MyWhats {
 				c.init(Cipher.DECRYPT_MODE, curKey);
 				c.update(SecUtils.getStringHex(msg.getBody()));
 				String body = new String(c.doFinal());
-				
+
 				//obtem public key de sender
 				ArrayList<String> names = new ArrayList<>();
 				names.add(msg.getFrom());
 				PublicKey publicKey = getCertificates(names, req.getUser()).get(msg.getFrom()).getPublicKey();
 				
-				//decifra sintese
-				byte[] sig = msg.getSignature().getSignature();
-				c = Cipher.getInstance("RSA");
-				c.init(Cipher.DECRYPT_MODE, publicKey);
-				byte[] hash = c.doFinal(sig);
-				
 				//valida sintese
-				boolean valid;
 				MessageDigest md = GenericSignature.getMessageDigest();
 				byte[] receivedHash = md.digest(body.getBytes());
-				valid = MessageDigest.isEqual(hash, receivedHash);
-				System.out.println("SINTESE CALCULADA: " + hash.toString());
-				System.out.println("SINTESE RECEBIDA: " + receivedHash.toString());
-				System.out.println("=====================");
+				Signature signature = Signature.getInstance("SHA256withRSA");
+				signature.initVerify(publicKey);
+				signature.update(receivedHash);
+				boolean valid = signature.verify(msg.getSignature().getSignature());
+
+				msg.setBody(body);
 				if (valid) {
-					msg.setBody(body);
-					System.out.println("BODY: " + body);
+					System.out.println("SINTESE BOA!");
 				}
 				else {
 //					convs.get(i).getMessages().remove(j);
-//					System.out.println("EXCLUDED!");
+					System.out.println("SINTESE INVALIDA!");
 				}
 				
 				j++;
