@@ -8,6 +8,29 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
+import java.util.Map;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+
+import client.MyWhats;
+import domain.User;
+import security.CipherFactory;
+import security.CipheredKey;
+import security.GenericSignature;
+import security.HashService;
+import security.SecUtils;
 
 /**
  * Esta classe é responsável pelo download e upload de ficheiros
@@ -38,34 +61,60 @@ public class FilesHandler {
 	 *
 	 * @requires conn != null && file != null
 	 * @throws IOException
+	 * @throws NoSuchAlgorithmException 
+	 * @throws SignatureException 
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
+	 * @throws NoSuchPaddingException 
+	 * @throws InvalidKeyException 
+	 * @throws KeyStoreException 
+	 * @throws CertificateException 
      */
-	public boolean send(Connection conn, File file) throws IOException {
+	public boolean send(Connection conn, ArrayList<String> members, User user, File file) throws IOException, NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, CertificateException, KeyStoreException {
 		byte[] byteArr;
 		FileInputStream fs = new FileInputStream(file);
+		
+		//gerar chave secreta
+		Key key = SecUtils.generateSymetricKey();
+		
+		//gerar sintese
+		byte[] hash = HashService.createFileHash(file);
+		
+		//assinar
+		GenericSignature gs = GenericSignature.createGenericFileSignature(user.getPrivateKey(), file);
+		
+		//enviar assinatura
+		conn.getOutputStream().writeObject(gs);
+		
+		//envia filesize
+		long fileSize = file.length() * 16;
+		conn.getOutputStream().writeLong(fileSize);
+		
+		//cifrar ficheiro e enviar
+		Cipher c = CipherFactory.getStandardCipher();
+		c.init(Cipher.ENCRYPT_MODE, key);
+		FileInputStream fis = new FileInputStream(file);
+		CipherOutputStream cos = new CipherOutputStream(conn.getOutputStream(), c);
+		
+		byte[] buf = new byte[16];
+		int sent = 0;
+		while((sent=fis.read(buf))>-1){
+			cos.write(buf, 0, sent);
+		}
+		cos.close();
+		
+		//enviar chave K cifrada com chave publica de members
+		Map<String, Certificate> certs = MyWhats.getCertificates(members, user);
+		certs.put(user.getName(), user.getCertificate());
+		Map<String, CipheredKey> keys = MyWhats.cipherAllKeys(certs, key);
+		conn.getOutputStream().writeObject(keys);
 		
 		//send filesize
 		conn.getOutputStream().writeLong(file.length());
 		conn.getOutputStream().flush();
 		
-		//send file itself
-		long fileSize = file.length();
-		long totalSent = 0;
-		while (totalSent < fileSize) {
-			int byteNum = 0;
-			if ( (totalSent + CHUNK) <= fileSize )
-				byteNum = CHUNK;
-			else
-				byteNum = (int) ( fileSize - totalSent );
-				
-			byteArr = new byte[byteNum];
-			int toSend = fs.read(byteArr, 0, byteNum);
-
-			conn.getOutputStream().write(byteArr, 0, toSend);
-			conn.getOutputStream().flush();
-			totalSent += toSend;
-		}
-		fs.close();
-		return totalSent == fileSize;
+		//return totalSent == fileSize;
+		return true;
 	}
 
 	/**
@@ -145,4 +194,6 @@ public class FilesHandler {
 		BufferedWriter bw = new BufferedWriter(fw);
 		return bw;
 	}
+	
+	
 }
