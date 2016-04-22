@@ -181,21 +181,17 @@ public class MyWhats {
 		//obtem a lista de conversation
 		ArrayList<Conversation> convs = reply.getConversations();
 		int i = 0;
-		int j;
-		System.out.println("SIZE: " + convs.size());
+		int j = 0;
+
 		//para cada conversation
 		for (Conversation conv : convs)
-		{	
-			j = 0;
+		{
 			for (Message msg : conv.getMessages())
 			{
+				System.out.println("SIZE: " + conv.getMessages().size());
 				System.out.println("ENTROU");
 				//obtem key
 				KeyWrapper kw = new KeyWrapper(msg.getKey());
-				if(privateKey == null)
-					System.out.println("NULL");
-				else
-					System.out.println(privateKey);
 				kw.unwrap(privateKey);
 				Key curKey = kw.getKey();
 				
@@ -221,15 +217,16 @@ public class MyWhats {
 				MessageDigest md = GenericSignature.getMessageDigest();
 				byte[] receivedHash = md.digest(body.getBytes());
 				valid = MessageDigest.isEqual(hash, receivedHash);
+				System.out.println("SINTESE CALCULADA: " + hash.toString());
+				System.out.println("SINTESE RECEBIDA: " + receivedHash.toString());
 				System.out.println("=====================");
-				System.out.println(body);
-				if (valid){
+				if (valid) {
 					msg.setBody(body);
 					System.out.println("BODY: " + body);
 				}
 				else {
-					convs.get(i).getMessages().remove(j);
-					System.out.println("EXCLUDED!");
+//					convs.get(i).getMessages().remove(j);
+//					System.out.println("EXCLUDED!");
 				}
 				
 				j++;
@@ -378,7 +375,7 @@ public class MyWhats {
 	 */
 	private static Map<String, Certificate> getCertificates(ArrayList<String> aliases, User user) throws NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, KeyStoreException{
 		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(new FileInputStream("keys/clients/"+user.getName()+".keyStore"), new String(user.getPassword()).toCharArray());
+		ks.load(new FileInputStream("keys/clients/" + user.getName() + ".keyStore"), new String(user.getPassword()).toCharArray());
 		
 		Map<String, Certificate> certs = new HashMap<String, Certificate>();
 		for(int i = 0; i < aliases.size(); i++)

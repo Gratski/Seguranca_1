@@ -262,12 +262,16 @@ public class ConversationsProxy extends Proxy {
 			conversation = new Conversation(group);
 		}
 
+		System.out.println("Number of messages: " + messagesNum);
+
 		for (int i = 1; i <= messagesNum; i++) {
 			File f2 = new File(path + "/" + i + "/" + "body" + MESSAGE_FILE_EXTENSION);
 			FileReader fr = new FileReader(f2);
 			BufferedReader br = new BufferedReader(fr);
 			String line;
 			Message message;
+
+			System.out.println("Processing message: " + i);
 
 			if ((line = br.readLine()) != null) {
 				String[] split = line.split(" ");
