@@ -26,6 +26,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.ShortBufferException;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -196,11 +197,14 @@ public class MyWhats {
 				kw.unwrap(privateKey);
 				Key curKey = kw.getKey();
 				
+				System.out.println("*******************************");
+				byte[] cipheredBytes = SecUtils.getStringHex(msg.getBody());
+				System.out.println("Ciphered Bytes: " + cipheredBytes.length);
+				
 				//decifra mensagem
 				Cipher c = Cipher.getInstance("AES");
 				c.init(Cipher.DECRYPT_MODE, curKey);
-				c.update(SecUtils.getStringHex(msg.getBody()));
-				String body = new String(c.doFinal());
+				String body = new String(c.doFinal(cipheredBytes));
 
 				//obtem public key de sender
 				ArrayList<String> names = new ArrayList<>();
@@ -248,12 +252,13 @@ public class MyWhats {
 	 * @throws SignatureException
 	 * @throws CertificateException
 	 * @throws KeyStoreException
+	 * @throws ShortBufferException 
 	 */
 	private static Reply executeSendMessage(Connection conn, Request req, Reply reply) 
 			throws ClassNotFoundException, IOException, IllegalBlockSizeException, 
 			NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, 
 			InvalidKeyException, SignatureException, CertificateException, 
-			KeyStoreException {
+			KeyStoreException, ShortBufferException {
 		
 		//receber contact list de server ou error
 		//TODO -> Substituir por get 
@@ -278,34 +283,24 @@ public class MyWhats {
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, key);
 		
-		System.out.println("BYTES: " + req.getMessage().getBody().getBytes().length);
+		String originalMsg = req.getMessage().getBody();
+		byte[] originalBytes = originalMsg.getBytes();
+		System.out.println("==========================================");
+		System.out.println("Original Message: " + originalMsg);
+		System.out.println("Original Bytes: " + originalBytes.length);
+		byte[] ciphered = c.doFinal(originalBytes);
+		String cipheredStr = SecUtils.getHexString(ciphered);
+		System.out.println("Ciphered Bytes: " + ciphered.length);
 		
-		////////////////////////////////////////////////////////////////
-		// AQUI EH O PROB
-		byte[] original = req.getMessage().getBody().getBytes();
-		int reps = (int) original.length / 16;
-		int extra = original.length % 16;
-		byte[] cipheredMsg;
-		if(extra != 0)
-			cipheredMsg = new byte[original.length + 16];
-		else
-			cipheredMsg = new byte[16];
-		int offset = 0;
-		for(int i = 0; i < reps; i++)
-		{
-			System.arraycopy(c.doFinal(original, offset, 16), 0, cipheredMsg, offset, 16);
-			offset += 16;
-		}
+		System.out.println("Decifrar para confirmar");
+		c.init(Cipher.DECRYPT_MODE, key);
+		//byte[] deciphered = c.doFinal(ciphered);
+		byte[] deciphered = c.doFinal(SecUtils.getStringHex(cipheredStr)); 
+		System.out.println("Deciphered Bytes: " + deciphered.length);
+		System.out.println("Deciphered Message: " + new String(deciphered));
+		System.out.println("==========================================");
 		
-		if(extra != 0)
-			System.arraycopy(c.doFinal(original, offset, extra), 0, cipheredMsg, offset, extra);
-		
-		System.out.println("CIPHERED BYTES: " + cipheredMsg.length);
-		// ATE AQUI
-		///////////////////////////////////////////////////////////////////
-		
-		
-		Message cm = new Message(req.getUser().getName(), req.getContact(), SecUtils.getHexString(cipheredMsg));
+		Message cm = new Message(req.getUser().getName(), req.getContact(), cipheredStr);
 		cm.setType("-t");
 		conn.getOutputStream().writeObject(cm);
 
