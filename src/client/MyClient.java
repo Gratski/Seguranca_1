@@ -23,18 +23,23 @@ public class MyClient {
 
 	public static void main(String[]args) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, FileNotFoundException, IOException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException{
 		
-		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(new FileInputStream("joao.keyStore"), "yoyoyo".toCharArray());
-		Certificate cert = ks.getCertificate("joao");
-		
+		String data = "This a cipher";
 		KeyGenerator kg = KeyGenerator.getInstance("AES");
-		kg.init(128);
-		Key key = kg.generateKey();
+		Key k = kg.generateKey();
 		
+		//Cipher
 		Cipher c = Cipher.getInstance("AES");
-		c.init(Cipher.ENCRYPT_MODE, cert.getPublicKey());
-		byte[] cKey = c.doFinal(key.getEncoded());
-		System.out.println(SecUtils.getHexString(cKey));
+		c.init(Cipher.ENCRYPT_MODE, k);
+		byte[] original = data.getBytes();
+		byte[]ciphered = c.doFinal(original);
+		String cipheredString = SecUtils.getHexString(ciphered);
+		
+		//Decipher
+		c.init(Cipher.DECRYPT_MODE, k);
+		byte[] d = SecUtils.getStringHex(cipheredString);
+		byte[] decripted = c.doFinal(d);
+		System.out.println(new String(decripted));
+		
 	}
 	
 }

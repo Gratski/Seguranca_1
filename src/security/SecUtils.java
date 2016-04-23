@@ -49,6 +49,7 @@ public class SecUtils {
 	 */
 	public static Key generateSymetricKey() throws NoSuchAlgorithmException{
 		KeyGenerator kg = KeyGenerator.getInstance("AES");
+		kg.init(128);
 		return kg.generateKey();
 	}
 	

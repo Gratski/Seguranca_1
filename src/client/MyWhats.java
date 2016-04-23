@@ -277,7 +277,34 @@ public class MyWhats {
 		Key key = SecUtils.generateSymetricKey();
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, key);
-		byte[] cipheredMsg = c.doFinal(req.getMessage().getBody().getBytes());
+		
+		System.out.println("BYTES: " + req.getMessage().getBody().getBytes().length);
+		
+		////////////////////////////////////////////////////////////////
+		// AQUI EH O PROB
+		byte[] original = req.getMessage().getBody().getBytes();
+		int reps = (int) original.length / 16;
+		int extra = original.length % 16;
+		byte[] cipheredMsg;
+		if(extra != 0)
+			cipheredMsg = new byte[original.length + 16];
+		else
+			cipheredMsg = new byte[16];
+		int offset = 0;
+		for(int i = 0; i < reps; i++)
+		{
+			System.arraycopy(c.doFinal(original, offset, 16), 0, cipheredMsg, offset, 16);
+			offset += 16;
+		}
+		
+		if(extra != 0)
+			System.arraycopy(c.doFinal(original, offset, extra), 0, cipheredMsg, offset, extra);
+		
+		System.out.println("CIPHERED BYTES: " + cipheredMsg.length);
+		// ATE AQUI
+		///////////////////////////////////////////////////////////////////
+		
+		
 		Message cm = new Message(req.getUser().getName(), req.getContact(), SecUtils.getHexString(cipheredMsg));
 		cm.setType("-t");
 		conn.getOutputStream().writeObject(cm);
