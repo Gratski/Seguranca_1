@@ -245,7 +245,7 @@ public class GroupsProxy extends Proxy {
 		}
 		//remover membro de grupo
 		else {
-			if (!this.groups.get(groupName).removeMember(member)) {
+			if (!this.groups.get(groupName).removeMember(member) || !deleteUserKeys(groupName, member)) {
 				return false;
 			}
 		}
@@ -254,6 +254,32 @@ public class GroupsProxy extends Proxy {
 		return true;
 	}
 
+	private boolean deleteUserKeys(String groupName, String member) {
+		File f = new File(Proxy.CONVERSATIONS_GROUP + groupName);
+		String[] msgs = f.list();
+		for(int i = 0; i < msgs.length; i++ )
+		{
+			File msg = new File(Proxy.CONVERSATIONS_GROUP + groupName +"/"+msgs[i]);
+			String[] innerFiles = msg.list();
+			
+			if(contains(innerFiles, member+".key"))
+			{
+				File kf = new File(Proxy.CONVERSATIONS_GROUP + groupName +"/"+msgs[i] + "/" +"" +member+".key");
+				kf.delete();
+			}
+				
+		}
+		return false;
+	}
+	
+	
+	private static boolean contains(String[] arr, String m){
+		for(int i = 0; i < arr.length; i++)
+			if(arr[i].equals(m))
+				return true;
+		return false;
+	}
+	
 	/**
 	 * Elimina a directoria e todas as subdirectorias de File f
 	 * @param f O File que corresponde à directoria a ser apagada

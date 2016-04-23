@@ -173,7 +173,6 @@ public class MyWhats {
 		}
 		return reply;
 	}
-
 	
 	private static Reply executeReceiveMessages(Reply reply, Connection conn, Request req) throws ClassNotFoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, CertificateException, KeyStoreException, SignatureException {
 		
