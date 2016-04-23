@@ -3,6 +3,7 @@ package client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.InvalidKeyException;
@@ -24,6 +25,7 @@ import java.util.Set;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
@@ -39,8 +41,10 @@ import domain.Request;
 import domain.User;
 import helpers.Connection;
 import helpers.FilesHandler;
+import security.CipherFactory;
 import security.CipheredKey;
 import security.GenericSignature;
+import security.HashService;
 import security.KeyWrapper;
 import security.SecUtils;
 import validators.InputValidator;
@@ -140,32 +144,30 @@ public class MyWhats {
 	public static Reply sendRequest(Connection conn, Request req) throws Exception {
 		// send base request
 		conn.getOutputStream().writeObject(req);
-
+		
+		// get base reply
 		Reply reply = (Reply) conn.getInputStream().readObject();
 		if (reply.hasError())
 			return reply;
 
+		// parse de casos que necessitam operacoes adicionais
 		switch (req.getType()) {
+		//upload mensagem
 		case "-m":
 			reply = executeSendMessage(conn, req, reply);
 			break;
+		//upload ficheiro
 		case "-f":
-			FilesHandler fHandler = new FilesHandler();
-			boolean sent = fHandler.send(conn, reply.getNames(), 
-					req.getUser(), new File(req.getFile().getFullPath()));
-			if(!sent)
-				reply = new Reply(400, "Erro ao enviar ficheiro.");
-			else
-				reply = (Reply) conn.getInputStream().readObject();
+			reply = executeSendFile(conn, req, reply);
 			break;
+		//download
 		case "-r":
+			//se eh para download de ficheiro
 			if (req.getSpecs().equals("download")) {
-				File downloaded = new FilesHandler().receive(conn, ".", req.getFile().getFullPath());
-				if (downloaded == null)
-					reply = new Reply(400, "Erro ao descarregar ficheiro.");
-				else
-					reply = new Reply(200, "Ficheiro descarregado.");
-			} else {
+				reply = executeReceiveFile(conn, req, reply);
+			} 
+			//se eh para download de mensagens
+			else {
 				reply = executeReceiveMessages(reply, conn, req);
 			}
 			
@@ -174,6 +176,23 @@ public class MyWhats {
 		return reply;
 	}
 	
+	/**
+	 * Recebe mensagens do servidor de um dado utilizador ou grupo
+	 * @param reply, reply de request inicial
+	 * @param conn, connection a ser utilizada
+	 * @param req, request a ser feito
+	 * @return reply de processo de envio de recepcao de mensagens
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 * @throws NoSuchPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeyException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+	 * @throws CertificateException
+	 * @throws KeyStoreException
+	 * @throws SignatureException
+	 */
 	private static Reply executeReceiveMessages(Reply reply, Connection conn, Request req) throws ClassNotFoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, CertificateException, KeyStoreException, SignatureException {
 		
 		//obtem private key de user
@@ -319,6 +338,196 @@ public class MyWhats {
 		reply = (Reply) conn.getInputStream().readObject();
 		return reply;
 	}
+
+	/**
+	 * Enviar ficheiro para servidor
+	 * @param conn, connection a ser utilizada
+	 * @param req, request a ser feito
+	 * @param reply, reply de request inicial ao server
+	 * @return reply do processo de envio de ficheiro para server
+	 * 
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws IllegalBlockSizeException
+	 * @throws BadPaddingException
+	 * @throws SignatureException
+	 * @throws IOException
+	 * @throws CertificateException
+	 * @throws KeyStoreException
+	 * @throws ClassNotFoundException
+	 */
+	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException{
+		
+		//verifica se o server lhe deu permissao
+		if(reply.hasError())
+			return reply;
+		
+		//obter chave privada
+		PrivateKey privateKey = req.getUser().getPrivateKey();
+		
+		//obter lista de membros de conversa
+		ArrayList<String> members = reply.getNames();
+		
+		//gerar assinatura digital, enviar e receber resposta
+		File file = new File(req.getFile().getFullPath());
+		GenericSignature gs = GenericSignature.createGenericFileSignature(privateKey, file);
+		conn.getOutputStream().writeObject(gs);
+		reply = (Reply) conn.getInputStream().readObject();
+		if(reply.hasError())
+			return new Reply(400, "Erro ao assinar ficheiro");
+		
+		//gerar chave simetrica K
+		Key key = SecUtils.generateSymetricKey();
+		
+		//setup de cipher object
+		Cipher c = CipherFactory.getStandardCipher();
+		c.init(Cipher.ENCRYPT_MODE, key);
+		
+		//preparar file size de acordo com cipher
+		long fileSize = file.length();
+		int extra = (int) fileSize % 16;
+		int toAdd = 0; //adicionar ao length para ficar multiplo de 16, padding
+		if(extra > 0)
+			toAdd = 16 - extra;
+		long fileSizeToServer = fileSize + toAdd;
+		
+		//enviar size ja com padding para server, e receber resposta
+		conn.getOutputStream().writeLong(fileSizeToServer);
+		reply = (Reply) conn.getInputStream().readObject();
+		if(reply.hasError())
+			return new Reply(400, "Erro ao enviar size de ficheiro");
+		
+		//cifrar ficheiro, enviar e receber resposta
+		byte[] buf = new byte[16];
+		int sent = 0;
+		FileInputStream fis = new FileInputStream(file);
+		CipherOutputStream cos = new CipherOutputStream(conn.getOutputStream(), c);
+		while((sent = fis.read(buf))!=-1){
+			cos.write(buf, 0, sent);
+		}
+		reply = (Reply) conn.getInputStream().readObject();
+		if(reply.hasError())
+			return new Reply(400, "Erro ao enviar ficheiro cifrado");
+		
+		//cifrar K com chaves publicas dos membros, enviar e receber resposta
+		Map<String, Certificate> certs = getCertificates(members, req.getUser());
+		Map<String, CipheredKey> keys = cipherAllKeys(certs, key);
+		conn.getOutputStream().writeObject(keys);
+		reply = (Reply) conn.getInputStream().readObject();
+		
+		
+		return reply;
+	}
+
+	/**
+	 * Receber ficheiro de servidor
+	 * @param conn, connection a utilizar
+	 * @param req, request a ser feito ao servidor
+	 * @param reply, reply inicial de servidor
+	 * @return reply de processo de download
+	 * @throws IOException
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws ClassNotFoundException
+	 * @throws SignatureException
+	 * @throws CertificateException
+	 * @throws KeyStoreException
+	 */
+	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException{
+		
+		//obtem autor de upload de ficheiro
+		ArrayList<String> names = new ArrayList<>();
+		String uploader = reply.getUser().getName();
+		names.add(uploader);
+		
+		//chave privada de utilizador de session
+		PrivateKey privateKey = req.getUser().getPrivateKey();
+		
+		//obtem size de ficheiro, informa server que recebeu
+		long fileSize = conn.getInputStream().readLong();
+			
+		
+		//se ficheiro nao existe, cria novo
+		File file = new File(req.getFile().getFullPath());
+		if(!file.exists())
+			file.createNewFile();
+		
+		//obtem chave K
+		reply = (Reply) conn.getInputStream().readObject();
+		CipheredKey cipheredKey = reply.getCipheredKey();
+		KeyWrapper kw = new KeyWrapper(cipheredKey.getKey());
+		kw.unwrap(privateKey);
+		Key key = kw.getKey();
+		
+		//recebe ficheiro cifrado e decifra
+		FileOutputStream fos = new FileOutputStream(file);
+		Cipher c = CipherFactory.getStandardCipher();
+		c.init(Cipher.DECRYPT_MODE, key);
+		CipherOutputStream cos = new CipherOutputStream(fos, c);
+		
+		long received = 0;
+		byte[] buf = new byte[16];
+		while(received < fileSize)
+		{
+			conn.getInputStream().read(buf, 0, 16);
+			cos.write(buf, 0, 16);
+		}
+		cos.close();
+		fos.close();
+		
+		//obtem public key de author de upload
+		Map<String, Certificate> certs = getCertificates(names, req.getUser());
+		PublicKey publicKey = certs.get(uploader).getPublicKey();
+		
+		//recebe assinatura de ficheiro	
+		GenericSignature gs = (GenericSignature) conn.getInputStream().readObject();
+		
+		//gera sintese de ficheiro
+		byte[] receivedHash = HashService.createFileHash(file);
+		
+		//verifica assinatura do ficheiro
+		Signature signature = Signature.getInstance("SHA256withRSA");
+		signature.initVerify(publicKey);
+		signature.update(receivedHash);
+		boolean valid = signature.verify(gs.getSignature());
+		
+		if(valid)
+			reply = new Reply(200);
+		else
+			reply = new Reply(400);
+		
+		return reply;
+	}
+	
+	/**
+	 * Recebe um objecto Reply do servidor
+	 * 
+	 * @param conn Connection considerada na ligacao
+	 * @return Reply com resposta
+	 * @throws Exception
+	 * @require conn != null
+	 */
+	public static Reply receiveReply(Connection conn) {
+		//se ocorreu um erro ao executar -r contact file
+		if (download_error)
+			return new Reply(400, "Erro ao descarregar ficheiro");
+		//se ocorreu um erro ao enviar file a contact
+		else if (upload_error)
+			return new Reply(400, "Erro ao enviar ficheiro");
+		//caso contrario espera pela resposta
+		else {
+			try {
+				return (Reply) conn.getInputStream().readObject();
+			} catch (IOException e) {
+				return new Reply(400, "");
+			} catch (ClassNotFoundException e) {
+				// e.printStackTrace();
+				return new Reply(400, "");
+			}
+		}
+	}
 	
 	/**
 	 * Cifra uma chave com varias chaves publicas
@@ -348,34 +557,6 @@ public class MyWhats {
 			keys.put(names[i], ck);
 		}
 		return keys;
-	}
-
-	/**
-	 * Recebe um objecto Reply do servidor
-	 * 
-	 * @param conn Connection considerada na ligacao
-	 * @return Reply com resposta
-	 * @throws Exception
-	 * @require conn != null
-	 */
-	public static Reply receiveReply(Connection conn) {
-		//se ocorreu um erro ao executar -r contact file
-		if (download_error)
-			return new Reply(400, "Erro ao descarregar ficheiro");
-		//se ocorreu um erro ao enviar file a contact
-		else if (upload_error)
-			return new Reply(400, "Erro ao enviar ficheiro");
-		//caso contrario espera pela resposta
-		else {
-			try {
-				return (Reply) conn.getInputStream().readObject();
-			} catch (IOException e) {
-				return new Reply(400, "");
-			} catch (ClassNotFoundException e) {
-				// e.printStackTrace();
-				return new Reply(400, "");
-			}
-		}
 	}
 	
 	/**

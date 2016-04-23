@@ -195,11 +195,8 @@ public class RequestHandler extends Thread {
 			break;
 		case "-f":
 
-			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) ) {
-				reply.setStatus(400);
-				reply.setMessage("Destinatário inexistente");
-				return reply;
-			}
+			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) )
+				return new Reply(400, "Destinatário inexistente");
 
 			try {
 				if (!executeGetFile(req))

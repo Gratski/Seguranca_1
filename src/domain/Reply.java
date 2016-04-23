@@ -1,10 +1,10 @@
 package domain;
 
 import java.io.Serializable;
-import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+
+import security.CipheredKey;
 
 /**
  * Esta classe representa uma resposta do servidor para o client
@@ -17,7 +17,8 @@ public class Reply extends NetworkMessage implements Serializable {
 	private int status;
 	private String message;
 	private ArrayList<String> names;
-
+	private CipheredKey cipheredKey;
+	
 	/**
 	 * Constructor
 	 */
@@ -28,6 +29,14 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.names = null;
 	}
 
+	public CipheredKey getCipheredKey(){
+		return this.cipheredKey;
+	}
+	
+	public void setCipheredKey(CipheredKey key){
+		this.cipheredKey = key;
+	}
+	
 	/**
 	 * Getter para nomes e certificados
 	 *
