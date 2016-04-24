@@ -1,9 +1,9 @@
 package handlers;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.KeyStoreException;
@@ -14,7 +14,9 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -238,14 +240,15 @@ public class RequestHandler extends Thread {
 		return reply;
 	}
 
+	
 	private Reply executeReceiveFile(Request req) throws Exception {
 		
-		if(req == null)
-			System.out.println("EH NULLLLLL");
-		
-		//envia okay com nomes de conversa
+		// reply object
 		Reply reply = new Reply();
+		
+		// obtem nomes de membros de conversation
 		ArrayList<String> names = new ArrayList<>();
+		
 		Group group = this.groupsProxy.find(req.getContact());
 		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
 			Collection<User> members = group.getMembers();
@@ -253,15 +256,16 @@ public class RequestHandler extends Thread {
 				names.add(user.getName());
 			}
 		}
-		// se nao e para um group
+		// se eh private
 		else {
-			// verifica se destinatario existe
+			// se destinatario nao existe
 			if (!this.userProxy.exists(new User(req.getContact()))) {
 				reply.setStatus(400);
 				reply.setMessage("Destinatário inexistente");
 				return reply;
 			}
-
+			
+			// coloca o nome do destinatario
 			User contact = this.userProxy.find(req.getContact());
 			names.add(contact.getName());
 		}
@@ -279,36 +283,89 @@ public class RequestHandler extends Thread {
 		System.out.println("Filesize eh: " + fileSize);
 		
 		// obtem directoria de ficheiro
-		// verifica se eh group
-		String path = "";
-		if (group != null) {
-			if ( group.hasMemberOrOwner(req.getUser().getName()) )
-				path = Proxy.getConversationsGroup() + req.getContact();
-		}
-		// verifica se eh private
-		else {
-			path = Proxy.getConversationsPrivate();
-			path = path + this.convProxy.getOrCreate(req.getUser().getName(), req.getContact());
-		}
+		String path = this.getPath(group, req);
 
 		//pasta de ficheiros
 		path = path + "/" + Proxy.getFilesFolder();
-		System.out.println("Filepath: " + path);
 		
-		// cria ficheiro se nao existe
+		// cria directory de ficheiro
 		String filename = req.getFile().getFullPath();
-		File file = new File(path+""+filename);
+		File file = new File(path+""+filename+"/");
 		if(!file.exists())
-			file.createNewFile();
+			file.mkdirs();
 		else
 			return new Reply(400, "Ficheiro ja existente");
 		
+		// cria ficheiro
+		File filePath = new File(path+""+filename+"/"+filename);
+		if(!filePath.exists())
+			filePath.createNewFile();
+		else
+			return new Reply(400, "Ficheiro ja existente");
 		
 		//Recebe ficheiro
+		boolean ok = this.receiveFile(fileSize, filePath);
+		if(!ok)
+			return new Reply(400, "Erro ao receber ficheiro");
+		
+		// recebe chaves cifradas e guarda-as
+		Map<String, CipheredKey> keys = (Map<String, CipheredKey>) this.connection.getInputStream().readObject();
+		storeAllKeys(path+""+filename, keys);
+			
+		//escreve assinatura
+		storeSignature(path+""+filename, gs);
+		
+		//set codigo de success
+		reply.setStatus(200);
+		return reply;
+	}
+
+	/**
+	 * Guarda uma assinatura
+	 * @param basePath, pasta onde guardar assinatura
+	 * @param gs, assinatura a guardar
+	 * @throws IOException
+	 */
+	private void storeSignature(String basePath, GenericSignature gs) throws IOException{
+		File sigPath = new File(basePath+"/"+"signature.sig");
+		FileOutputStream fos = new FileOutputStream(sigPath);
+		fos.write(gs.getSignature());
+		fos.close();
+	}
+	
+	/**
+	 * Guarda multiplas chaves cifradas
+	 * @param basePath, pasta onde guardar chaves
+	 * @param keys, chaves a guardar
+	 * @throws IOException
+	 */
+	private void storeAllKeys(String basePath, Map<String, CipheredKey> keys) throws IOException{
+		Set<String> keyNames = keys.keySet();
+		Iterator<String> it = keyNames.iterator();
+		while(it.hasNext())
+		{
+			String name = it.next();
+			CipheredKey key = keys.get(name);
+			File keyFile = new File(basePath+"/"+name+".key");
+			FileOutputStream fos = new FileOutputStream(keyFile);
+			fos.write(key.getKey());
+			fos.close();
+		}
+	}
+	
+	/**
+	 * Recebe ficheiro por stream
+	 * @param fileSize, tamanho do ficheiro esperado
+	 * @param filePath, path onde guardar o ficheiro recebido
+	 * @return true se recebeu o tamanho esperado, false caso contrario
+	 * @throws IOException
+	 */
+	private boolean receiveFile(long fileSize, File filePath) throws IOException{
+		
 		int totalRead = 0;
 		int read = 0;
 		byte[] buf = new byte[16];
-		FileOutputStream fos = new FileOutputStream(file);
+		FileOutputStream fos = new FileOutputStream(filePath);
 		while(totalRead < fileSize)
 		{
 			read = this.connection.getInputStream().read(buf);
@@ -322,21 +379,10 @@ public class RequestHandler extends Thread {
 		
 		//fechar fos
 		fos.close();
-		System.out.println("File received, size: " + totalRead);
-		
-		// recebe chaves cifradas
-		Map<String, CipheredKey> keys = (Map<String, CipheredKey>) this.connection.getInputStream().readObject();
-		
-		//escreve assinatura
-		
-		
-		// escreve chaves privadas
-		
-		reply.setStatus(200);
-		System.out.println("DONE!");
-		return reply;
+		System.out.println("RECEIVED: " + totalRead + ", OF: " + fileSize);
+		return totalRead == fileSize;
 	}
-
+	
 	/**
 	 * Obtem a ultima mensagem de cada conversacao existente
 	 *
@@ -689,6 +735,21 @@ public class RequestHandler extends Thread {
 		return reply;
 	}
 
+	private String getPath(Group group, Request req) throws IOException
+	{
+		String path = "";
+		if (group != null) {
+			if ( group.hasMemberOrOwner(req.getUser().getName()) )
+				path = Proxy.getConversationsGroup() + req.getContact();
+		}
+		// verifica se eh private
+		else {
+			path = Proxy.getConversationsPrivate();
+			path = path + this.convProxy.getOrCreate(req.getUser().getName(), req.getContact());
+		}
+		return path;
+	}
+	
 	/**
 	 * Adiciona um Utilizador a um Grupo
 	 *
@@ -721,7 +782,7 @@ public class RequestHandler extends Thread {
 
 		return new Reply(200);
 	}
-
+	
 	/**
 	 * Valida utilizador
 	 * Se utilizador nao existe cria um novo

@@ -359,12 +359,25 @@ public class MyWhats {
 	 * @throws CertificateException
 	 * @throws KeyStoreException
 	 * @throws ClassNotFoundException
+	 * @throws ShortBufferException 
 	 */
-	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException{
+	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException, ShortBufferException{
 		
 		//verifica se o server lhe deu permissao
 		if(reply.hasError())
 			return reply;
+		
+		//envia mensagem de ficheiro
+		/*Message msg = new Message(req.getUser().getName(), req.getFile().getFullPath());
+		msg.setType("-f");
+		Request msgRequest = new Request();
+		msgRequest.setUser(req.getUser());
+		msgRequest.setContact(req.getContact());
+		msgRequest.setMessage(msg);
+		conn.getOutputStream().writeObject(msgRequest);
+		reply = (Reply) conn.getInputStream().readObject();
+		reply = executeSendMessage(conn, msgRequest, reply);
+		*/
 		
 		//obter chave privada
 		PrivateKey privateKey = req.getUser().getPrivateKey();

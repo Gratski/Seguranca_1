@@ -152,6 +152,11 @@ public class GroupsProxy extends Proxy {
 		File filesFolder = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER);
 		if (!filesFolder.exists())
 			filesFolder.mkdirs();
+		
+		// cria files index
+		File file = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER + "/ index");
+		if(!file.exists())
+			file.createNewFile();
 	}
 	
 	/**
