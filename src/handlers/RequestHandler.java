@@ -1,8 +1,9 @@
 package handlers;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
 import java.security.InvalidKeyException;
@@ -295,6 +296,13 @@ public class RequestHandler extends Thread {
 			file.mkdirs();
 		else
 			return new Reply(400, "Ficheiro ja existente");
+		
+		// guarda nome de autor de upload
+		File authorFile = new File(path+""+filename+"/author");
+		FileWriter fw = new FileWriter(authorFile);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(req.getUser().getName());
+		bw.close();
 		
 		// cria ficheiro
 		File filePath = new File(path+""+filename+"/"+filename);
