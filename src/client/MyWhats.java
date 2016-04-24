@@ -443,8 +443,8 @@ public class MyWhats {
 	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException{
 		
 		// obtem autor de upload de ficheiro
+		String uploader = (String) conn.getInputStream().readObject();
 		ArrayList<String> names = reply.getNames();
-		String uploader = reply.getUser().getName();
 		names.add(uploader);
 		
 		// chave privada de utilizador de session
@@ -454,32 +454,32 @@ public class MyWhats {
 		long fileSize = conn.getInputStream().readLong();
 		
 		// se ficheiro nao existe, cria novo
-		File file = new File(req.getFile().getFullPath());
+		File file = new File("DOWNLOADS/"+req.getFile().getFullPath());
 		if(!file.exists())
 			file.createNewFile();
 		
 		// obtem chave K
-		reply = (Reply) conn.getInputStream().readObject();
-		CipheredKey cipheredKey = reply.getCipheredKey();
+		CipheredKey cipheredKey = (CipheredKey) conn.getInputStream().readObject();
 		KeyWrapper kw = new KeyWrapper(cipheredKey.getKey());
 		kw.unwrap(privateKey);
 		Key key = kw.getKey();
 		
 		// recebe ficheiro cifrado e decifra
 		FileOutputStream fos = new FileOutputStream(file);
-		Cipher c = CipherFactory.getStandardCipher();
+		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
 		c.init(Cipher.DECRYPT_MODE, key);
 		CipherOutputStream cos = new CipherOutputStream(fos, c);
 		
 		long received = 0;
+		int read = 0;
 		byte[] buf = new byte[16];
-		while(received < fileSize)
+		while((read = conn.getInputStream().read(buf)) != -1)
 		{
-			conn.getInputStream().read(buf, 0, 16);
-			cos.write(buf, 0, 16);
+			cos.write(buf, 0, read);
+			received += read;
 		}
+		System.out.println("RECEIVED: " + received + ", OF: " + fileSize);
 		cos.close();
-		fos.close();
 		
 		//obtem public key de author de upload
 		Map<String, Certificate> certs = getCertificates(names, req.getUser());
@@ -497,10 +497,14 @@ public class MyWhats {
 		signature.update(receivedHash);
 		boolean valid = signature.verify(gs.getSignature());
 		
-		if(valid)
+		if(valid){
 			reply = new Reply(200);
-		else
+			System.out.println("RECEBIDO OK!");
+		}
+		else{
 			reply = new Reply(400);
+			System.out.println("RECEBIDO NOT OK!");
+		}
 		
 		return reply;
 	}
