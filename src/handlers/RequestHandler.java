@@ -276,11 +276,19 @@ public class RequestHandler extends Thread {
 		CipheredKey ck = new CipheredKey(req.getUser().getName(), cipheredKey);
 		this.connection.getOutputStream().writeObject(ck);
 		
+		//envia IV
+		File IVPath = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/iv");
+		byte[] IV = new byte[16];
+		FileInputStream fis = new FileInputStream(IVPath);
+		fis.read(IV, 0, 16);
+		fis.close();
+		this.connection.getOutputStream().write(IV, 0, 16);
+		
 		// envia ficheiro
 		int read = 0;
 		long totalSent = 0;
 		byte[] buf = new byte[16];
-		FileInputStream fis = new FileInputStream(filePath);
+		fis = new FileInputStream(filePath);
 		while((read = fis.read(buf))!=-1)
 		{
 			System.out.println("line: " + SecUtils.getHexString(buf));
@@ -369,6 +377,15 @@ public class RequestHandler extends Thread {
 			filePath.createNewFile();
 		else
 			return new Reply(400, "Ficheiro ja existente");
+		
+		// recebe IV
+		byte[] IV = new byte[16];
+		this.connection.getInputStream().read(IV, 0, 16);
+		File IVPath = new File(path+""+filename+"/iv");
+		IVPath.createNewFile();
+		FileOutputStream fos = new FileOutputStream(IVPath);
+		fos.write(IV, 0, 16);
+		fos.close();
 		
 		//Recebe ficheiro
 		boolean ok = this.receiveFile(fileSize, filePath);

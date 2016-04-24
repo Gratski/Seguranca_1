@@ -5,9 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -27,10 +26,12 @@ import java.util.Set;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.ShortBufferException;
+import javax.crypto.spec.IvParameterSpec;
 import javax.net.SocketFactory;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -42,7 +43,6 @@ import domain.Reply;
 import domain.Request;
 import domain.User;
 import helpers.Connection;
-import security.CipherFactory;
 import security.CipheredKey;
 import security.GenericSignature;
 import security.HashService;
@@ -367,18 +367,6 @@ public class MyWhats {
 		if(reply.hasError())
 			return reply;
 		
-		//envia mensagem de ficheiro
-		/*Message msg = new Message(req.getUser().getName(), req.getFile().getFullPath());
-		msg.setType("-f");
-		Request msgRequest = new Request();
-		msgRequest.setUser(req.getUser());
-		msgRequest.setContact(req.getContact());
-		msgRequest.setMessage(msg);
-		conn.getOutputStream().writeObject(msgRequest);
-		reply = (Reply) conn.getInputStream().readObject();
-		reply = executeSendMessage(conn, msgRequest, reply);
-		*/
-		
 		//obter chave privada
 		PrivateKey privateKey = req.getUser().getPrivateKey();
 		
@@ -392,6 +380,7 @@ public class MyWhats {
 		
 		//gerar chave simetrica K
 		Key key = SecUtils.generateSymetricKey();
+		System.out.println("KEY OUT: " + SecUtils.getHexString(key.getEncoded()));
 		
 		//preparar file size de acordo com cipher
 		long fileSize = file.length();
@@ -402,6 +391,13 @@ public class MyWhats {
 		// cifra ficheiro, envia
 		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
 		c.init(Cipher.ENCRYPT_MODE, key);
+		
+		//envia IV
+		byte[] IV = c.getIV();
+		conn.getOutputStream().write(IV, 0, 16);
+		System.out.println("SENT IV; " + SecUtils.getHexString(IV));
+		
+		//envia ficheiro
 		byte[] buf = new byte[16];
 		int sent = 0;
 		long totalSent = 0;
@@ -439,8 +435,9 @@ public class MyWhats {
 	 * @throws SignatureException
 	 * @throws CertificateException
 	 * @throws KeyStoreException
+	 * @throws InvalidAlgorithmParameterException 
 	 */
-	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException{
+	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException, InvalidAlgorithmParameterException{
 		
 		// obtem autor de upload de ficheiro
 		String uploader = reply.getUploader();
@@ -465,24 +462,32 @@ public class MyWhats {
 		Key key = kw.getKey();
 		if(key == null)
 			System.out.println("Is null");
+		
+		System.out.println("KEY DECRIPTED: " + SecUtils.getHexString(key.getEncoded()));
+		
+		// recebe IV
+		byte[] IV = new byte[16];
+		conn.getInputStream().read(IV, 0, 16);
+		System.out.println("RECEIVED IV; " + SecUtils.getHexString(IV));
+		
 		// recebe ficheiro cifrado e decifra
 		FileOutputStream fos = new FileOutputStream(file);
 		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
-		c.init(Cipher.DECRYPT_MODE, key);
-		CipherOutputStream cos = new CipherOutputStream(fos, c);
+		c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(IV));
+		CipherInputStream cis = new CipherInputStream(conn.getInputStream(), c);
 		
 		long received = 0;
 		int read = 0;
 		byte[] buf = new byte[16];
-		while((read = conn.getInputStream().read(buf)) != -1)
+		while((read = cis.read(buf)) != -1)
 		{
 			System.out.println("line: " + SecUtils.getHexString(buf));
 			System.out.println("==============");
-			cos.write(buf, 0, read);
+			fos.write(buf, 0, read);
 			received += read;
 		}
 		System.out.println("RECEIVED: " + received + ", OF: " + fileSize);
-		cos.close();
+		fos.close();
 		
 		//obtem public key de author de upload
 		Map<String, Certificate> certs = getCertificates(names, req.getUser());
