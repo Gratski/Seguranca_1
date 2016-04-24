@@ -133,7 +133,7 @@ public class FilesHandler {
 	 * @requires conn != null && filename != null
      * @throws Exception
      */
-	public File receive(Connection conn, String dir, String filename) throws Exception {
+	public File receive(Connection conn, String dir, String filename, long fileSize) throws Exception {
 		byte[] byteArr = new byte[CHUNK];
 
 		//receiving filename
@@ -141,18 +141,20 @@ public class FilesHandler {
 		file.getParentFile().mkdirs();
 		FileOutputStream out = new FileOutputStream(dir + "/" + filename);
 		
-		//receiving filesize
-		long fileSize = conn.getInputStream().readLong();
+		
 		long totalRead = 0;
 		
 		//receiving file itself
 		while (totalRead < fileSize) {
+			System.out.println("READING...");
 			int cur = conn.getInputStream().read(byteArr);
+			
 			if (cur == -1)
 				continue;
 			
 			out.write(byteArr, 0, cur);
 			totalRead += cur;
+			System.out.println("TOTAL READ: " + totalRead);
 		}
 		out.close();
 		return totalRead == fileSize ? file : null;

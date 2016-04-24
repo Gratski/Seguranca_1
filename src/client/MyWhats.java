@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -40,7 +42,6 @@ import domain.Reply;
 import domain.Request;
 import domain.User;
 import helpers.Connection;
-import helpers.FilesHandler;
 import security.CipherFactory;
 import security.CipheredKey;
 import security.GenericSignature;
@@ -144,6 +145,8 @@ public class MyWhats {
 	public static Reply sendRequest(Connection conn, Request req) throws Exception {
 		// send base request
 		conn.getOutputStream().writeObject(req);
+		System.out.println("AQUI");
+		System.out.println("TO: " + req.getContact());
 		
 		// get base reply
 		Reply reply = (Reply) conn.getInputStream().readObject();
@@ -373,50 +376,39 @@ public class MyWhats {
 		File file = new File(req.getFile().getFullPath());
 		GenericSignature gs = GenericSignature.createGenericFileSignature(privateKey, file);
 		conn.getOutputStream().writeObject(gs);
-		reply = (Reply) conn.getInputStream().readObject();
-		if(reply.hasError())
-			return new Reply(400, "Erro ao assinar ficheiro");
 		
 		//gerar chave simetrica K
 		Key key = SecUtils.generateSymetricKey();
 		
-		//setup de cipher object
-		Cipher c = CipherFactory.getStandardCipher();
-		c.init(Cipher.ENCRYPT_MODE, key);
-		
 		//preparar file size de acordo com cipher
 		long fileSize = file.length();
-		int extra = (int) fileSize % 16;
-		int toAdd = 0; //adicionar ao length para ficar multiplo de 16, padding
-		if(extra > 0)
-			toAdd = 16 - extra;
-		long fileSizeToServer = fileSize + toAdd;
+		System.out.println("Filesize is: " + fileSize);
+		// envia size ja com padding
+		conn.getOutputStream().writeLong(fileSize);
 		
-		//enviar size ja com padding para server, e receber resposta
-		conn.getOutputStream().writeLong(fileSizeToServer);
-		reply = (Reply) conn.getInputStream().readObject();
-		if(reply.hasError())
-			return new Reply(400, "Erro ao enviar size de ficheiro");
-		
-		//cifrar ficheiro, enviar e receber resposta
+		// cifra ficheiro, envia
+		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
+		c.init(Cipher.ENCRYPT_MODE, key);
 		byte[] buf = new byte[16];
 		int sent = 0;
+		long totalSent = 0;
 		FileInputStream fis = new FileInputStream(file);
 		CipherOutputStream cos = new CipherOutputStream(conn.getOutputStream(), c);
+		
 		while((sent = fis.read(buf))!=-1){
 			cos.write(buf, 0, sent);
+			System.out.println("ENVIOU BYTES: " + sent);
+			totalSent += sent;
 		}
-		reply = (Reply) conn.getInputStream().readObject();
-		if(reply.hasError())
-			return new Reply(400, "Erro ao enviar ficheiro cifrado");
+		cos.flush();
+		System.out.println("ENVIOU: " + totalSent);
 		
 		//cifrar K com chaves publicas dos membros, enviar e receber resposta
 		Map<String, Certificate> certs = getCertificates(members, req.getUser());
 		Map<String, CipheredKey> keys = cipherAllKeys(certs, key);
 		conn.getOutputStream().writeObject(keys);
+		
 		reply = (Reply) conn.getInputStream().readObject();
-		
-		
 		return reply;
 	}
 

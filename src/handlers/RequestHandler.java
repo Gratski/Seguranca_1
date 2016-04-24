@@ -1,20 +1,19 @@
 package handlers;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.Socket;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.crypto.BadPaddingException;
@@ -36,8 +35,8 @@ import proxies.GroupsProxy;
 import proxies.Proxy;
 import proxies.UsersProxy;
 import security.CipheredKey;
+import security.GenericSignature;
 import security.MACService;
-import security.SecUtils;
 
 /**
  * Esta classe representa a entidade que trata de um Request
@@ -127,12 +126,10 @@ public class RequestHandler extends Thread {
 	 * 
 	 * @param req 	Request a ser considerado
 	 * @return 		Reply com a resposta devida para o client
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeyException 
-	 *
+	 * @throws Exception 
 	 * @require req != null
 	 */
-	Reply parseRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, CertificateException, InvalidKeySpecException, KeyStoreException, NoSuchProviderException, SignatureException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException {
+	Reply parseRequest(Request req, SecretKey key) throws Exception {
 		// autentica se existe, senao cria novo
 		if (!validateUser(req.getUser(), key))
 			return new Reply(400, "User nao autenticado");
@@ -146,16 +143,10 @@ public class RequestHandler extends Thread {
 	 *
 	 * @param req 	Request a considerar
 	 * @return 		Reply com resposta tratada
-	 * @throws 		IOException
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeyException 
-	 * @throws KeyStoreException 
-	 * @throws CertificateException 
-	 * @throws SignatureException 
-	 *
+	 * @throws Exception 
 	 * @require req != null
      */
-	private Reply executeRequest(Request req, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, BadPaddingException, IllegalBlockSizeException, SignatureException, CertificateException, KeyStoreException {
+	private Reply executeRequest(Request req, SecretKey key) throws Exception {
 		Reply reply = new Reply();
 
 		//verifica se a integridade foi comprometida
@@ -194,11 +185,12 @@ public class RequestHandler extends Thread {
 			}
 			break;
 		case "-f":
-
 			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) )
 				return new Reply(400, "Destinatário inexistente");
-
-			try {
+			
+			reply = executeReceiveFile(req);
+			
+			/*try {
 				if (!executeGetFile(req))
 					reply = new Reply(400, "Erro ao receber ficheiro");
 				else
@@ -207,7 +199,7 @@ public class RequestHandler extends Thread {
 				reply.setStatus(400);
 				reply.setMessage("Erro ao receber ficheiro");
 				e.printStackTrace();
-			}
+			}*/
 			break;
 		case "-m":
 			synchronized (groupsProxy) {
@@ -243,6 +235,105 @@ public class RequestHandler extends Thread {
 			reply.setMessage("Comando invalido");
 			break;
 		}
+		return reply;
+	}
+
+	private Reply executeReceiveFile(Request req) throws Exception {
+		
+		if(req == null)
+			System.out.println("EH NULLLLLL");
+		
+		//envia okay com nomes de conversa
+		Reply reply = new Reply();
+		ArrayList<String> names = new ArrayList<>();
+		Group group = this.groupsProxy.find(req.getContact());
+		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
+			Collection<User> members = group.getMembers();
+			for (User user : members) {
+				names.add(user.getName());
+			}
+		}
+		// se nao e para um group
+		else {
+			// verifica se destinatario existe
+			if (!this.userProxy.exists(new User(req.getContact()))) {
+				reply.setStatus(400);
+				reply.setMessage("Destinatário inexistente");
+				return reply;
+			}
+
+			User contact = this.userProxy.find(req.getContact());
+			names.add(contact.getName());
+		}
+
+		// Envia nomes para client
+		reply.setStatus(200);
+		reply.setNames(names);
+		this.connection.getOutputStream().writeObject(reply);
+		
+		// recebe assinatura
+		GenericSignature gs = (GenericSignature) this.connection.getInputStream().readObject();
+		
+		//obtem tamanho de ficheiro
+		long fileSize = this.connection.getInputStream().readLong();
+		System.out.println("Filesize eh: " + fileSize);
+		
+		// obtem directoria de ficheiro
+		// verifica se eh group
+		String path = "";
+		if (group != null) {
+			if ( group.hasMemberOrOwner(req.getUser().getName()) )
+				path = Proxy.getConversationsGroup() + req.getContact();
+		}
+		// verifica se eh private
+		else {
+			path = Proxy.getConversationsPrivate();
+			path = path + this.convProxy.getOrCreate(req.getUser().getName(), req.getContact());
+		}
+
+		//pasta de ficheiros
+		path = path + "/" + Proxy.getFilesFolder();
+		System.out.println("Filepath: " + path);
+		
+		// cria ficheiro se nao existe
+		String filename = req.getFile().getFullPath();
+		File file = new File(path+""+filename);
+		if(!file.exists())
+			file.createNewFile();
+		else
+			return new Reply(400, "Ficheiro ja existente");
+		
+		
+		//Recebe ficheiro
+		int totalRead = 0;
+		int read = 0;
+		byte[] buf = new byte[16];
+		FileOutputStream fos = new FileOutputStream(file);
+		while(totalRead < fileSize)
+		{
+			read = this.connection.getInputStream().read(buf);
+			if(read == -1)
+				continue;
+			totalRead += read;
+			System.out.println("READ: " + read);
+			System.out.println("TOTAL: " + totalRead);
+			fos.write(buf, 0, read);
+		}
+		
+		//fechar fos
+		fos.close();
+		System.out.println("File received, size: " + totalRead);
+		
+		// recebe chaves cifradas
+		Map<String, CipheredKey> keys = (Map<String, CipheredKey>) this.connection.getInputStream().readObject();
+		
+		//escreve assinatura
+		
+		
+		// escreve chaves privadas
+		
+		reply.setStatus(200);
+		System.out.println("DONE!");
 		return reply;
 	}
 
@@ -369,7 +460,7 @@ public class RequestHandler extends Thread {
 			return false;
 		}
 
-		return fHandler.receive(this.connection, path, filename) != null;
+		return fHandler.receive(this.connection, path, filename, 1) != null;
 	}
 
 	/**
