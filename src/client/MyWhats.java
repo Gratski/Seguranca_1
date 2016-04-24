@@ -179,6 +179,7 @@ public class MyWhats {
 		return reply;
 	}
 	
+	
 	/**
 	 * Recebe mensagens do servidor de um dado utilizador ou grupo
 	 * @param reply, reply de request inicial
@@ -281,8 +282,7 @@ public class MyWhats {
 			InvalidKeyException, SignatureException, CertificateException, 
 			KeyStoreException, ShortBufferException {
 		
-		//receber contact list de server ou error
-		//TODO -> Substituir por get 
+		//receber contact list de server ou error 
 		ArrayList<String> names = reply.getNames();
 		Map<String, Certificate> members = getCertificates(names, req.getUser());
 		
@@ -442,31 +442,30 @@ public class MyWhats {
 	 */
 	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException{
 		
-		//obtem autor de upload de ficheiro
-		ArrayList<String> names = new ArrayList<>();
+		// obtem autor de upload de ficheiro
+		ArrayList<String> names = reply.getNames();
 		String uploader = reply.getUser().getName();
 		names.add(uploader);
 		
-		//chave privada de utilizador de session
+		// chave privada de utilizador de session
 		PrivateKey privateKey = req.getUser().getPrivateKey();
 		
-		//obtem size de ficheiro, informa server que recebeu
+		// obtem size de ficheiro
 		long fileSize = conn.getInputStream().readLong();
-			
 		
-		//se ficheiro nao existe, cria novo
+		// se ficheiro nao existe, cria novo
 		File file = new File(req.getFile().getFullPath());
 		if(!file.exists())
 			file.createNewFile();
 		
-		//obtem chave K
+		// obtem chave K
 		reply = (Reply) conn.getInputStream().readObject();
 		CipheredKey cipheredKey = reply.getCipheredKey();
 		KeyWrapper kw = new KeyWrapper(cipheredKey.getKey());
 		kw.unwrap(privateKey);
 		Key key = kw.getKey();
 		
-		//recebe ficheiro cifrado e decifra
+		// recebe ficheiro cifrado e decifra
 		FileOutputStream fos = new FileOutputStream(file);
 		Cipher c = CipherFactory.getStandardCipher();
 		c.init(Cipher.DECRYPT_MODE, key);
