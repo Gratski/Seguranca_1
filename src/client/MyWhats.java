@@ -443,8 +443,8 @@ public class MyWhats {
 	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException{
 		
 		// obtem autor de upload de ficheiro
-		String uploader = (String) conn.getInputStream().readObject();
-		ArrayList<String> names = reply.getNames();
+		String uploader = reply.getUploader();
+		ArrayList<String> names = new ArrayList<>();
 		names.add(uploader);
 		
 		// chave privada de utilizador de session
@@ -463,7 +463,8 @@ public class MyWhats {
 		KeyWrapper kw = new KeyWrapper(cipheredKey.getKey());
 		kw.unwrap(privateKey);
 		Key key = kw.getKey();
-		
+		if(key == null)
+			System.out.println("Is null");
 		// recebe ficheiro cifrado e decifra
 		FileOutputStream fos = new FileOutputStream(file);
 		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
@@ -475,6 +476,8 @@ public class MyWhats {
 		byte[] buf = new byte[16];
 		while((read = conn.getInputStream().read(buf)) != -1)
 		{
+			System.out.println("line: " + SecUtils.getHexString(buf));
+			System.out.println("==============");
 			cos.write(buf, 0, read);
 			received += read;
 		}

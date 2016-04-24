@@ -1,8 +1,11 @@
 package handlers;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.Socket;
@@ -40,6 +43,7 @@ import proxies.UsersProxy;
 import security.CipheredKey;
 import security.GenericSignature;
 import security.MACService;
+import security.SecUtils;
 
 /**
  * Esta classe representa a entidade que trata de um Request
@@ -192,17 +196,6 @@ public class RequestHandler extends Thread {
 				return new Reply(400, "Destinatário inexistente");
 			
 			reply = executeReceiveFile(req);
-			
-			/*try {
-				if (!executeGetFile(req))
-					reply = new Reply(400, "Erro ao receber ficheiro");
-				else
-					reply = new Reply(200);
-			} catch (Exception e) {
-				reply.setStatus(400);
-				reply.setMessage("Erro ao receber ficheiro");
-				e.printStackTrace();
-			}*/
 			break;
 		case "-m":
 			synchronized (groupsProxy) {
@@ -220,8 +213,7 @@ public class RequestHandler extends Thread {
 				break;
 			// se eh para fazer download
 			case "download":
-				boolean sent = sendFile(req);
-				reply = sent ? new Reply(200) : new Reply(400, "Erro ao fazer download");
+				reply = executeSendFile(req);
 				break;
 			// se eh para obter todas as mensagens de todos
 			case "all":
@@ -241,6 +233,73 @@ public class RequestHandler extends Thread {
 		return reply;
 	}
 
+	
+	private Reply executeSendFile(Request req) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
+		
+		Reply reply = new Reply();
+		
+		String path = this.convProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
+
+		File file = null;
+		if (path != null) {
+			file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/");
+			if(!file.exists())
+				return new Reply(400,"Ficheiro inexistente");
+		}
+		
+		// obter author de upload
+		file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/author");
+		if(!file.exists())
+			return new Reply(400,"Ficheiro de author missing");
+		
+		FileReader fr = new FileReader(file);
+		BufferedReader br = new BufferedReader(fr);
+		String uploader = br.readLine();
+		br.close();
+		
+		//enviar uploader
+		System.out.println("Uploader was: " + uploader);
+		reply.setStatus(200);
+		reply.setUploader(uploader);
+		this.connection.getOutputStream().writeObject(reply);
+		
+		//envia tamanho de ficheiro
+		File filePath = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/"+req.getFile().getFullPath());
+		System.out.println("FilePath is: " + path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/"+req.getFile().getFullPath());
+		long fileSize = filePath.length();
+		this.connection.getOutputStream().writeLong(fileSize);
+		
+		//obtem chave cifrada
+		String keyPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/"+req.getUser().getName()+".key";
+		System.out.println("Key Path: " + keyPath);
+		byte[] cipheredKey = SecUtils.readKeyFromFile(keyPath);
+		CipheredKey ck = new CipheredKey(req.getUser().getName(), cipheredKey);
+		this.connection.getOutputStream().writeObject(ck);
+		
+		// envia ficheiro
+		int read = 0;
+		long totalSent = 0;
+		byte[] buf = new byte[16];
+		FileInputStream fis = new FileInputStream(filePath);
+		while((read = fis.read(buf))!=-1)
+		{
+			System.out.println("line: " + SecUtils.getHexString(buf));
+			System.out.println("================");
+			this.connection.getOutputStream().write(buf, 0, read);
+			totalSent += read;
+		}
+		fis.close();
+		System.out.println("ENVIADOS: " + totalSent +", OF: " + fileSize );
+		
+		//envia assinatura
+		String sigPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/signature.sig";
+		GenericSignature gs = GenericSignature.readSignatureFromFile(sigPath);
+		this.connection.getOutputStream().writeObject(gs);
+		
+		
+		return new Reply(200);
+		
+	}
 	
 	private Reply executeReceiveFile(Request req) throws Exception {
 		
@@ -336,9 +395,10 @@ public class RequestHandler extends Thread {
 	 */
 	private void storeSignature(String basePath, GenericSignature gs) throws IOException{
 		File sigPath = new File(basePath+"/"+"signature.sig");
-		FileOutputStream fos = new FileOutputStream(sigPath);
-		fos.write(gs.getSignature());
-		fos.close();
+		FileWriter fw = new FileWriter(sigPath);
+		BufferedWriter bw = new BufferedWriter(fw);
+		bw.write(SecUtils.getHexString(gs.getSignature()));
+		bw.close();
 	}
 	
 	/**
@@ -355,9 +415,10 @@ public class RequestHandler extends Thread {
 			String name = it.next();
 			CipheredKey key = keys.get(name);
 			File keyFile = new File(basePath+"/"+name+".key");
-			FileOutputStream fos = new FileOutputStream(keyFile);
-			fos.write(key.getKey());
-			fos.close();
+			FileWriter fw = new FileWriter(keyFile);
+			BufferedWriter bw = new BufferedWriter(fw);
+			bw.write(SecUtils.getHexString(key.getKey()));
+			bw.close();
 		}
 	}
 	

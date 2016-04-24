@@ -18,6 +18,7 @@ public class Reply extends NetworkMessage implements Serializable {
 	private String message;
 	private ArrayList<String> names;
 	private CipheredKey cipheredKey;
+	private String uploader;
 	
 	/**
 	 * Constructor
@@ -28,7 +29,14 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.message = null;
 		this.names = null;
 	}
-
+	
+	public String getUploader(){
+		return this.uploader;
+	}
+	public void setUploader(String uploader){
+		this.uploader = uploader;
+	}
+	
 	public CipheredKey getCipheredKey(){
 		return this.cipheredKey;
 	}
