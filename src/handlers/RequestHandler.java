@@ -278,17 +278,17 @@ public class RequestHandler extends Thread {
 		
 		//envia IV
 		File IVPath = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/iv");
-		byte[] IV = new byte[16];
-		FileInputStream fis = new FileInputStream(IVPath);
-		fis.read(IV, 0, 16);
-		fis.close();
-		this.connection.getOutputStream().write(IV, 0, 16);
+		fr = new FileReader(IVPath);
+		br = new BufferedReader(fr);
+		String IV = br.readLine();
+		br.close();
+		this.connection.getOutputStream().writeObject(IV);
 		
 		// envia ficheiro
 		int read = 0;
 		long totalSent = 0;
 		byte[] buf = new byte[16];
-		fis = new FileInputStream(filePath);
+		FileInputStream fis = new FileInputStream(filePath);
 		while((read = fis.read(buf))!=-1)
 		{
 			System.out.println("line: " + SecUtils.getHexString(buf));
@@ -379,13 +379,13 @@ public class RequestHandler extends Thread {
 			return new Reply(400, "Ficheiro ja existente");
 		
 		// recebe IV
-		byte[] IV = new byte[16];
-		this.connection.getInputStream().read(IV, 0, 16);
+		String IV = (String) this.connection.getInputStream().readObject();
 		File IVPath = new File(path+""+filename+"/iv");
 		IVPath.createNewFile();
-		FileOutputStream fos = new FileOutputStream(IVPath);
-		fos.write(IV, 0, 16);
-		fos.close();
+		fw = new FileWriter(IVPath);
+		bw = new BufferedWriter(fw);
+		bw.write(IV);
+		bw.close();
 		
 		//Recebe ficheiro
 		boolean ok = this.receiveFile(fileSize, filePath);

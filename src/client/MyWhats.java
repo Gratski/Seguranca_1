@@ -43,6 +43,7 @@ import domain.Reply;
 import domain.Request;
 import domain.User;
 import helpers.Connection;
+import security.CipherFactory;
 import security.CipheredKey;
 import security.GenericSignature;
 import security.HashService;
@@ -363,28 +364,24 @@ public class MyWhats {
 	 */
 	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException, ShortBufferException{
 		
-		//verifica se o server lhe deu permissao
-		if(reply.hasError())
-			return reply;
-		
-		//obter chave privada
+		// obter chave privada
 		PrivateKey privateKey = req.getUser().getPrivateKey();
 		
-		//obter lista de membros de conversa
+		// obter lista de membros de conversa, obtem seus certificados
 		ArrayList<String> members = reply.getNames();
+		Map<String, Certificate> certs = getCertificates(members, req.getUser());
 		
-		//gerar assinatura digital, enviar e receber resposta
+		// gerar assinatura digital, enviar e receber resposta
 		File file = new File(req.getFile().getFullPath());
 		GenericSignature gs = GenericSignature.createGenericFileSignature(privateKey, file);
 		conn.getOutputStream().writeObject(gs);
 		
-		//gerar chave simetrica K
+		// gerar chave simetrica K
 		Key key = SecUtils.generateSymetricKey();
-		System.out.println("KEY OUT: " + SecUtils.getHexString(key.getEncoded()));
 		
-		//preparar file size de acordo com cipher
+		// preparar file size de acordo com cipher
 		long fileSize = file.length();
-		System.out.println("Filesize is: " + fileSize);
+	
 		// envia size ja com padding
 		conn.getOutputStream().writeLong(fileSize);
 		
@@ -392,12 +389,14 @@ public class MyWhats {
 		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
 		c.init(Cipher.ENCRYPT_MODE, key);
 		
-		//envia IV
+		// envia IV
+		Cipher cIV = CipherFactory.getStandardCipher();
+		cIV.init(Cipher.ENCRYPT_MODE, key);
 		byte[] IV = c.getIV();
-		conn.getOutputStream().write(IV, 0, 16);
-		System.out.println("SENT IV; " + SecUtils.getHexString(IV));
+		byte[] IVCiphered = cIV.doFinal(IV);
+		conn.getOutputStream().writeObject(SecUtils.getHexString(IVCiphered));
 		
-		//envia ficheiro
+		// envia ficheiro
 		byte[] buf = new byte[16];
 		int sent = 0;
 		long totalSent = 0;
@@ -413,7 +412,6 @@ public class MyWhats {
 		System.out.println("ENVIOU: " + totalSent);
 		
 		//cifrar K com chaves publicas dos membros, enviar e receber resposta
-		Map<String, Certificate> certs = getCertificates(members, req.getUser());
 		Map<String, CipheredKey> keys = cipherAllKeys(certs, key);
 		conn.getOutputStream().writeObject(keys);
 		
@@ -436,13 +434,19 @@ public class MyWhats {
 	 * @throws CertificateException
 	 * @throws KeyStoreException
 	 * @throws InvalidAlgorithmParameterException 
+	 * @throws BadPaddingException 
+	 * @throws IllegalBlockSizeException 
 	 */
-	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException, InvalidAlgorithmParameterException{
+	private static Reply executeReceiveFile(Connection conn, Request req, Reply reply) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, ClassNotFoundException, SignatureException, CertificateException, KeyStoreException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException{
 		
 		// obtem autor de upload de ficheiro
 		String uploader = reply.getUploader();
 		ArrayList<String> names = new ArrayList<>();
 		names.add(uploader);
+		
+		// chave publica de author de upload para utilizar em decifrar assinatura
+		Map<String, Certificate> certs = getCertificates(names, req.getUser());
+		PublicKey publicKey = certs.get(uploader).getPublicKey();
 		
 		// chave privada de utilizador de session
 		PrivateKey privateKey = req.getUser().getPrivateKey();
@@ -460,40 +464,26 @@ public class MyWhats {
 		KeyWrapper kw = new KeyWrapper(cipheredKey.getKey());
 		kw.unwrap(privateKey);
 		Key key = kw.getKey();
-		if(key == null)
-			System.out.println("Is null");
-		
-		System.out.println("KEY DECRIPTED: " + SecUtils.getHexString(key.getEncoded()));
 		
 		// recebe IV
-		byte[] IV = new byte[16];
-		conn.getInputStream().read(IV, 0, 16);
-		System.out.println("RECEIVED IV; " + SecUtils.getHexString(IV));
+		String IVHex = (String) conn.getInputStream().readObject();
+		Cipher cIV = Cipher.getInstance("AES");
+		cIV.init(Cipher.DECRYPT_MODE, key);
+		byte[] clearIV = cIV.doFinal(SecUtils.getStringHex(IVHex));
 		
 		// recebe ficheiro cifrado e decifra
 		FileOutputStream fos = new FileOutputStream(file);
 		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
-		c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(IV));
+		c.init(Cipher.DECRYPT_MODE, key, new IvParameterSpec(clearIV));
 		CipherInputStream cis = new CipherInputStream(conn.getInputStream(), c);
 		
-		long received = 0;
 		int read = 0;
 		byte[] buf = new byte[16];
 		while((read = cis.read(buf)) != -1)
-		{
-			System.out.println("line: " + SecUtils.getHexString(buf));
-			System.out.println("==============");
 			fos.write(buf, 0, read);
-			received += read;
-		}
-		System.out.println("RECEIVED: " + received + ", OF: " + fileSize);
 		fos.close();
 		
-		//obtem public key de author de upload
-		Map<String, Certificate> certs = getCertificates(names, req.getUser());
-		PublicKey publicKey = certs.get(uploader).getPublicKey();
-		
-		//recebe assinatura de ficheiro	
+		// recebe assinatura de ficheiro	
 		GenericSignature gs = (GenericSignature) conn.getInputStream().readObject();
 		
 		//gera sintese de ficheiro
@@ -515,34 +505,6 @@ public class MyWhats {
 		}
 		
 		return reply;
-	}
-	
-	/**
-	 * Recebe um objecto Reply do servidor
-	 * 
-	 * @param conn Connection considerada na ligacao
-	 * @return Reply com resposta
-	 * @throws Exception
-	 * @require conn != null
-	 */
-	public static Reply receiveReply(Connection conn) {
-		//se ocorreu um erro ao executar -r contact file
-		if (download_error)
-			return new Reply(400, "Erro ao descarregar ficheiro");
-		//se ocorreu um erro ao enviar file a contact
-		else if (upload_error)
-			return new Reply(400, "Erro ao enviar ficheiro");
-		//caso contrario espera pela resposta
-		else {
-			try {
-				return (Reply) conn.getInputStream().readObject();
-			} catch (IOException e) {
-				return new Reply(400, "");
-			} catch (ClassNotFoundException e) {
-				// e.printStackTrace();
-				return new Reply(400, "");
-			}
-		}
 	}
 	
 	/**
