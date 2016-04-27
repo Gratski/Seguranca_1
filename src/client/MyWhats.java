@@ -146,8 +146,6 @@ public class MyWhats {
 	public static Reply sendRequest(Connection conn, Request req) throws Exception {
 		// send base request
 		conn.getOutputStream().writeObject(req);
-		System.out.println("AQUI");
-		System.out.println("TO: " + req.getContact());
 		
 		// get base reply
 		Reply reply = (Reply) conn.getInputStream().readObject();
@@ -172,7 +170,7 @@ public class MyWhats {
 			} 
 			//se eh para download de mensagens
 			else {
-				reply = executeReceiveMessages(reply, conn, req);
+				reply = executeReceiveMessages(reply, req);
 			}
 			
 			break;
@@ -184,7 +182,6 @@ public class MyWhats {
 	/**
 	 * Recebe mensagens do servidor de um dado utilizador ou grupo
 	 * @param reply, reply de request inicial
-	 * @param conn, connection a ser utilizada
 	 * @param req, request a ser feito
 	 * @return reply de processo de envio de recepcao de mensagens
 	 * @throws ClassNotFoundException
@@ -198,7 +195,7 @@ public class MyWhats {
 	 * @throws KeyStoreException
 	 * @throws SignatureException
 	 */
-	private static Reply executeReceiveMessages(Reply reply, Connection conn, Request req) throws ClassNotFoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, CertificateException, KeyStoreException, SignatureException {
+	private static Reply executeReceiveMessages(Reply reply, Request req) throws ClassNotFoundException, IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, BadPaddingException, IllegalBlockSizeException, CertificateException, KeyStoreException, SignatureException {
 		
 		//obtem private key de user
 		PrivateKey privateKey = req.getUser().getPrivateKey();
@@ -209,10 +206,10 @@ public class MyWhats {
 		int j = 0;
 
 		//para cada conversation
-		System.out.println("Numero de conversas: " + convs.size());
+//		System.out.println("Numero de conversas: " + convs.size());
 		for (Conversation conv : convs)
 		{
-			System.out.println("Numero de mensagens: " + conv.getMessages().size());
+//			System.out.println("Numero de mensagens: " + conv.getMessages().size());
 			for (Message msg : conv.getMessages())
 			{
 				//obtem key
@@ -220,10 +217,10 @@ public class MyWhats {
 				kw.unwrap(privateKey);
 				Key curKey = kw.getKey();
 				
-				System.out.println("*******************************");
+//				System.out.println("*******************************");
 				byte[] cipheredBytes = SecUtils.getStringHex(msg.getBody());
-				System.out.println("Ciphered Bytes: " + cipheredBytes.length);
-				
+//				System.out.println("Ciphered Bytes: " + cipheredBytes.length);
+
 				//decifra mensagem
 				Cipher c = Cipher.getInstance("AES");
 				c.init(Cipher.DECRYPT_MODE, curKey);
@@ -236,19 +233,19 @@ public class MyWhats {
 				
 				//valida sintese
 				MessageDigest md = GenericSignature.getMessageDigest();
-				byte[] receivedHash = md.digest(bodyEmClaro.getBytes());
+				byte[] receivedHash = md.digest(body.getBytes());
 				Signature signature = Signature.getInstance("SHA256withRSA");
 				signature.initVerify(publicKey);
 				signature.update(receivedHash);
 				boolean valid = signature.verify(msg.getSignature().getSignature());
 
-				msg.setBody(bodyEmClaro);
+				msg.setBody(body);
 				if (valid) {
-					System.out.println("SINTESE BOA!");
+//					System.out.println("SINTESE BOA!");
 				}
 				else {
 //					convs.get(i).getMessages().remove(j);
-					System.out.println("SINTESE INVALIDA!");
+//					System.out.println("SINTESE INVALIDA!");
 				}
 				
 				j++;

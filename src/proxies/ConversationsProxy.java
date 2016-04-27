@@ -151,7 +151,7 @@ public class ConversationsProxy extends Proxy {
 	 *
 	 * @throws IOException
      */
-	public ArrayList<Conversation> getLastMessageFromAll(User user) throws IOException {
+	public ArrayList<Conversation> getLastMessageFromAll(User user) throws IOException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
 		// Ir buscar conversations
 		ArrayList<Conversation> conversations = new ArrayList<>();
 		conversations.addAll(getConversationsFrom(user.getName()));
@@ -163,7 +163,7 @@ public class ConversationsProxy extends Proxy {
 		}
 		// Iterar as conversations para ir buscar a lastMessage (em novo metodo, como em baixo)
 		for (Conversation conversation : conversations) {
-			Message lastMessage = getLastMessage(conversation);
+			Message lastMessage = getLastMessage(conversation, user.getName());
 			if (lastMessage != null)
 				conversation.addMessage(lastMessage);
 		}
@@ -182,15 +182,18 @@ public class ConversationsProxy extends Proxy {
 	 *
 	 * @requires conversation != null
      */
-	private Message getLastMessage(Conversation conversation) throws IOException {
+	private Message getLastMessage(Conversation conversation, String user) throws IOException, IllegalBlockSizeException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, NoSuchPaddingException {
 		String folder = conversation.getGroup() == null ? "PRIVATE" : "GROUP";
 		String id = conversation.getGroup() == null ? conversation.getFilename() : conversation.getGroup().getName();
 
 		String lastMessage = null;
+		int lastMessageID = 0;
 		File f = new File(CONVERSATIONS + folder + "/" + id);
 		try {
-			if ( f.listFiles().length > 1)
-				lastMessage = f.list().length - 1 + MESSAGE_FILE_EXTENSION;
+			if ( f.listFiles().length > 1) {
+				lastMessageID = f.list().length - 1;
+				lastMessage = lastMessageID + "/body" + MESSAGE_FILE_EXTENSION;
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Erro ao tentar f.list()");
@@ -208,12 +211,12 @@ public class ConversationsProxy extends Proxy {
 			String timeInMilliseconds = split[0];
 			String from = split[1];
 			String type = split[2];
-
-			split = line.split(type);
-			String messageBody = split[1];
+			String messageBody = split[3];
 
 			message = new Message(from, messageBody);
 			message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
+			message.setSignature(GenericSignature.readSignatureFromFile(CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/" + "signature.sig"));
+			message.setKey(SecUtils.readKeyFromFile(CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/" + user + ".key"));
 
 		} else {
 			br.close();

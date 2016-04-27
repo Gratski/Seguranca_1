@@ -477,7 +477,7 @@ public class RequestHandler extends Thread {
 	 * @throws IOException
 	 * @require req != null
      */
-	private Reply getLastMessageFromConversations(Request req) throws IOException {
+	private Reply getLastMessageFromConversations(Request req) throws IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
 		Reply reply = new Reply();
 		//obtem todas as conversas
 		ArrayList<Conversation> conversations = this.convProxy.getLastMessageFromAll(req.getUser());
@@ -668,8 +668,6 @@ public class RequestHandler extends Thread {
 			return reply;
 		}
 
-		
-		
 		// Receber lista de Ks cifrados
 		Map<String, CipheredKey> cipheredKeys;
 		try {
