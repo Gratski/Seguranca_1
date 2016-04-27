@@ -236,13 +236,13 @@ public class MyWhats {
 				
 				//valida sintese
 				MessageDigest md = GenericSignature.getMessageDigest();
-				byte[] receivedHash = md.digest(body.getBytes());
+				byte[] receivedHash = md.digest(bodyEmClaro.getBytes());
 				Signature signature = Signature.getInstance("SHA256withRSA");
 				signature.initVerify(publicKey);
 				signature.update(receivedHash);
 				boolean valid = signature.verify(msg.getSignature().getSignature());
 
-				msg.setBody(body);
+				msg.setBody(bodyEmClaro);
 				if (valid) {
 					System.out.println("SINTESE BOA!");
 				}
