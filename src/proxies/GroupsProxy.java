@@ -274,7 +274,7 @@ public class GroupsProxy extends Proxy {
 			}
 				
 		}
-		return false;
+		return true;
 	}
 	
 	

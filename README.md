@@ -13,5 +13,5 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 
 
 TODO:
-- Servidor não pode distribuir chaves, é para ser manualmente
-- Cifrar todo o conteúdo da mensagem
+- mandar msg de ficheiro
+- verificar se user tem key para receber mensagens (grupo)

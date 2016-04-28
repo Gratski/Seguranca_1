@@ -8,6 +8,7 @@ grant codeBase "file:bin${/}-" {
   // Files
   permission java.io.FilePermission "<<ALL FILES>>", "read";
   permission java.io.FilePermission ".${/}*", "write";
+  permission java.io.FilePermission ".${/}DOWNLOADS${/}*", "write";
 
   // KeyStore
   permission java.util.PropertyPermission "javax.net.ssl.trustStore", "read, write";
@@ -15,6 +16,7 @@ grant codeBase "file:bin${/}-" {
 
   // Certificates
   permission java.lang.RuntimePermission "accessClassInPackage.sun.security.x509", "read";
+
 };
 
 grant codeBase "file:${java.home}${/}lib${/}ext${/}*" {

@@ -146,7 +146,7 @@ public class MyWhats {
 	public static Reply sendRequest(Connection conn, Request req) throws Exception {
 		// send base request
 		conn.getOutputStream().writeObject(req);
-		
+
 		// get base reply
 		Reply reply = (Reply) conn.getInputStream().readObject();
 		if (reply.hasError())

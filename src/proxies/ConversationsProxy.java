@@ -286,8 +286,10 @@ public class ConversationsProxy extends Proxy {
 				message = new Message(from, messageBody);
 				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
 				message.setSignature(GenericSignature.readSignatureFromFile(path + "/" + i + "/" + "signature.sig"));
-				message.setKey(SecUtils.readKeyFromFile(path + "/" + i + "/" + user + ".key"));
-				conversation.addMessage(message);
+				if (new File(path + "/" + i + "/" + user + ".key").exists()) {
+					message.setKey(SecUtils.readKeyFromFile(path + "/" + i + "/" + user + ".key"));
+					conversation.addMessage(message);
+				}
 			} else {
 				br.close();
 				fr.close();
