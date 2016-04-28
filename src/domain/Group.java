@@ -35,8 +35,10 @@ public class Group implements Serializable {
 	 *
 	 * @return Collection<User> membros do Group
      */
-	public Collection<User> getMembers(){
-		return this.members.values();
+	public Collection<User> getMembersAndOwner(){
+		Collection<User> allMembers = new ArrayList<>(this.members.values());
+		allMembers.add(owner);
+		return allMembers;
 	}
 	
 	/**

@@ -15,9 +15,7 @@ import javax.crypto.SecretKey;
 import builders.FileStreamBuilder;
 import domain.Group;
 import domain.User;
-import helpers.FilesHandler;
 import security.MACService;
-import security.SecUtils;
 
 /**
  * Esta classe representa a entidade responsavel
@@ -314,7 +312,7 @@ public class GroupsProxy extends Proxy {
 			sb.append(g.getOwner());
 			sb.append(" " + g.getName());
 			
-			Collection<User> members = g.getMembers();
+			Collection<User> members = g.getMembersAndOwner();
 			int i = 0;
 			for ( User m : members ) {
 				//se eh o primeiro dos membros

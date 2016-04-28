@@ -319,7 +319,7 @@ public class RequestHandler extends Thread {
 		
 		Group group = this.groupsProxy.find(req.getContact());
 		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
-			Collection<User> members = group.getMembers();
+			Collection<User> members = group.getMembersAndOwner();
 			for (User user : members) {
 				names.add(user.getName());
 			}
@@ -619,7 +619,7 @@ public class RequestHandler extends Thread {
 		ArrayList<String> names = new ArrayList<>();
 		Group group = this.groupsProxy.find(req.getMessage().getTo());
 		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
-			Collection<User> members = group.getMembers();
+			Collection<User> members = group.getMembersAndOwner();
 			for (User user : members) {
 				names.add(user.getName());
 			}
@@ -640,6 +640,7 @@ public class RequestHandler extends Thread {
 		// Envia certificados e nomes
 		reply.setStatus(200);
 		reply.setNames(names);
+		System.out.println("NOME ENVIADOS: " + names);
 		this.connection.getOutputStream().writeObject(reply);
 
 		// Receber assinatura digital

@@ -1,11 +1,7 @@
 package domain;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
-
-import proxies.MessagesProxy;
 
 /**
  * Esta classe representa a entidade Conversacao
@@ -60,7 +56,7 @@ public class Conversation implements Serializable {
 	public Conversation(Group group) {
 		this.filename = null;
 		this.group = group;
-		this.users = new ArrayList<>(group.getMembers());
+		this.users = new ArrayList<>(group.getMembersAndOwner());
 		this.msgs = new ArrayList<>();
 	}
 
