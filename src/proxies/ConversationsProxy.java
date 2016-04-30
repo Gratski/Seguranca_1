@@ -207,17 +207,7 @@ public class ConversationsProxy extends Proxy {
 		Message message = null;
 
 		if ((line = br.readLine()) != null) {
-			String[] split = line.split(" ");
-			String timeInMilliseconds = split[0];
-			String from = split[1];
-			String type = split[2];
-			String messageBody = split[3];
-
-			message = new Message(from, messageBody);
-			message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
-			message.setSignature(GenericSignature.readSignatureFromFile(CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/" + "signature.sig"));
-			message.setKey(SecUtils.readKeyFromFile(CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/" + user + ".key"));
-
+			message = createMessageFromLine(line, user, CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/");
 		} else {
 			br.close();
 			fr.close();
@@ -225,6 +215,41 @@ public class ConversationsProxy extends Proxy {
 		}
 		br.close();
 		fr.close();
+		return message;
+	}
+
+	/**
+	 * Constrói uma nova mensagem com base numa linha
+	 *
+	 * @param line
+	 * 		Linha de onde se vão buscar as informações para construir a mensagem
+	 * @param user
+	 * 		Utilizador que vai receber a mensagem, serve para ver se vamos buscar a sua .key ou não
+	 * @param path
+	 * 		Path onde a informação da mensagem está
+	 * @return
+	 * 		Retorna mensagem Message com as informações todas lidas
+	 * @throws NoSuchPaddingException
+	 * @throws NoSuchAlgorithmException
+	 * @throws IOException
+	 * @throws BadPaddingException
+	 * @throws IllegalBlockSizeException
+     * @throws InvalidKeyException
+     */
+	private Message createMessageFromLine(String line, String user, String path) throws NoSuchPaddingException, NoSuchAlgorithmException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidKeyException {
+		String[] split = line.split(" ");
+		String timeInMilliseconds = split[0];
+		String from = split[1];
+		String messageBody = split[3];
+
+		Message message = new Message(from, messageBody);
+		message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
+		message.setSignature(GenericSignature.readSignatureFromFile(path + "signature.sig"));
+
+		// Verificar se user pode receber mensagem com base na existência do user.key
+		if (new File(path + user + ".key").exists())
+			message.setKey(SecUtils.readKeyFromFile(path + user + ".key"));
+
 		return message;
 	}
 
@@ -273,23 +298,11 @@ public class ConversationsProxy extends Proxy {
 			BufferedReader br = new BufferedReader(fr);
 			String line;
 			Message message;
-
 			System.out.println("Processing message: " + i);
 
 			if ((line = br.readLine()) != null) {
-				String[] split = line.split(" ");
-				String timeInMilliseconds = split[0];
-				String from = split[1];
-				String type = split[2];
-				String messageBody = split[3];
-
-				message = new Message(from, messageBody);
-				message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
-				message.setSignature(GenericSignature.readSignatureFromFile(path + "/" + i + "/" + "signature.sig"));
-				if (new File(path + "/" + i + "/" + user + ".key").exists()) {
-					message.setKey(SecUtils.readKeyFromFile(path + "/" + i + "/" + user + ".key"));
-					conversation.addMessage(message);
-				}
+				message = createMessageFromLine(line, user, path + "/" + i + "/");
+				conversation.addMessage(message);
 			} else {
 				br.close();
 				fr.close();
