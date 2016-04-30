@@ -1,8 +1,6 @@
 package domain;
 
 import java.io.Serializable;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
 
 /**
  * Esta classe representa um pedido de uma acção do cliente para o servidor
@@ -66,9 +64,7 @@ public class Request extends NetworkMessage implements Serializable {
 	public String getContact() {
 		return this.contact;
 	}
-	
-	
-	
+
 	/**
 	 * Setter para contact
 	 *

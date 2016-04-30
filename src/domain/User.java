@@ -36,7 +36,14 @@ public class User implements Serializable {
 		this.name = name;
 		this.password = password;
 	}
-	
+
+	/**
+	 * Constructor
+	 *
+	 * @param name Nome de utilizador
+	 * @param password Password de utilizador
+	 * @param salt Salt que foi utilizado para gerar hash de password final
+     */
 	public User(String name, byte[] password, byte[] salt){
 		this.name = name;
 		this.password = password;
@@ -62,28 +69,36 @@ public class User implements Serializable {
 	}
 
 	/**
+	 * Getter para certificado de utilizador
 	 * 
-	 * @return
+	 * @return Certificate que representa o certificado
 	 */
 	public Certificate getCertificate(){
 		return this.certificate;
 	}
 	
 	/**
-	 * 
-	 * @return
+	 * Getter para chave privada do utilizador
+	 *
+	 * @return Chave privada de utilizador
 	 */
 	public PrivateKey getPrivateKey(){
 		return this.privateKey;
 	}
-	
+
+	/**
+	 * Setter para chave privada
+	 *
+	 * @param k Chave privada
+     */
 	public void setPrivateKey(PrivateKey k){
 		this.privateKey = k;
 	}
 	
 	/**
-	 * 
-	 * @param cert
+	 * Setter para certificado
+	 *
+	 * @param cert Certificado para ser guardado
 	 */
 	public void setCertificate(Certificate cert){
 		this.certificate = cert;
@@ -97,15 +112,30 @@ public class User implements Serializable {
 		sb.append('}');
 		return sb.toString();
 	}
-	
+
+	/**
+	 * Setter para salt gerado
+	 *
+	 * @param salt Salt a ser guardado
+     */
 	public void setSalt(byte[] salt){
 		this.salt = salt;
 	}
 
+	/**
+	 * Setter para password do utilizador
+	 *
+	 * @param pass Password de utilizador
+     */
 	public void setPassword(byte[] pass){
 		this.password = pass;
 	}
-	
+
+	/**
+	 * Getter para salt gerado
+	 *
+	 * @return Salt que está guardado
+     */
 	public byte[] getSalt() {
 		return this.salt;
 	}

@@ -59,7 +59,7 @@ public class MessagesProxy extends Proxy {
 			dir.mkdirs();
 		
 		// grava mensagem
-		File file = new File(path + "/" + fname + "/" + "body" + MESSAGE_FILE_EXTENSION);
+		File file = new File(path + "/" + fname + "/" + "body" + Proxy.getMessageFileExtension());
 		if (file.exists())
 			return false;
 		writeToFile(file, toStoreFormat(msg));
@@ -79,10 +79,15 @@ public class MessagesProxy extends Proxy {
 			file = new File(path + "/" + fname + "/" + name + ".key");
 			writeToFile(file, SecUtils.getHexString(key.getKey()));
 		}
-		
 		return true;
 	}
 
+	/**
+	 * Método que escreve para um ficheiro f a String content
+	 * @param f Ficheiro onde vai ser escrito o contéudo
+	 * @param content Conteúdo que vai ser escrito no ficheiro
+	 * @throws IOException
+     */
 	private void writeToFile(File f, String content) throws IOException{
 		FileWriter fw = new FileWriter(f);
 		BufferedWriter bw = new BufferedWriter(fw);

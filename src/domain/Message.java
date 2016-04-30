@@ -3,8 +3,6 @@ package domain;
 import security.GenericSignature;
 
 import java.io.Serializable;
-import java.security.cert.Certificate;
-import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -46,18 +44,38 @@ public class Message implements Serializable, Comparable {
 		this.timestamp = null;
 	}
 
+	/**
+	 * Getter para a key
+	 *
+	 * @return array de bytes que representam a chave simétrica (cifrada) para decifrar a mensagem
+     */
 	public byte[] getKey() {
 		return key;
 	}
 
+	/**
+	 * Setter para key
+	 *
+	 * @param key key que vai ser enviada em conjunto com a mensagem
+     */
 	public void setKey(byte[] key) {
 		this.key = key;
 	}
 
+	/**
+	 * Getter para a assinatura digital do conteúdo da mensagem
+	 *
+	 * @return GenericSignature que contém assinatura digital da mensagem
+     */
 	public GenericSignature getSignature() {
 		return signature;
 	}
 
+	/**
+	 * Serrer para a assinatura digital da mensagem
+	 *
+	 * @param signature assinatura a ser guardada na mensagem
+     */
 	public void setSignature(GenericSignature signature) {
 		this.signature = signature;
 	}
@@ -154,12 +172,17 @@ public class Message implements Serializable, Comparable {
 		System.out.println(getHumanDateString());
 	}
 
+	/**
+	 * Adicionar a String body à mensagem
+	 *
+	 * @param body body da mensagem
+     */
 	public void setBody(String body){
 		this.body = body;
 	}
 	
 	/**
-	 * Obtem data
+	 * Obtem data para ser impressa no ecran
 	 *
 	 * @return data num formato perceptivel
      */

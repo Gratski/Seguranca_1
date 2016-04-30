@@ -229,11 +229,12 @@ public class MyWhats {
 				signature.update(receivedHash);
 				boolean valid = signature.verify(msg.getSignature().getSignature());
 
-				msg.setBody(body);
-				if (!valid) {
-					System.out.println("Mensagem currompida...");
+				if (valid) {
+					msg.setBody(body);
+				} else {
+					msg.setBody("{(Mensagem corrompida)}");
+					System.out.println("Foi encontrada uma mensagem corrompida");
 				}
-				
 			}
 		}
 		reply.setConversations(convs);
@@ -242,6 +243,7 @@ public class MyWhats {
 
 	/**
 	 * Envia uma mensagem para o servidor
+	 *
 	 * @param conn, conexao a base de dados
 	 * @param req, request a considerar
 	 * @param reply, reply que obteve inicialmente
@@ -288,21 +290,9 @@ public class MyWhats {
 		
 		String originalMsg = req.getMessage().getBody();
 		byte[] originalBytes = originalMsg.getBytes();
-		System.out.println("==========================================");
-		System.out.println("Original Message: " + originalMsg);
-		System.out.println("Original Bytes: " + originalBytes.length);
 		byte[] ciphered = c.doFinal(originalBytes);
 		String cipheredStr = SecUtils.getHexString(ciphered);
-		System.out.println("Ciphered Bytes: " + ciphered.length);
-		
-		System.out.println("Decifrar para confirmar");
-		c.init(Cipher.DECRYPT_MODE, key);
-		//byte[] deciphered = c.doFinal(ciphered);
-		byte[] deciphered = c.doFinal(SecUtils.getStringHex(cipheredStr)); 
-		System.out.println("Deciphered Bytes: " + deciphered.length);
-		System.out.println("Deciphered Message: " + new String(deciphered));
-		System.out.println("==========================================");
-		
+
 		Message cm = new Message(req.getUser().getName(), req.getContact(), cipheredStr);
 		cm.setType("-t");
 		conn.getOutputStream().writeObject(cm);
@@ -343,7 +333,7 @@ public class MyWhats {
 	 * @throws ClassNotFoundException
 	 * @throws ShortBufferException 
 	 */
-	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException, ShortBufferException{
+	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException, ShortBufferException {
 
 		// obter chave privada
 		PrivateKey privateKey = req.getUser().getPrivateKey();
@@ -352,9 +342,10 @@ public class MyWhats {
 		ArrayList<String> members = reply.getNames();
 		Map<String, Certificate> certs = getCertificates(members, req.getUser());
 		
-		// gerar assinatura digital, enviar e receber resposta
+		// gerar assinatura digital e enviar
 		File file = new File(req.getFile().getFullPath());
 		GenericSignature gs = GenericSignature.createGenericFileSignature(privateKey, file);
+		conn.getOutputStream().writeObject(gs);
 
 		// gerar chave simetrica K
 		Key key = SecUtils.generateSymetricKey();
@@ -362,11 +353,13 @@ public class MyWhats {
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, key);
 
+		// Gerar mensagem e enviar
 		String originalMsg = req.getFile().getFullPath();
 		byte[] originalBytes = originalMsg.getBytes();
 		byte[] ciphered = c.doFinal(originalBytes);
 		String cipheredStr = SecUtils.getHexString(ciphered);
-		c.init(Cipher.DECRYPT_MODE, key);
+		gs = GenericSignature.createGenericMessageSignature(
+				req.getUser().getPrivateKey(), originalBytes);
 
 		Message cm = new Message(req.getUser().getName(), req.getContact(), cipheredStr);
 		cm.setSignature(gs);
@@ -492,14 +485,13 @@ public class MyWhats {
 		signature.update(receivedHash);
 		boolean valid = signature.verify(gs.getSignature());
 
-		// se
+		// se assinatura for válida
 		if (!valid) {
 			file.delete();
-			reply = new Reply(400, "Ficheiro currompido.");
+			reply = new Reply(400, "Ficheiro corrompido.");
 		} else
-			reply = new Reply(200, "Fcheiro guardado em DOWNLOADS/"+file.getName());
+			reply = new Reply(200, "Fcheiro guardado em DOWNLOADS/" + file.getName());
 
-		
 		return reply;
 	}
 	
@@ -549,8 +541,7 @@ public class MyWhats {
 		ks.load(new FileInputStream("keys/clients/" + user.getName() + ".keyStore"), new String(user.getPassword()).toCharArray());
 		
 		Map<String, Certificate> certs = new HashMap<String, Certificate>();
-		for(int i = 0; i < aliases.size(); i++)
-		{
+		for (int i = 0; i < aliases.size(); i++) {
 			Certificate cert = ks.getCertificate(aliases.get(i));
 			certs.put(aliases.get(i), cert);
 		}
@@ -559,5 +550,4 @@ public class MyWhats {
 		certs.put(user.getName(), cert);
 		return certs;
 	}
-	
 }

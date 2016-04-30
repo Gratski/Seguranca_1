@@ -161,7 +161,7 @@ public class ConversationsProxy extends Proxy {
 		for (Group group : groups) {
 			conversations.add(new Conversation(group));
 		}
-		// Iterar as conversations para ir buscar a lastMessage (em novo metodo, como em baixo)
+		// Iterar as conversations para ir buscar a lastMessage
 		for (Conversation conversation : conversations) {
 			Message lastMessage = getLastMessage(conversation, user.getName());
 			if (lastMessage != null)

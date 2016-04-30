@@ -53,17 +53,6 @@ public class GroupsProxy extends Proxy {
 	}
 
 	/**
-	 * Method used for tests, emptys the Map in memory and
-	 * reloads from the Groups file
-	 *
-	 * @throws IOException
-	 */
-	public void reload() throws IOException {
-		this.groups = new HashMap<>();
-		init();
-	}
-
-	/**
 	 * Popula o map de groups
 	 *
 	 * @throws IOException
@@ -184,19 +173,6 @@ public class GroupsProxy extends Proxy {
 	}
 	
 	/**
-	 * Verifica se o Group com nome groupName tem um membro com nome name
-	 * @param groupName
-	 * 		Nome do group a considerar
-	 * @param name
-	 * 		User a considerar
-	 * @return
-	 * 		true se eh membro, false caso contrario
-	 */
-	public boolean hasMember(String groupName, String name){
-		return this.groups.get(groupName).hasMember(name);
-	}
-	
-	/**
 	 * Adiciona um novo membro ao group
 	 * @param groupName
 	 * 		Nome do group ao qual o novo membro vai ser adicionado
@@ -260,25 +236,22 @@ public class GroupsProxy extends Proxy {
 	private boolean deleteUserKeys(String groupName, String member) {
 		File f = new File(Proxy.CONVERSATIONS_GROUP + groupName);
 		String[] msgs = f.list();
-		for(int i = 0; i < msgs.length; i++ )
-		{
+		for (int i = 0; i < msgs.length; i++) {
 			File msg = new File(Proxy.CONVERSATIONS_GROUP + groupName +"/"+msgs[i]);
 			String[] innerFiles = msg.list();
 			
-			if(contains(innerFiles, member+".key"))
-			{
-				File kf = new File(Proxy.CONVERSATIONS_GROUP + groupName +"/"+msgs[i] + "/" +"" +member+".key");
+			if (contains(innerFiles, member + ".key")) {
+				File kf = new File(Proxy.CONVERSATIONS_GROUP + groupName + "/" + msgs[i] + "/" + "" + member + ".key");
 				kf.delete();
 			}
-				
 		}
 		return true;
 	}
 	
 	
 	private static boolean contains(String[] arr, String m){
-		for(int i = 0; i < arr.length; i++)
-			if(arr[i].equals(m))
+		for (int i = 0; i < arr.length; i++)
+			if (arr[i].equals(m))
 				return true;
 		return false;
 	}
@@ -331,11 +304,6 @@ public class GroupsProxy extends Proxy {
 		writer.close();
 	}
 
-	private boolean validMAC(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException
-	{
-		return MACService.validateMAC(Proxy.getGroupsIndex(), key);
-	}
-	
 	/**
 	 * Actualiza MAC de users file
 	 * @param key, chave simetrica a ser utilizada
