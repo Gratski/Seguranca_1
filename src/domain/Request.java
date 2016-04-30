@@ -5,153 +5,156 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 
 /**
- * Esta classe representa um pedido de uma acção do cliente para o servidor
+ * This class represents an entity: Request
+ * A Request is a type of network message used when a client
+ * sends a request to the server
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class Request extends NetworkMessage implements Serializable {
 	
+	/**
+	 * message object
+	 */
 	private Message message;
+	
+	/**
+	 * message contact name
+	 */
 	private String contact;
+	
+	/**
+	 * message group name
+	 */
 	private String group;
+	
+	/**
+	 * message file
+	 */
 	private NetworkFile file;
+	
+	/**
+	 * message specification if there is any
+	 */
 	private String specification;
 
 	/**
-	 *	Getter para Message
+	 *	Gets message
 	 *
-	 * @return
-	 * 		Message que estava guardada
+	 * @return network message
      */
 	public Message getMessage() {
 		return this.message;
 	}
 
 	/**
-	 * Setter para Message
+	 * Sets message value
 	 *
-	 * @param message
-	 * 		Message a ser guardada
+	 * @param message, new message to be set
      */
 	public void setMessage(Message message) {
 		this.message = message;
 	}
 
 	/**
-	 * Setter para Networkfile
+	 * Sets the network file
 	 *
-	 * @param f
-	 * 		NetworkFile a ser guardado
+	 * @param f, new network file
      */
 	public void setFile(NetworkFile f){
 		this.file = f;
 	}
 
 	/**
-	 * Getter para Networkfile
+	 * Gets network file
 	 *
-	 * @return
-	 * 		Devolve o NetworkFile guardado
+	 * @return NetworkFile
      */
 	public NetworkFile getFile(){
 		return this.file;
 	}
 
 	/**
-	 * Getter para o contact guardado
+	 * Gets the message contact
 	 *
-	 * @return
-	 * 		Devolve o contact guardado
+	 * @return message contact
      */
 	public String getContact() {
 		return this.contact;
 	}
 	
-	
-	
 	/**
-	 * Setter para contact
+	 * Sets contact value
 	 *
-	 * @param contact
-	 * 		contact a ser guardada
+	 * @param contact, new contact value
      */
 	public void setContact(String contact) {
 		this.contact = contact;
 	}
 
 	/**
-	 * Getter para Group
+	 * Gets message group
 	 *
-	 * @return
-	 * 		Devolve Group que está guardado
+	 * @return message group
      */
 	public String getGroup() {
 		return group;
 	}
 
 	/**
-	 * Setter para Group
+	 * Sets message group
 	 *
-	 * @param group
-	 * 		Group para ser guardado
+	 * @param group, new message group
      */
 	public void setGroup(String group) {
 		this.group = group;
 	}
 
 	/**
-	 * Setter para especificação
-	 * Serve para especificar uma acção em Type
+	 * Sets message specification
 	 *
-	 * @param spec
-	 * 		Especificação em forma de String
+	 * @param spec, new specification value
      */
 	public void setSpecification(String spec){
 		this.specification = spec;
 	}
 
 	/**
-	 * Getter para especificação
+	 * Gets message specification
 	 *
-	 * @return
-	 * 		String que denota a especificação
+	 * @return message specification
      */
 	public String getSpecs(){
 		return this.specification;
 	}
 
 	/**
-	 * Verifica se uma mensagem eh do type send Message
-	 * @return true se eh mensagem, false caso contrario
+	 * Checks this message is of type -m (message)
+	 * 
+	 * @return true if so, false otherwise
 	 */
 	public Boolean isMessage() {
 		return this.type.equals("-m");
 	}
 
 	/**
-	 * Verifica se a operacao envolve ficheiros
+	 * Checks if this message has a file set
 	 *
-	 * @return true se opracao de ficheiros, false caso contrario
-	 * @require req != null
+	 * @return true if so, false otherwise
 	 */
 	public Boolean isFileOperation() {
 		return ( this.type.equals("-f") || ( this.type.equals("-r") && this.specification.equals("download") ) );
 	}
 
 	/**
-	 * Verifica se é uma operação de upload de ficheiro
-	 * @return True se for uma operação de upload, false caso contrário
+	 * Checks if this message is of type -f (file upload)
+	 * 
+	 * @return true if so, false otherwise
      */
 	public Boolean isFileUpload(){
 		return this.type.equals("-f");
 	}
 
-	/**
-	 * Override de toString
-	 *
-	 * @return
-	 * 		Representação textual de um Request
-     */
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("=== REQUEST ===\n");

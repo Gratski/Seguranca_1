@@ -11,33 +11,39 @@ import validators.InputValidator;
 
 
 /**
- * Esta classe representa a entidade responsavel
- * pela criacao de Requests
+ * This class represents an entity that is responsible for
+ * the creation of Request objects based on given parameters
  *
  * @author JoaoRodrigues & Simao Neves
  */
 public class RequestBuilder {
 
 	/**
-	 * Formula um request
-	 * @param input Map no qual se vai basear a criacao do Request
-	 * @return Request devido caso valido, null caso contrario
+	 * Formulates a new Request object
+	 * As there are some options that require more parameters
+	 * than others, this method considers two possible extra fields
+	 * used in some options. Their names are field_1 and field_2 respectively
+	 * 
+	 * @param input, map with the input parameters
+	 * @return The corresponding Request object if is a valid input,
+	 * 			otherwise null
 	 * @require input != null
      */
 	public static Request make(HashMap<String, String> input) throws FileNotFoundException {
 
 		String flag = input.get("flag");
-		//valida flag
+		
+		// flag validation
 		if (!InputValidator.validFlag(flag))
 			return null;
 
-		//inicializa user e request base
+		// initialize user and base request
 		User user = UserBuilder.make(input);
 		Request request = new Request();
 		request.setType(flag);
 		request.setUser(user);
 
-		// tratar cada flag de forma diferente
+		// handle request based on given flag
 		switch(flag) {
 		case "-a":
 			request.setContact(input.get("field_1"));
@@ -58,11 +64,12 @@ public class RequestBuilder {
 		case "-r":
 			request.setSpecification("all");
 
-			//se eh especifico para um contacto
+			// if it is for a specific contact
 			if ( input.containsKey("field_1") ) {
 				request.setSpecification("single_contact");
 				request.setContact(input.get("field_1"));
-				//se eh para fazer o download de um file
+				
+				// if it is a file download
 				if ( input.containsKey("field_2") ) {
 					request.setSpecification("download");
 					request.setFile(new NetworkFile(input.get("field_2")));

@@ -4,24 +4,39 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Esta classe representa a entidade Conversacao
- * Contempla conversacoes entre 2 ou mais intervenientes
+ * This class represents an entity: Conversation entity
+ * It contemplates between 2 or more users
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class Conversation implements Serializable {
 
+	/**
+	 * conversation filename
+	 */
 	private String filename;
+	
+	/**
+	 * conversation messages
+	 */
 	private ArrayList<Message> msgs;
+	
+	/**
+	 * conversation group if exists
+	 */
 	private Group group;
+	
+	/**
+	 * conversation members
+	 */
 	private ArrayList<User> users;
 
 	/**
 	 * Constructor
 	 *
-	 * @param u1 User interveniente
-	 * @param u2 User interveniente
-	 * @param filename Nome do ficheiro de Conversation
+	 * @param u1 User talker
+	 * @param u2 User talker
+	 * @param filename conversation filename
      */
 	public Conversation(User u1, User u2, String filename) {
 		this.filename = filename;
@@ -35,8 +50,8 @@ public class Conversation implements Serializable {
 	/**
 	 * Constructor
 	 *
-	 * @param u1 User interveniente
-	 * @param u2 User interveniente
+	 * @param u1 User talker
+	 * @param u2 User talker
      */
 	public Conversation(User u1, User u2) {
 		this.filename = null;
@@ -50,7 +65,7 @@ public class Conversation implements Serializable {
 	/**
 	 * Constructor
 	 *
-	 * @param group Group de Conversation
+	 * @param group conversation group
 	 * @require group != null
      */
 	public Conversation(Group group) {
@@ -61,26 +76,26 @@ public class Conversation implements Serializable {
 	}
 
 	/**
-	 * Obter group
+	 * Get group
 	 *
-	 * @return Group de Conversation
+	 * @return Conversation group
      */
 	public Group getGroup() {
 		return this.group;
 	}
 
 	/**
-	 * Adiciona mensagem a msgs
+	 * Adds a new message to messages list
 	 *
-	 * @param msg Message a adicionar a msgs
-	 * @return true se adicionou, false caso contrario
+	 * @param msg Message to be added
+	 * @return true if added, false otherwise
      */
 	public boolean addMessage(Message msg) {
 		return this.msgs.add(msg);
 	}
 
 	/**
-	 * Obter filename
+	 * Get filename
 	 *
 	 * @return String
      */
@@ -89,7 +104,7 @@ public class Conversation implements Serializable {
 	}
 
 	/**
-	 * Obter Messages
+	 * Get messages
 	 *
 	 * @return ArrayList<Message>
      */
@@ -98,7 +113,7 @@ public class Conversation implements Serializable {
 	}
 
 	/**
-	 * Obter users intervenientes
+	 * Get conversation members
 	 *
 	 * @return ArrayList<User>
      */

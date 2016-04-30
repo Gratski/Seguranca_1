@@ -7,12 +7,15 @@ import java.util.Collections;
 import security.CipheredKey;
 
 /**
- * Esta classe representa uma resposta do servidor para o client
+ * This class represents a network message of reply type
  *
  * @author JoaoRodrigues & Simao Neves
  */
 public class Reply extends NetworkMessage implements Serializable {
 	
+	/**
+	 * 
+	 */
 	private ArrayList<Conversation> conversations;
 	private int status;
 	private String message;

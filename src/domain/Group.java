@@ -8,21 +8,33 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Esta classe representa a entidade Group
+ * This class represents an entity: Group
+ * A group is a union of users
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class Group implements Serializable {
 
+	/**
+	 * group name
+	 */
 	private String name;
+	
+	/**
+	 * group owner
+	 */
 	private User owner;
+	
+	/**
+	 * group members
+	 */
 	private Map<String, User> members;
 
 	/**
 	 * Constructor
 	 *
-	 * @param name Nome de Group
-	 * @param owner Owner de Group
+	 * @param name, group name
+	 * @param owner, group owner
      */
 	public Group(String name, User owner) {
 		this.name = name;
@@ -31,9 +43,9 @@ public class Group implements Serializable {
 	}
 
 	/**
-	 * Obter membros de Group
+	 * Get group members
 	 *
-	 * @return Collection<User> membros do Group
+	 * @return Collection<User> group members
      */
 	public Collection<User> getMembersAndOwner(){
 		Collection<User> allMembers = new ArrayList<>(this.members.values());
@@ -42,9 +54,9 @@ public class Group implements Serializable {
 	}
 	
 	/**
-	 * Adiciona um user ao Group
+	 * Adds a new user to group
 	 *
-	 * @param user User a ser adicionado ao Group
+	 * @param user, User to be added
 	 */
 	public boolean addMember(String user) {
 		if (this.members.containsKey(user))
@@ -55,29 +67,29 @@ public class Group implements Serializable {
 	}
 	
 	/**
-	 * Verifica se o user existe neste group
+	 * Checks if a given user is member of group
 	 *
-	 * @param user User a considerar
-	 * @return true se existe, false caso contrario
+	 * @param user, user to consider when searching
+	 * @return true if exists, false otherwise
 	 */
 	public boolean hasMember(String user) {
 		return this.members.containsKey(user);
 	}
 
 	/**
-	 * Verifca se um dado nome eh o nome do Group Owner
+	 * Checks if a given user owns this group
 	 *
-	 * @param user Nome de User a ser considerado
-	 * @return true se eh Owner, false caso contrario
+	 * @param user, user name to be considered
+	 * @return true if so, false otherwise
      */
 	public boolean hasMemberOrOwner(String user) {
 		return (hasMember(user) || this.owner.getName().equals(user));
 	}
 	
 	/**
-	 * Remove o dado utilizador do Group caso exista
+	 * Removes the given member from group
 	 *
-	 * @param user User a ser adicionado
+	 * @param user, user to be removed
 	 */
 	public boolean removeMember(String user) {
 		this.members.remove(user);
@@ -85,18 +97,18 @@ public class Group implements Serializable {
 	}
 
 	/**
-	 * Obtem o nome do Group Owner
+	 * Get group owner name
 	 *
-	 * @return String
+	 * @return String, group owner name
      */
 	public String getOwner(){
 		return this.owner.getName();
 	}
 
 	/**
-	 * Obtem o nome do Group
+	 * Gets group name
 	 *
-	 * @return String
+	 * @return String, group name
      */
 	public String getName(){
 		return this.name;
