@@ -13,7 +13,7 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 
 
 TODO:
-- mandar msg de ficheiro
 - verificar se user tem key para receber mensagens (grupo)
 - refactor de como se constroiem mensagens
 - ao fazer -r contact ficheiro, servidor tem de verificar que existe uma conversa, antes de verificar que o ficheiro não existe
+- implementar mensagem de erro quando se envia o mesmo ficheiro para um grupo/contact

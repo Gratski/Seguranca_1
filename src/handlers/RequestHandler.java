@@ -344,7 +344,7 @@ public class RequestHandler extends Thread {
 		this.connection.getOutputStream().writeObject(reply);
 		
 		// recebe assinatura
-		GenericSignature gs = (GenericSignature) this.connection.getInputStream().readObject();
+		Message messageWithSignature = (Message) this.connection.getInputStream().readObject();
 		
 		//obtem tamanho de ficheiro
 		long fileSize = this.connection.getInputStream().readLong();
@@ -358,29 +358,29 @@ public class RequestHandler extends Thread {
 		
 		// cria directory de ficheiro
 		String filename = req.getFile().getFullPath();
-		File file = new File(path+""+filename+"/");
-		if(!file.exists())
+		File file = new File(path + "" + filename + "/");
+		if (!file.exists())
 			file.mkdirs();
 		else
 			return new Reply(400, "Ficheiro ja existente");
 		
 		// guarda nome de autor de upload
-		File authorFile = new File(path+""+filename+"/author");
+		File authorFile = new File(path + "" + filename + "/author");
 		FileWriter fw = new FileWriter(authorFile);
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write(req.getUser().getName());
 		bw.close();
 		
 		// cria ficheiro
-		File filePath = new File(path+""+filename+"/"+filename);
-		if(!filePath.exists())
+		File filePath = new File(path + "" + filename + "/" + filename);
+		if (!filePath.exists())
 			filePath.createNewFile();
 		else
 			return new Reply(400, "Ficheiro ja existente");
 		
 		// recebe IV
 		String IV = (String) this.connection.getInputStream().readObject();
-		File IVPath = new File(path+""+filename+"/iv");
+		File IVPath = new File(path + "" + filename + "/iv");
 		IVPath.createNewFile();
 		fw = new FileWriter(IVPath);
 		bw = new BufferedWriter(fw);
@@ -389,15 +389,28 @@ public class RequestHandler extends Thread {
 		
 		//Recebe ficheiro
 		boolean ok = this.receiveFile(fileSize, filePath);
-		if(!ok)
+		if (!ok)
 			return new Reply(400, "Erro ao receber ficheiro");
 		
 		// recebe chaves cifradas e guarda-as
 		Map<String, CipheredKey> keys = (Map<String, CipheredKey>) this.connection.getInputStream().readObject();
-		storeAllKeys(path+""+filename, keys);
+		storeAllKeys(path + "" + filename, keys);
 			
 		//escreve assinatura
-		storeSignature(path+""+filename, gs);
+		storeSignature(path + "" + filename, messageWithSignature.getSignature());
+
+		// Gravar mensagem
+		boolean inserted = false;
+		if (group != null) {
+			inserted =
+					this.convProxy.insertGroupMessage(messageWithSignature, keys,
+							messageWithSignature.getSignature());
+		}
+		//se eh para private
+		else {
+			inserted = this.convProxy.insertPrivateMessage(messageWithSignature, keys,
+					messageWithSignature.getSignature());
+		}
 		
 		//set codigo de success
 		reply.setStatus(200);
@@ -682,12 +695,11 @@ public class RequestHandler extends Thread {
 			return reply;
 		}
 
-
 		//se eh para group
 		boolean inserted = false;
 		if (group != null) {
 			inserted = 
-					this.convProxy.insertGroupMessage(cipherMessage, cipheredKeys, 
+					this.convProxy.insertGroupMessage(cipherMessage, cipheredKeys,
 							messageWithSignature.getSignature());
 		}
 		//se eh para private
@@ -700,36 +712,6 @@ public class RequestHandler extends Thread {
 		reply.setStatus(200);
 		return reply;
 
-
-
-		/////////// OLD BUILD - to be updated
-//		Group group = this.groupsProxy.find(req.getMessage().getTo());
-//
-//		// verifica se o user de destino nao eh o proprio autor
-//		if (req.getUser().getName().equals(req.getMessage().getTo())) {
-//			reply.setStatus(400);
-//			reply.setMessage("with yourself..? o.O");
-//		} else if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
-//
-//			boolean inserted = this.convProxy.insertGroupMessage(req.getMessage());
-//			if (!inserted) {
-//				reply.setStatus(400);
-//				reply.setMessage("Erro ao enviar mensagem");
-//			} else
-//				reply.setStatus(200);
-//		}
-//		// se nao e para um group
-//		else {
-//			// verifica se destinatario existe
-//			if (!this.userProxy.exists(new User(req.getMessage().getTo()))) {
-//				reply.setStatus(400);
-//				reply.setMessage("Destinatário inexistente");
-//				return reply;
-//			}
-//			this.convProxy.insertPrivateMessage(req.getMessage());
-//			reply.setStatus(200);
-//		}
-//		return reply;
 	}
 
 	/**

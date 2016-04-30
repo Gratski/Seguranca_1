@@ -85,8 +85,14 @@ public class MyWhats {
 			File ksFile = new File("keys/clients/" + parsedInput.get("username") + ".keyStore");
 			FileInputStream fis = new FileInputStream(ksFile);
 			KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-			ks.load(fis, parsedInput.get("password").toCharArray());
-			Certificate cert = ks.getCertificate(parsedInput.get("username")); 
+			try {
+				ks.load(fis, parsedInput.get("password").toCharArray());
+			} catch (Exception e) {
+				System.out.println("Password incorrecta para utilizador: " + parsedInput.get("username"));
+				System.out.println("Impossível abrir keystore");
+				System.exit(-1);
+			}
+			Certificate cert = ks.getCertificate(parsedInput.get("username"));
 			PrivateKey privateKey = (PrivateKey) ks.getKey(parsedInput.get("username"), parsedInput.get("password").toCharArray());
 			
 			// create request obj
@@ -371,10 +377,23 @@ public class MyWhats {
 		// gerar assinatura digital, enviar e receber resposta
 		File file = new File(req.getFile().getFullPath());
 		GenericSignature gs = GenericSignature.createGenericFileSignature(privateKey, file);
-		conn.getOutputStream().writeObject(gs);
-		
+
 		// gerar chave simetrica K
 		Key key = SecUtils.generateSymetricKey();
+
+		Cipher c = Cipher.getInstance("AES");
+		c.init(Cipher.ENCRYPT_MODE, key);
+
+		String originalMsg = req.getFile().getFullPath();
+		byte[] originalBytes = originalMsg.getBytes();
+		byte[] ciphered = c.doFinal(originalBytes);
+		String cipheredStr = SecUtils.getHexString(ciphered);
+		c.init(Cipher.DECRYPT_MODE, key);
+
+		Message cm = new Message(req.getUser().getName(), req.getContact(), cipheredStr);
+		cm.setSignature(gs);
+		cm.setType("-f");
+		conn.getOutputStream().writeObject(cm);
 		
 		// preparar file size de acordo com cipher
 		long fileSize = file.length();
@@ -383,7 +402,7 @@ public class MyWhats {
 		conn.getOutputStream().writeLong(fileSize);
 		
 		// cifra ficheiro, envia
-		Cipher c = Cipher.getInstance("AES/CFB8/NoPadding");
+		c = Cipher.getInstance("AES/CFB8/NoPadding");
 		c.init(Cipher.ENCRYPT_MODE, key);
 		
 		// envia IV
