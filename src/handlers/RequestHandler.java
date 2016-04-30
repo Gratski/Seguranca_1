@@ -242,9 +242,13 @@ public class RequestHandler extends Thread {
 
 		File file = null;
 		if (path != null) {
-			file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/");
-			if(!file.exists())
-				return new Reply(400,"Ficheiro inexistente");
+			file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/");
+			if (!file.exists())
+				return new Reply(400, "Ficheiro inexistente");
+		} else {
+			reply.setStatus(400);
+			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
+			return reply;
 		}
 		
 		// obter author de upload
