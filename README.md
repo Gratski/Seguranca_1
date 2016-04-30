@@ -13,5 +13,4 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 
 
 TODO:
-- refactor de como se constroiem mensagens
 - implementar mensagem de erro quando se envia o mesmo ficheiro para um grupo/contact

@@ -317,11 +317,20 @@ public class RequestHandler extends Thread {
 		
 		// reply object
 		Reply reply = new Reply();
-		
+
+		Group group = this.groupsProxy.find(req.getContact());
+
+		// get path da directory de ficheiro
+		String path = this.getPath(group, req);
+		path = path + "/" + Proxy.getFilesFolder();
+
+		String filename = req.getFile().getFullPath();
+		File file = new File(path + "" + filename + "/");
+		if (file.exists())
+			return new Reply(400, "Ficheiro ja existente");
+
 		// obtem nomes de membros de conversation
 		ArrayList<String> names = new ArrayList<>();
-		
-		Group group = this.groupsProxy.find(req.getContact());
 		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
 			Collection<User> members = group.getMembersAndOwner();
 			for (User user : members) {
@@ -354,20 +363,9 @@ public class RequestHandler extends Thread {
 		long fileSize = this.connection.getInputStream().readLong();
 		System.out.println("Filesize eh: " + fileSize);
 		
-		// obtem directoria de ficheiro
-		String path = this.getPath(group, req);
+		// cria directory de ficheiro (porque já verificamos que não existe, atras)
+		file.mkdirs();
 
-		//pasta de ficheiros
-		path = path + "/" + Proxy.getFilesFolder();
-		
-		// cria directory de ficheiro
-		String filename = req.getFile().getFullPath();
-		File file = new File(path + "" + filename + "/");
-		if (!file.exists())
-			file.mkdirs();
-		else
-			return new Reply(400, "Ficheiro ja existente");
-		
 		// guarda nome de autor de upload
 		File authorFile = new File(path + "" + filename + "/author");
 		FileWriter fw = new FileWriter(authorFile);
