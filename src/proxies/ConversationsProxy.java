@@ -298,6 +298,7 @@ public class ConversationsProxy extends Proxy {
 			BufferedReader br = new BufferedReader(fr);
 			String line;
 			Message message;
+
 			System.out.println("Processing message: " + i);
 
 			if ((line = br.readLine()) != null) {

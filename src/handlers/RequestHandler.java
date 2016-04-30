@@ -163,8 +163,7 @@ public class RequestHandler extends Thread {
 		switch (req.getType()) {
 		case "-a":
 			//verifica integridade de ficheiro de groups
-			if(!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
-				//LANCAR EXCEPTION EM DISTO
+			if (!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
 				reply.setStatus(400);
 				reply.setMessage("SEGURANCA NOOOOOO GOOOOOOOOD. HIRE JOAO&SIMON NOW!!!");
 				break;
@@ -180,7 +179,7 @@ public class RequestHandler extends Thread {
 			}
 			break;
 		case "-d":
-			if(!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
+			if (!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
 				System.out.println("PATH: " + Proxy.getGroupsIndex());
 				//LANCAR EXCEPTION EM DISTO
 				reply.setStatus(400);
@@ -201,7 +200,7 @@ public class RequestHandler extends Thread {
 			synchronized (groupsProxy) {
 				req.getMessage().setType("-t");
 				req.getMessage().setTimestampNow();
-				reply = executeSendMessage(req);
+				reply = executeReceiveMessage(req);
 			}
 			break;
 		case "-r":
@@ -621,7 +620,7 @@ public class RequestHandler extends Thread {
 	 * @require req != null && req.getUser() != null
 	 * 			req.getMessage() != null
      */
-	private Reply executeSendMessage(Request req) throws IOException {
+	private Reply executeReceiveMessage(Request req) throws IOException {
 		Reply reply = new Reply();
 
 		// verifica se o user de destino nao eh o proprio autor
@@ -700,7 +699,7 @@ public class RequestHandler extends Thread {
 		//se eh para group
 		boolean inserted = false;
 		if (group != null) {
-			inserted = 
+			inserted =
 					this.convProxy.insertGroupMessage(cipherMessage, cipheredKeys,
 							messageWithSignature.getSignature());
 		}
@@ -709,7 +708,7 @@ public class RequestHandler extends Thread {
 			inserted = this.convProxy.insertPrivateMessage(cipherMessage, cipheredKeys,
 					messageWithSignature.getSignature());
 		}
-		
+
 		System.out.println("Gravou mensagem!");
 		reply.setStatus(200);
 		return reply;

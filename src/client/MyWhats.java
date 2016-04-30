@@ -60,13 +60,6 @@ import validators.InputValidator;
  */
 public class MyWhats {
 
-	/**
-	 * flag utilizada para identifica erro em operacao
-	 * download e upload respectivamente
-	 */
-	private static boolean download_error = false;
-	private static boolean upload_error = false;
-
 	public static void main(String[] args) {
 
 		try {
@@ -75,8 +68,6 @@ public class MyWhats {
 				System.out.println("Parametros mal formed");
 				System.exit(-1);
 			}
-			
-			Signature sig = Signature.getInstance("MD5WithRSA");
 			
 			// parse input
 			HashMap<String, String> parsedInput = InputValidator.parseInput(args);
@@ -175,10 +166,9 @@ public class MyWhats {
 				reply = executeReceiveFile(conn, req, reply);
 			} 
 			//se eh para download de mensagens
-			else {
+			else
 				reply = executeReceiveMessages(reply, req);
-			}
-			
+
 			break;
 		}
 		return reply;
@@ -187,6 +177,7 @@ public class MyWhats {
 	
 	/**
 	 * Recebe mensagens do servidor de um dado utilizador ou grupo
+	 *
 	 * @param reply, reply de request inicial
 	 * @param req, request a ser feito
 	 * @return reply de processo de envio de recepcao de mensagens
@@ -208,14 +199,9 @@ public class MyWhats {
 		
 		//obtem a lista de conversation
 		ArrayList<Conversation> convs = reply.getConversations();
-		int i = 0;
-		int j = 0;
 
-		//para cada conversation
-//		System.out.println("Numero de conversas: " + convs.size());
 		for (Conversation conv : convs)
 		{
-//			System.out.println("Numero de mensagens: " + conv.getMessages().size());
 			for (Message msg : conv.getMessages())
 			{
 				//obtem key
@@ -223,9 +209,7 @@ public class MyWhats {
 				kw.unwrap(privateKey);
 				Key curKey = kw.getKey();
 				
-//				System.out.println("*******************************");
 				byte[] cipheredBytes = SecUtils.getStringHex(msg.getBody());
-//				System.out.println("Ciphered Bytes: " + cipheredBytes.length);
 
 				//decifra mensagem
 				Cipher c = Cipher.getInstance("AES");
@@ -246,17 +230,11 @@ public class MyWhats {
 				boolean valid = signature.verify(msg.getSignature().getSignature());
 
 				msg.setBody(body);
-				if (valid) {
-//					System.out.println("SINTESE BOA!");
-				}
-				else {
-//					convs.get(i).getMessages().remove(j);
-//					System.out.println("SINTESE INVALIDA!");
+				if (!valid) {
+					System.out.println("Mensagem currompida...");
 				}
 				
-				j++;
 			}
-			i++;
 		}
 		reply.setConversations(convs);
 		return reply;
@@ -366,7 +344,7 @@ public class MyWhats {
 	 * @throws ShortBufferException 
 	 */
 	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException, ShortBufferException{
-		
+
 		// obter chave privada
 		PrivateKey privateKey = req.getUser().getPrivateKey();
 		
@@ -471,9 +449,12 @@ public class MyWhats {
 		long fileSize = conn.getInputStream().readLong();
 		
 		// se ficheiro nao existe, cria novo
-		File file = new File("DOWNLOADS/"+req.getFile().getFullPath());
-		if(!file.exists())
-			file.createNewFile();
+		File file = new File("DOWNLOADS/");
+		if (!file.exists())
+			file.mkdir();
+		file = new File("DOWNLOADS/" + req.getFile().getFullPath());
+		if (!file.exists())
+				file.createNewFile();
 		
 		// obtem chave K
 		CipheredKey cipheredKey = (CipheredKey) conn.getInputStream().readObject();
@@ -510,15 +491,14 @@ public class MyWhats {
 		signature.initVerify(publicKey);
 		signature.update(receivedHash);
 		boolean valid = signature.verify(gs.getSignature());
-		
-		if(valid){
-			reply = new Reply(200);
-			System.out.println("RECEBIDO OK!");
-		}
-		else{
-			reply = new Reply(400);
-			System.out.println("RECEBIDO NOT OK!");
-		}
+
+		// se
+		if (!valid) {
+			file.delete();
+			reply = new Reply(400, "Ficheiro currompido.");
+		} else
+			reply = new Reply(200, "Fcheiro guardado em DOWNLOADS/"+file.getName());
+
 		
 		return reply;
 	}
