@@ -159,8 +159,17 @@ public class ConversationsProxy extends Proxy {
 
 		// Para cada group criar uma conversation de grupo e juntar as de privates
 		for (Group group : groups) {
-			conversations.add(new Conversation(group));
+			File f = new File(CONVERSATIONS_GROUP + group.getName());
+			try {
+				if ( f.listFiles().length > 1)
+					conversations.add(new Conversation(group));
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println("Erro ao tentar f.list()");
+				return null;
+			}
 		}
+
 		// Iterar as conversations para ir buscar a lastMessage
 		for (Conversation conversation : conversations) {
 			Message lastMessage = getLastMessage(conversation, user.getName());
