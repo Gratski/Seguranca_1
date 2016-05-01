@@ -139,11 +139,6 @@ public class GroupsProxy extends Proxy {
 		File filesFolder = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER);
 		if (!filesFolder.exists())
 			filesFolder.mkdirs();
-		
-		// cria files index
-		File file = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER + "/ index");
-		if(!file.exists())
-			file.createNewFile();
 	}
 	
 	/**
@@ -234,14 +229,29 @@ public class GroupsProxy extends Proxy {
 	}
 
 	private boolean deleteUserKeys(String groupName, String member) {
-		File f = new File(Proxy.CONVERSATIONS_GROUP + groupName);
+
+		// Remove keys de mensagens
+		File f = new File(CONVERSATIONS_GROUP + groupName);
 		String[] msgs = f.list();
 		for (int i = 0; i < msgs.length; i++) {
-			File msg = new File(Proxy.CONVERSATIONS_GROUP + groupName +"/"+msgs[i]);
+			File msg = new File(CONVERSATIONS_GROUP + groupName + "/" + msgs[i]);
 			String[] innerFiles = msg.list();
 			
 			if (contains(innerFiles, member + ".key")) {
-				File kf = new File(Proxy.CONVERSATIONS_GROUP + groupName + "/" + msgs[i] + "/" + "" + member + ".key");
+				File kf = new File(CONVERSATIONS_GROUP + groupName + "/" + msgs[i] + "/" + "" + member + ".key");
+				kf.delete();
+			}
+		}
+
+		// Remove keys de ficheiros
+		f = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER);
+		String[] ficheiros = f.list();
+		for (int i = 0; i < ficheiros.length; i++) {
+			File ficheiro = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER + ficheiros[i]);
+			String[] innerFiles = ficheiro.list();
+
+			if (contains(innerFiles, member + ".key")) {
+				File kf = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER + ficheiros[i] + "/" + member + ".key");
 				kf.delete();
 			}
 		}
