@@ -300,7 +300,7 @@ public class RequestHandler extends Thread {
 			throw new ApplicationException("Ficheiro inexistente");
 		
 		// Verifica se quem pediu o ficheiro o pode receber
-		file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getUser().getName() + Proxy.getKeyFileExtension());
+		file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getFile().getFullPath() + Proxy.getKeyFileExtension() + "." + req.getUser().getName());
 		if (!file.exists())
 			throw new ApplicationException("Ficheiro não pode ser acedido");
 
@@ -327,7 +327,7 @@ public class RequestHandler extends Thread {
 		this.connection.getOutputStream().writeLong(fileSize);
 		
 		//obtem chave cifrada
-		String keyPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getUser().getName() + Proxy.getKeyFileExtension();
+		String keyPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getFile().getFullPath() + Proxy.getKeyFileExtension() + "." + req.getUser().getName();
 		System.out.println("Key Path: " + keyPath);
 		byte[] cipheredKey = SecUtils.readKeyFromFile(keyPath);
 		CipheredKey ck = new CipheredKey(req.getUser().getName(), cipheredKey);
@@ -464,7 +464,7 @@ public class RequestHandler extends Thread {
 		
 		// gets all ciphered keys and store them properly
 		Map<String, CipheredKey> keys = (Map<String, CipheredKey>) this.connection.getInputStream().readObject();
-		storeAllKeys(path + "" + filename, keys);
+		storeAllKeys(path + filename + "/" + filename, keys);
 			
 		// stores signature
 		storeSignature(path + "" + filename, signature);
@@ -515,7 +515,7 @@ public class RequestHandler extends Thread {
 		while (it.hasNext()) {
 			String name = it.next();
 			CipheredKey key = keys.get(name);
-			File keyFile = new File(basePath + "/" + name + Proxy.getKeyFileExtension());
+			File keyFile = new File(basePath + Proxy.getKeyFileExtension() + "." + name);
 			FileWriter fw = new FileWriter(keyFile);
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(SecUtils.getHexString(key.getKey()));
