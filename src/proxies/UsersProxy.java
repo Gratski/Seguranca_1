@@ -152,9 +152,12 @@ public class UsersProxy extends Proxy {
 	 * @require
 	 * 		!exists(user) && user != null
 	 */
-	public String insert(User user) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
+	public boolean insert(User user, SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
 		if (this.users.containsKey(user.getName()))
-			return null;
+			return false;
+		
+		if(!MACService.validateMAC(Proxy.getUsersIndex(), key))
+			return false;
 		
 		user.setSalt(SecUtils.generateRandomSalt(SALT_SIZE));
 		
@@ -185,7 +188,12 @@ public class UsersProxy extends Proxy {
 			System.out.println("Erro ao escrever no ficheiro USERS");
 			System.out.println(e.fillInStackTrace());
 		}
-		return this.users.containsKey(user.getName()) ? passStr : null;
+		
+		// update mac
+		if(this.users.containsKey(user.getName()))
+			MACService.updateMAC(Proxy.getUsersIndex(), key);
+		
+		return MACService.validateMAC(Proxy.getUsersIndex(), key);
 	}
 	
 	/**

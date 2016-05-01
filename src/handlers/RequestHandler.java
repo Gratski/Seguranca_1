@@ -163,13 +163,14 @@ public class RequestHandler extends Thread {
 	Reply parseRequest(Request req, SecretKey key) throws Exception {
 		
 		// checks server files integrity
-		if(!MACService.validateMAC(Proxy.getGroupsIndex(), key)
-				|| !MACService.validateMAC(Proxy.getUsersIndex(), key))
-			throw new SecurityException("Server has been hacked");
+		if(!MACService.validateMAC(Proxy.getUsersIndex(), key))
+			throw new SecurityException("Server has been hacked. File: USERS");
+		
+		if(!MACService.validateMAC(Proxy.getGroupsIndex(), key))
+			throw new SecurityException("Server has been hacked. File: GROUPS");
 		
 		// authenticate user if exists
 		// if it doesn't exist yet, then create a new one
-		System.out.println("Here!");
 		if (!validateUser(req.getUser(), key))
 			throw new ApplicationException("User nao autenticado");
 
@@ -831,18 +832,7 @@ public class RequestHandler extends Thread {
 			valid = this.userProxy.autheticate(user);
 		// se user nao existe
 		else {
-			
-			//valida integridade de ficheiro de users
-			if (!MACService.validateMAC(Proxy.getUsersIndex(), key))
-				return false;
-			//insere
-			String password = this.userProxy.insert(user); 
-			valid = password != null;
-
-			//actualiza mac de users file
-			if (valid){
-				MACService.updateMAC(Proxy.getUsersIndex(), key);
-			}
+			valid = this.userProxy.insert(user, key);
 		}
 		return valid;
 	}
