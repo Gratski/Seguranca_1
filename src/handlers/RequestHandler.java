@@ -169,6 +169,7 @@ public class RequestHandler extends Thread {
 		
 		// authenticate user if exists
 		// if it doesn't exist yet, then create a new one
+		System.out.println("Here!");
 		if (!validateUser(req.getUser(), key))
 			throw new ApplicationException("User nao autenticado");
 

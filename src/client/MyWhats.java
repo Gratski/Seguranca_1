@@ -325,8 +325,7 @@ public class MyWhats {
 			return reply;
 		
 		// receive server's final reply
-		reply = (Reply) conn.getInputStream().readObject();
-		return reply;
+		return (Reply) conn.getInputStream().readObject();
 	}
 
 	/**

@@ -67,10 +67,13 @@ public class SecUtils {
 	 * @param size, tamanho de salt
 	 * @return salt em array de bytes
 	 */
-	public static byte[] generateRandomSalt(int size){
+	public static int generateRandomSalt(int size){
 		Random rand = new Random();
-		byte[] salt = new byte[size];
-		rand.nextBytes(salt);
+		int salt = 0;
+		for(int i = 0; i < size; i++){
+			salt *= 10;
+			salt += rand.nextInt(10);
+		}
 		return salt;
 	}
 	
