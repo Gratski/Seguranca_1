@@ -320,9 +320,13 @@ public class MyWhats {
 
 		// send all encrypted keys to server
 		conn.getOutputStream().writeObject(keys);
-
+		reply = (Reply) conn.getInputStream().readObject();
+		if(reply.hasError())
+			return reply;
+		
 		// receive server's final reply
 		reply = (Reply) conn.getInputStream().readObject();
+		System.out.println("recebi resposta");
 		return reply;
 	}
 

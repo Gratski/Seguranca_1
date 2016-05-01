@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -33,8 +34,8 @@ import domain.NetworkMessage;
 import domain.Reply;
 import domain.Request;
 import domain.User;
+import exception.ApplicationException;
 import helpers.Connection;
-import helpers.FilesHandler;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.Proxy;
@@ -45,26 +46,46 @@ import security.MACService;
 import security.SecUtils;
 
 /**
- * Esta classe representa a entidade que trata de um Request
- * enviado por um client
+ * This class represents a server request handler
+ * It has the responsibility of handling a server request
+ * based on it's request type
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class RequestHandler extends Thread {
-
+	
+	/**
+	 * connection used to comunicate with client
+	 */
 	private Connection connection;
+	
+	/**
+	 * users proxy
+	 */
 	private UsersProxy userProxy;
+	
+	/**
+	 * groups proxy
+	 */
 	private GroupsProxy groupsProxy;
+	
+	/**
+	 * conversations proxy
+	 */
 	private ConversationsProxy convProxy;
+	
+	/**
+	 * 
+	 */
 	private SecretKey key;
 	
 	/**
 	 * Constructor
 	 *
-	 * @param clientSocket 	Socket client a ser utilizada
-	 * @param userProxy		Proxy de Users a ser utilizado
-	 * @param groupsProxy	Proxy de Groups a ser utilizado
-	 * @param conversationsProxy	Proxy de Conversations a ser utilizado
+	 * @param clientSocket 	client socket to be used
+	 * @param userProxy		users proxy to be used
+	 * @param groupsProxy	groups proxy to be used
+	 * @param conversationsProxy	conversations proxy to be used
 	 *
      * @throws IOException
      */
@@ -78,13 +99,18 @@ public class RequestHandler extends Thread {
 	}
 
 	/**
-	 * Executa com base no request
+	 * Thread run method
+	 * Executes a received request
 	 */
 	public void run() {
+		
+		// declare request and reply variables
 		Request clientRequest = null;
 		Reply reply = null;
 
-		// Obter request
+		// get client request
+		// in this case we are not considering any time out period
+		// but it would improve server's performance
 		try {
 			clientRequest = (Request) this.connection.getInputStream().readObject();
 		} catch(Exception e) {
@@ -96,30 +122,27 @@ public class RequestHandler extends Thread {
 			this.interrupt();
 		}
 
-		// Tratamento de request
+		// request handling
 		try {
-			// trata de request
+			// parse request and execute it
 			reply = parseRequest(clientRequest, key);
 
 		} catch(SecurityException e) {
-			System.out.println("Falha de seguranca.");
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			this.interrupt();
-		} catch (Exception e) {
-			System.out.println("Erro ao processar o pedido.");
-			 e.printStackTrace();
-			this.interrupt();
+			reply = new Reply(400, "The server may have been hacked");
+		} catch( ApplicationException e){
+			reply = new Reply(400, e.getMessage());
+		}catch (Exception e) {
+			reply = new Reply(400, "Something went wrong executing your request");
 		}
 
-		// ENVIA RESPOSTA
+		// sends final request execution reply to client
 		try {
 			this.connection.getOutputStream().writeObject(reply);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		// FECHA LIGACAO
+		// closes the connection
 		try {
 			this.connection.destroy();
 		} catch (IOException e1) {
@@ -128,73 +151,84 @@ public class RequestHandler extends Thread {
 	}
 
 	/**
-	 * Faz parse de request e encaminha
+	 * Parses a given request and forwards it to
+	 * the corresponding method in order to be
+	 * executed
 	 * 
-	 * @param req 	Request a ser considerado
-	 * @return 		Reply com a resposta devida para o client
+	 * @param req 	Request to be considered
+	 * @return 		Reply object with operation result
 	 * @throws Exception 
 	 * @require req != null
 	 */
 	Reply parseRequest(Request req, SecretKey key) throws Exception {
-		// autentica se existe, senao cria novo
+		
+		// checks server files integrity
+		if(!MACService.validateMAC(Proxy.getGroupsIndex(), key)
+				|| !MACService.validateMAC(Proxy.getUsersIndex(), key))
+			throw new SecurityException("Server has been hacked");
+		
+		// authenticate user if exists
+		// if it doesn't exist yet, then create a new one
 		if (!validateUser(req.getUser(), key))
-			return new Reply(400, "User nao autenticado");
+			throw new ApplicationException("User nao autenticado");
 
-		// executa o request
+		// executes this request
 		return executeRequest(req, key);
 	}
 
 	/**
-	 * Executa o request
+	 * Executes a request based on it's request type
+	 * Request type can be:
+	 * -a, if a user who is group owner wants to add another user to a given Group
+	 * -d, if a users is a group owner and wants to remove a given user from a certain Group
+	 * -m, if a user wants to send a new message to a Group or User
+	 * -f, if a user wants to upload a file to be shared with a Group or a User
+	 * -r, if a user wants to retrieve data from server
 	 *
-	 * @param req 	Request a considerar
-	 * @return 		Reply com resposta tratada
+	 * @param req 	Request to be considered
+	 * @return 		Reply object with request execution final result
 	 * @throws Exception 
 	 * @require req != null
      */
-	private Reply executeRequest(Request req, SecretKey key) throws Exception {
+	private Reply executeRequest(Request req, SecretKey key) throws ApplicationException, SecurityException, Exception {
 		Reply reply = new Reply();
-
-		//verifica se a integridade foi comprometida
-		if(!MACService.validateMAC(Proxy.getGroupsIndex(), key))
-			throw new SecurityException("Ficheiro " + Proxy.getGroupsIndex() + " comprometido.");
 		
+		// handle request based on it's type
 		switch (req.getType()) {
-		case "-a":
-			//verifica integridade de ficheiro de groups
-			if (!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
-				reply.setStatus(400);
-				reply.setMessage("SEGURANCA NOOOOOO GOOOOOOOOD. HIRE JOAO&SIMON NOW!!!");
-				break;
-			}
-			// verifica se o user a adicionar é o próprio
-			if (req.getUser().getName().equals(req.getContact())) {
-				reply.setStatus(400);
-				reply.setMessage("Não se pode adicionar a si próprio a um grupo.");
-				break;
-			}
+		
+		// add user to a group
+		case "-a":			
+			// this validation is also been done by MyWhats client
+			// as this is a secure service we decided to keep this
+			// just to double check it on request arrival
+			if (req.getUser().getName().equals(req.getContact()))
+				throw new ApplicationException("Não se pode adicionar a si próprio a um grupo.");
+		
 			synchronized (groupsProxy) {
 				reply = addUserToGroup(req.getGroup(), req.getUser(), req.getContact(), key);
 			}
 			break;
+			
+		// removing a user from a group
 		case "-d":
-			if (!MACService.validateMAC(Proxy.getGroupsIndex(), key)){
-				System.out.println("PATH: " + Proxy.getGroupsIndex());
-				//LANCAR EXCEPTION EM DISTO
-				reply.setStatus(400);
-				reply.setMessage("SEGURANCA NOOOOOO GOOOOOOOOD. HIRE JOAO&SIMON NOW!!!");
-				break;
-			}
+			
 			synchronized (groupsProxy) {
 				reply = removeUserFromGroup(req.getGroup(), req.getUser(), req.getContact());
 			}
 			break;
-		case "-f":
-			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) )
-				return new Reply(400, "Destinatário inexistente");
 			
+		// upload a ciphered file
+		case "-f":
+			
+			// if message receiver doesn't exist
+			if ( !(this.userProxy.exists(new User(req.getContact())) || this.groupsProxy.exists(req.getContact())) )
+				throw new ApplicationException("Destinatário inexistente");
+				
+			// execute receive file
 			reply = executeReceiveFile(req);
 			break;
+			
+		// upload a ciphered text message
 		case "-m":
 			synchronized (groupsProxy) {
 				req.getMessage().setType("-t");
@@ -202,40 +236,47 @@ public class RequestHandler extends Thread {
 				reply = executeReceiveMessage(req);
 			}
 			break;
+			
+		// download data
 		case "-r":
 
+			// download execution based on what user really wants
 			switch (req.getSpecs()) {
-			// se eh para obter mensagens de uma conversa
+			
+			// if request is only to obtain a single conversation
 			case "single_contact":
 				reply = getConversation(req);
 				break;
-			// se eh para fazer download
-			case "download":
-				reply = executeSendFile(req);
-				break;
-			// se eh para obter todas as mensagens de todos
+				
+			// if request is to obtain all last received messages
 			case "all":
 				reply = getLastMessageFromConversations(req);
 				break;
-			default:
-				reply.setStatus(400);
-				reply.setMessage("Comando invalida");
+				
+			// if request is for a file download
+			case "download":
+				reply = executeSendFile(req);
 				break;
+			
+			// if download specification was not recognized
+			default:
+				throw new ApplicationException("Comando invalido");
 			}
 			break;
+			
+		// if request operation was not recognized
 		default:
-			reply.setStatus(400);
-			reply.setMessage("Comando invalido");
-			break;
+			throw new ApplicationException("Comando invalido");
 		}
 		return reply;
 	}
 
 	/**
-	 * Executa a acção de enviar um ficheiro para o cliente
+	 * Sends a file through a given socket stream
 	 *
-	 * @param req Request que contém toda a informação para executar o pedido
-	 * @return Reply final que vai ser enviada para o cliente
+	 * @param req Request object that contains request specifications
+	 * @return Reply object that contains operation's final result
+	 * 
 	 * @throws IOException
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
@@ -243,27 +284,25 @@ public class RequestHandler extends Thread {
 	 * @throws IllegalBlockSizeException
      * @throws BadPaddingException
      */
-	private Reply executeSendFile(Request req) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
+	private Reply executeSendFile(Request req) throws ApplicationException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
 		
 		Reply reply = new Reply();
 		
+		// checks if the conversation exists
 		String path = this.convProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
+		if(path == null)
+			throw new ApplicationException("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
 
-		File file = null;
-		if (path != null) {
-			file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/");
-			if (!file.exists())
-				return new Reply(400, "Ficheiro inexistente");
-		} else {
-			reply.setStatus(400);
-			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
-			return reply;
-		}
+		
+		File file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/");
+		if (!file.exists())
+			throw new ApplicationException("Ficheiro inexistente");
 		
 		// obter author de upload
 		file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/author");
 		if(!file.exists())
-			return new Reply(400,"Ficheiro de author missing");
+			throw new ApplicationException("Ficheiro de author missing");
+			
 		
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
@@ -328,76 +367,83 @@ public class RequestHandler extends Thread {
 	 * @throws Exception
      */
 	private Reply executeReceiveFile(Request req) throws Exception {
-		
-		// reply object
-		Reply reply = new Reply();
 
 		Group group = this.groupsProxy.find(req.getContact());
 
-		// get path da directory de ficheiro
+		// get base path where to store the new file
 		String path = this.getPath(group, req);
 		path = path + "/" + Proxy.getFilesFolder();
 
+		// get filename with it's extension
 		String filename = req.getFile().getFullPath();
 		File file = new File(path + "" + filename + "/");
+		File filePath = new File(path + "" + filename + "/" + filename);
+		
+		// if file exists then error
 		if (file.exists())
-			return new Reply(400, "Ficheiro ja existente");
+			throw new ApplicationException("Ficheiro ja existente");
+		
+		// if file doesn't exist then create it
+		else{
+			file.mkdirs();
+			if (!filePath.exists())
+				filePath.createNewFile();
+			else
+				throw new ApplicationException("Ficheiro ja existente");
+		}
 
-		// obtem nomes de membros de conversation
+		// get conversation members names
 		ArrayList<String> names = new ArrayList<>();
+		
+		// if it is a group conversation
 		if (group != null && group.hasMemberOrOwner(req.getUser().getName())) {
 			Collection<User> members = group.getMembersAndOwner();
 			for (User user : members) {
 				names.add(user.getName());
 			}
 		}
-		// se eh private
+		
+		// if is a private conversation
 		else {
-			// se destinatario nao existe
-			if (!this.userProxy.exists(new User(req.getContact()))) {
-				reply.setStatus(400);
-				reply.setMessage("Destinatário inexistente");
-				return reply;
-			}
 			
-			// coloca o nome do destinatario
+			// if the receiver doesn't exist
+			if (!this.userProxy.exists(new User(req.getContact())))
+				throw new ApplicationException("Destinatário inexistente");
+				
+			// get contact's user object
 			User contact = this.userProxy.find(req.getContact());
+			if(contact == null)
+				throw new ApplicationException("Erro ao obter destinatário");
+			
+			// puts receiver name into conversation members list
 			names.add(contact.getName());
 		}
 
-		// Envia nomes para client
-		reply.setStatus(200);
+		// send conversation member names to client
+		Reply reply = new Reply(200);
 		reply.setNames(names);
 		this.connection.getOutputStream().writeObject(reply);
 		
-		// recebe assinatura do ficheiro
+		// gets file signature
 		GenericSignature signature = (GenericSignature) this.connection.getInputStream().readObject();
 
-		// recebe mensagem para apresentação
+		// gets ciphered textual message
 		Message message = (Message) this.connection.getInputStream().readObject();
 
-		//obtem tamanho de ficheiro
+		// gets file size
 		long fileSize = this.connection.getInputStream().readLong();
 		System.out.println("Filesize eh: " + fileSize);
 		
-		// cria directory de ficheiro (porque já verificamos que não existe, atras)
-		file.mkdirs();
-
-		// guarda nome de autor de upload
+		// stores upload author name
+		// change this to username.sig
 		File authorFile = new File(path + "" + filename + "/author");
 		FileWriter fw = new FileWriter(authorFile);
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write(req.getUser().getName());
 		bw.close();
 		
-		// cria ficheiro
-		File filePath = new File(path + "" + filename + "/" + filename);
-		if (!filePath.exists())
-			filePath.createNewFile();
-		else
-			return new Reply(400, "Ficheiro ja existente");
 		
-		// recebe IV
+		// gets encryption IV
 		String IV = (String) this.connection.getInputStream().readObject();
 		File IVPath = new File(path + "" + filename + "/iv");
 		IVPath.createNewFile();
@@ -406,39 +452,35 @@ public class RequestHandler extends Thread {
 		bw.write(IV);
 		bw.close();
 		
-		//Recebe ficheiro
+		// gets the file
 		boolean ok = this.receiveFile(fileSize, filePath);
 		if (!ok)
-			return new Reply(400, "Erro ao receber ficheiro");
+			throw new ApplicationException("Erro ao receber ficheiro");
+			
 		
-		// recebe chaves cifradas e guarda-as
+		// gets all ciphered keys and store them properly
 		Map<String, CipheredKey> keys = (Map<String, CipheredKey>) this.connection.getInputStream().readObject();
 		storeAllKeys(path + "" + filename, keys);
 			
-		//escreve assinatura
+		// stores signature
 		storeSignature(path + "" + filename, signature);
 
-		// Gravar mensagem
+		// stores file upload message
 		boolean inserted;
 		if (group != null) {
 			inserted =
 					this.convProxy.insertGroupMessage(message, keys,
 							message.getSignature());
 		}
-		//se eh para private
 		else {
 			inserted = this.convProxy.insertPrivateMessage(message, keys,
 					message.getSignature());
 		}
 
-		if (inserted)
-			reply.setStatus(200);
-		else {
-			reply.setStatus(400);
-			reply.setMessage("Ficheiro não foi gravada correctamente!");
-		}
+		if (!inserted)
+			throw new ApplicationException("Ficheiro não foi gravado correctamente!");
 
-		return reply;
+		return new Reply(200);
 	}
 
 	/**
@@ -514,39 +556,38 @@ public class RequestHandler extends Thread {
 	 * @throws IOException
 	 * @require req != null
      */
-	private Reply getLastMessageFromConversations(Request req) throws IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
-		Reply reply = new Reply();
-		//obtem todas as conversas
+	private Reply getLastMessageFromConversations(Request req) throws ApplicationException, IOException, IllegalBlockSizeException, NoSuchPaddingException, BadPaddingException, NoSuchAlgorithmException, InvalidKeyException {
+		
+		// obtain all session user conversations
 		ArrayList<Conversation> conversations = this.convProxy.getLastMessageFromAll(req.getUser());
-		if (conversations.size() == 0) {
-			reply.setStatus(400);
-			reply.setMessage("Não existem nenhumas conversas");
-		} else {
+		
+		// if user has no conversations
+		if (conversations.size() == 0)
+			throw new ApplicationException("Não existem nenhumas conversas");
+			
 
-			ArrayList<Conversation> toDeleteList = new ArrayList<>();
-			// Ver se existem conversas sem mensagens
-			for (Conversation conversation : conversations) {
-				if (conversation.getMessages().size() == 0) {
-					toDeleteList.add(conversation);
-				}
+		ArrayList<Conversation> toDeleteList = new ArrayList<>();
+		
+		// checks if there are any conversations without messages
+		for (Conversation conversation : conversations) {
+			if (conversation.getMessages().size() == 0) {
+				toDeleteList.add(conversation);
 			}
-
-			// eliminar conversas sem mensagens (não se pode fazer no for de cima)
-			for (Conversation conversation : toDeleteList) {
-				conversations.remove(conversation);
-			}
-
-			// Se não sobrarem conversas, enviar erro
-			if (conversations.size() == 0) {
-				reply.setStatus(400);
-				reply.setMessage("Não existem nenhumas conversas");
-			} else {
-				reply.setStatus(200);
-				reply.setType("all");
-				reply.setConversations(conversations);
-			}
-
 		}
+
+		// delete conversations with no messages
+		for (Conversation conversation : toDeleteList) {
+			conversations.remove(conversation);
+		}
+
+		// if there are no conversations then error
+		if (conversations.size() == 0)
+			throw new ApplicationException("Não existem nenhumas conversas");
+		
+		// operation ok
+		Reply reply = new Reply(200);
+		reply.setType("all");
+		reply.setConversations(conversations);
 		return reply;
 	}
 
@@ -560,27 +601,24 @@ public class RequestHandler extends Thread {
 	 * @throws IOException
 	 * @require req != null && req.getUser() != null
      */
-	private Reply getConversation(Request req) throws IOException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
-		Reply reply = new Reply();
+	private Reply getConversation(Request req) throws ApplicationException, IOException, InvalidKeyException, BadPaddingException, NoSuchAlgorithmException, IllegalBlockSizeException, NoSuchPaddingException {
 
-		//obtem a conversacao entre user e contacto
+		// obtain the corresponding conversation object
 		Conversation conversation = this.convProxy.getConversationBetween(req.getUser().getName(),
 				req.getContact());
-
-		if (conversation == null) {
-			reply.setStatus(400);
-			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
-		} else {
-			// Ver se a conversa tem mensagens
-			if (conversation.getMessages().size() == 0) {
-				reply.setStatus(400);
-				reply.setMessage("Não existem nenhumas mensagens nesta conversa");
-			} else {
-				reply.setStatus(200);
-				reply.setType("single");
-				reply.setConversation(conversation);
-			}
-		}
+		
+		// checks if conversation exists
+		if (conversation == null)
+			throw new ApplicationException("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
+			
+		// checks if conversation has messages
+		if (conversation.getMessages().size() == 0)
+			throw new ApplicationException("Não existem nenhumas mensagens nesta conversa");
+			
+		// operation ok
+		Reply reply = new Reply(200);
+		reply.setType("single");
+		reply.setConversation(conversation);
 		return reply;
 	}
 
@@ -596,15 +634,12 @@ public class RequestHandler extends Thread {
 	 * @require req != null && req.getUser() != null
 	 * 			req.getMessage() != null
      */
-	private Reply executeReceiveMessage(Request req) throws IOException {
+	private Reply executeReceiveMessage(Request req) throws ApplicationException, IOException {
 		Reply reply = new Reply();
 
 		// verifica se o user de destino nao eh o proprio autor
-		if (req.getUser().getName().equals(req.getMessage().getTo())) {
-			reply.setStatus(400);
-			reply.setMessage("with yourself..? o.O");
-			return reply;
-		}
+		if (req.getUser().getName().equals(req.getMessage().getTo()))
+			throw new ApplicationException("with yourself..? o.O");
 
 		ArrayList<String> names = new ArrayList<>();
 		Group group = this.groupsProxy.find(req.getMessage().getTo());
@@ -617,11 +652,8 @@ public class RequestHandler extends Thread {
 		// se nao e para um group
 		else {
 			// verifica se destinatario existe
-			if (!this.userProxy.exists(new User(req.getMessage().getTo()))) {
-				reply.setStatus(400);
-				reply.setMessage("Destinatário inexistente");
-				return reply;
-			}
+			if (!this.userProxy.exists(new User(req.getMessage().getTo())))
+				throw new ApplicationException("Destinatário inexistente");
 
 			User contact = this.userProxy.find(req.getMessage().getTo());
 			names.add(contact.getName());
@@ -638,12 +670,10 @@ public class RequestHandler extends Thread {
 		try {
 			messageWithSignature = (NetworkMessage) this.connection.getInputStream().readObject();
 			this.connection.getOutputStream().writeObject(new Reply(200));
-		} catch (ClassNotFoundException e) {
+		} catch (ClassNotFoundException e){
 			e.printStackTrace();
 			System.out.println("Erro ao receber assinatura, depois de enviar nomes e certificados");
-			reply.setStatus(400);
-			reply.setMessage("Erro ao receber assinatura, depois de enviar nomes e certificados");
-			return reply;
+			throw new ApplicationException("Erro ao receber assinatura, depois de enviar nomes e certificados");
 		}
 
 		// Receber mensagem cifrada
@@ -654,9 +684,7 @@ public class RequestHandler extends Thread {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			System.out.println("Erro ao receber cipherMessage, depois de enviar assinatura");
-			reply.setStatus(400);
-			reply.setMessage("Erro ao receber cipherMessage, depois de enviar assinatura");
-			return reply;
+			throw new ApplicationException("Erro ao receber cipherMessage, depois de enviar assinatura");
 		}
 
 		// Receber lista de Ks cifrados
@@ -667,9 +695,7 @@ public class RequestHandler extends Thread {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			System.out.println("Erro ao receber cipheredKeys");
-			reply.setStatus(400);
-			reply.setMessage("Erro ao receber cipheredKeys");
-			return reply;
+			throw new ApplicationException("Erro ao receber cipheredKeys");
 		}
 
 		//se eh para group
@@ -685,15 +711,11 @@ public class RequestHandler extends Thread {
 					messageWithSignature.getSignature());
 		}
 
-		if (inserted)
-			reply.setStatus(200);
-		else {
-			reply.setStatus(400);
-			reply.setMessage("Mensagem não foi gravada correctamente!");
-		}
+		if (!inserted)
+			throw new ApplicationException("Mensagem não foi gravada correctamente!");
 
 		System.out.println("Gravou mensagem!");
-		return reply;
+		return new Reply(200);
 
 	}
 
@@ -709,38 +731,29 @@ public class RequestHandler extends Thread {
 	 * @throws InvalidKeyException 
 	 * @require user != null
      */
-	private Reply removeUserFromGroup(String groupName, User user, String member) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
-		Reply reply = new Reply(200);
-
+	private Reply removeUserFromGroup(String groupName, User user, String member) throws ApplicationException, IOException, InvalidKeyException, NoSuchAlgorithmException {
+		
+		// find group by the given group name
 		Group group = groupsProxy.find(groupName);
-
-		// verifica se group existe
-		if (group == null) {
-			reply.setStatus(400);
-			reply.setMessage("Group inexistente");
-			return reply;
-		}
-		// verifica se user eh owner
-		if (!group.getOwner().equals(user.getName())) {
-			reply.setStatus(400);
-			reply.setMessage("User " + user.getName() + " nao eh owner de grupo " + groupName);
-			return reply;
-		}
-
-		// verifica se o member e realmente member do group
-		if (!group.hasMemberOrOwner(member)) {
-			reply.setStatus(400);
-			reply.setMessage("O utilizador " + member + " nao eh membro do group " + groupName);
-			return reply;
-		}
-
+		
+		// if group doesn't exist
+		if (group == null)
+			throw new ApplicationException("O grupo " + groupName + " nao existe");
+		
+		// if session user is not group owner
+		if (!group.getOwner().equals(user.getName()))
+			throw new ApplicationException("User " + user.getName() + " nao eh owner de grupo " + groupName);
+		
+		// checks if user to be removed really is a group member
+		if (!group.hasMemberOrOwner(member))
+			throw new ApplicationException("O utilizador " + member + " nao eh membro do group " + groupName);
+			
 		// remove member do group
-		if (!groupsProxy.removeMember(groupName, member, key)) {
-			reply.setStatus(400);
-			reply.setMessage("Erro ao remover membro do group");
-			return reply;
-		}
-		return reply;
+		if (!groupsProxy.removeMember(groupName, member, key))
+			throw new ApplicationException("Erro ao remover membro do group");
+		
+		// operation ok
+		return new Reply(200);
 	}
 
 	/**
@@ -777,24 +790,25 @@ public class RequestHandler extends Thread {
 	 * @throws InvalidKeyException 
 	 * @require uProxy != null && user != null
      */
-	private Reply addUserToGroup(String groupName, User user, String newMember, SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException {
+	private Reply addUserToGroup(String groupName, User user, String newMember, SecretKey key) throws ApplicationException, IOException, InvalidKeyException, NoSuchAlgorithmException {
 
-		// verifica se o user de contacto existe
+		// checks if the new given member exists
 		if (!this.userProxy.exists(new User(newMember)))
-			return new Reply(400, "O user " + newMember + " nao existe");
+			throw new ApplicationException("O user " + newMember + " nao existe");
 
-		// group nao existe => cria novo
+		// if group doesn't exists then create a new one
 		if (!this.groupsProxy.exists(groupName))
 			this.groupsProxy.create(groupName, user);
+		
+		// if group already exists confirm if session user is it's owner
+		else if(!this.groupsProxy.isOwner(groupName, user.getName()))
+			throw new ApplicationException("Operacao nao permitida. Nao é o owner deste grupo");
 
-		// verifica se user eh owner
-		if (!this.groupsProxy.isOwner(groupName, user.getName()))
-			return new Reply(400, "User " + user.getName() + " nao eh o owner do grupo " + groupName);
-
-		// adiciona newMember a group
+		// adds the new member to group
 		if (!this.groupsProxy.addMember(groupName, newMember, key))
-			return new Reply(400, "O utilizador " + newMember + " ja e membro do grupo " + groupName);
+			throw new ApplicationException("O utilizador " + newMember + " ja e membro do grupo " + groupName);
 
+		// operation ok
 		return new Reply(200);
 	}
 	
