@@ -35,10 +35,10 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -r
 
 #### Now joao is going to say hello to simao
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m simao "Hello!"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m simao "Hello"
 
 #### Simao replies very happy
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m joao "Hey!!!"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m joao "Hey :)"
 
 #### Its been 4 hours since they talked and simao wants to know what have been said so far
 #### So he retrieves all messages from their conversation
@@ -54,26 +54,29 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m GATORFCUL "Hey guys!! :D"
 
 #### Aligator replies to group
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -m GATORFCUL "Whats up!"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -m GATORFCUL "Whats up"
 
 #### joao asks if someone wants to do some 24h hackaton
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m GATORFCUL "24H Hackaton, anyone!? :D"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m GATORFCUL "24H Hackaton, anyone? "
 
 #### aligator replies to group
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -m GATORFCUL "Wtf!? no way!"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -m GATORFCUL "What? no way! "
+
+#### joao obtains all group messages
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -r GATORFCUL
 
 #### joao tries to kick aligator out of group
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -d aligator GATORFCUL
 
 #### But he can't because he is not the group owner!!!
 #### So joao decided to encourage simao to kick aligator
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m simao "Hey jamas! Kick aligator from GATORFCUL. He doesn't like to code -.-'"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m simao "Hey jamas! Kick aligator from GATORFCUL. He doesn't like to code -.-' "
 
 #### simao totally agrees with joao and imediatly kicks aligator from GATORFCUL
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -d aligator GATORFCUL
 
 #### aligator tries to say something more to group
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -m GATORFCUL "Are you guys going..?"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -m GATORFCUL "Are you guys going..? "
 
 #### But he can't because he is no longer part of the conversation
 #### Hum... aligator tries to retrieve all conversation messages
@@ -82,7 +85,7 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 #### Oh wait he can't too...
 
 #### joao sends a picture of last years hackaton to simao so he can feel it!
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m simao myFile.txt
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -f simao myFile.txt
 
 #### simao checks if joao said anything else
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -r joao
@@ -95,15 +98,18 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 #### simao imediatly adds gator to GATORFCUL group again and sends him a message
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -a aligator GATORFCUL
 
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m GATORFCUL "Hey Gator you know what.. we know you don't like to code but... can you please be physically there with us? They have meetballs for you to eat xD"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m GATORFCUL "Hey Gator you know what.. we know you don't like to code but... can you please be physically there with us? They have meetballs for you to eat xD "
 
 #### aligator them checks what have been said on group so far (again)
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -r GATORFCUL
 
-#### And this time he can retrieve all messages again because he is a GATORFCUL member again
+#### And this time he can retrieve "all" messages again because he is a GATORFCUL member again
 
 #### joao wants to check all the latest messages of his conversations
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -r
+
+#### joao wants to know more about GATORFCUL chat
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -r GATORFCUL
 
 
 ## This conversations flow show how this application can be used and how it can not.
