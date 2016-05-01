@@ -216,7 +216,9 @@ public class ConversationsProxy extends Proxy {
 		Message message = null;
 
 		if ((line = br.readLine()) != null) {
-			message = createMessageFromLine(line, user, CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/");
+			// Verificar se user pode receber mensagem com base na existência do user.key
+			if (new File(CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/" + user + ".key").exists())
+				message = createMessageFromLine(line, user, CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/");
 		} else {
 			br.close();
 			fr.close();
@@ -254,10 +256,7 @@ public class ConversationsProxy extends Proxy {
 		Message message = new Message(from, messageBody);
 		message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
 		message.setSignature(GenericSignature.readSignatureFromFile(path + "signature.sig"));
-
-		// Verificar se user pode receber mensagem com base na existência do user.key
-		if (new File(path + user + ".key").exists())
-			message.setKey(SecUtils.readKeyFromFile(path + user + ".key"));
+		message.setKey(SecUtils.readKeyFromFile(path + user + ".key"));
 
 		return message;
 	}
@@ -311,8 +310,10 @@ public class ConversationsProxy extends Proxy {
 			System.out.println("Processing message: " + i);
 
 			if ((line = br.readLine()) != null) {
-				message = createMessageFromLine(line, user, path + "/" + i + "/");
-				conversation.addMessage(message);
+				if (new File(path + "/" + i + "/" + user + ".key").exists()) {
+					message = createMessageFromLine(line, user, path + "/" + i + "/");
+					conversation.addMessage(message);
+				}
 			} else {
 				br.close();
 				fr.close();

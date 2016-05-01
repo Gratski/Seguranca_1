@@ -522,9 +522,30 @@ public class RequestHandler extends Thread {
 			reply.setStatus(400);
 			reply.setMessage("Não existem nenhumas conversas");
 		} else {
-			reply.setStatus(200);
-			reply.setType("all");
-			reply.setConversations(conversations);
+
+			ArrayList<Conversation> toDeleteList = new ArrayList<>();
+			// Ver se existem conversas sem mensagens
+			for (Conversation conversation : conversations) {
+				if (conversation.getMessages().size() == 0) {
+					toDeleteList.add(conversation);
+				}
+			}
+
+			// eliminar conversas sem mensagens (não se pode fazer no for de cima)
+			for (Conversation conversation : toDeleteList) {
+				conversations.remove(conversation);
+			}
+
+			// Se não sobrarem conversas, enviar erro
+			if (conversations.size() == 0) {
+				reply.setStatus(400);
+				reply.setMessage("Não existem nenhumas conversas");
+			} else {
+				reply.setStatus(200);
+				reply.setType("all");
+				reply.setConversations(conversations);
+			}
+
 		}
 		return reply;
 	}
@@ -549,13 +570,17 @@ public class RequestHandler extends Thread {
 		if (conversation == null) {
 			reply.setStatus(400);
 			reply.setMessage("Não existem conversas entre " + req.getUser().getName() + " e " + req.getContact());
-			System.out.println(reply);
 		} else {
-			reply.setStatus(200);
-			reply.setType("single");
-			reply.setConversation(conversation);
+			// Ver se a conversa tem mensagens
+			if (conversation.getMessages().size() == 0) {
+				reply.setStatus(400);
+				reply.setMessage("Não existem nenhumas mensagens nesta conversa");
+			} else {
+				reply.setStatus(200);
+				reply.setType("single");
+				reply.setConversation(conversation);
+			}
 		}
-
 		return reply;
 	}
 
