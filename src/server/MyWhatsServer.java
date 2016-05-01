@@ -41,48 +41,63 @@ public class MyWhatsServer {
 			System.exit(-1);
 		}
 		
+		// set server port
+		@SuppressWarnings("resource")
+		int port = Integer.parseInt(args[0]);
+		
 		//prepare file structure
 		DatabaseBuilder dbBuilder = new DatabaseBuilder();
 		boolean createdFolders = dbBuilder.make();
 		if (!createdFolders)
 			System.exit(-1);
 		
-		// TODO: ALTERAR NO FIM
-		//valida seguranca de sistema
-		SecretKey key;
-		String pass = "segredo";
-//		do {
-//			System.out.println("Insert your password:");
-//			Scanner sc = new Scanner(System.in);
-//			pass = sc.nextLine();
-//			if (pass.equals(""))
-//				System.out.println("Invalid password format!");
-//		} while (pass.equals(""));
-		key = SecUtils.getKeyByString(pass);
 		
+		// asks for system password
+		String pass = null;
+		do {
+			System.out.print("Insert your password: ");
+			Scanner sc = new Scanner(System.in);
+			pass = sc.nextLine();
+			if (pass.equals(""))
+				System.out.println("Invalid password format!");
+		} while (pass.equals(""));
+		
+		// set secret key from password
+		SecretKey key = SecUtils.getKeyByString(pass);
+		
+		// accessing key store
+		System.setProperty("javax.net.ssl.keyStore", "keys/server/server.keyStore");
+		System.setProperty("javax.net.ssl.keyStorePassword", pass);
+		ServerSocket server = null;
+		try{			
+			ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
+			server = ssf.createServerSocket(port);
+			server.setReuseAddress(true);
+		} catch (Exception e) {
+			System.out.println("System is not secured.");
+			System.out.println("Shutting down.");
+			System.exit(-1);
+		}
+		
+		// validate system security level
 		boolean isSecured = secureSystem(key);
 		if (!isSecured) {
 			System.out.println("System is not secured.");
 			System.out.println("Shutting down.");
-			return;
+			System.exit(-1);
 		}
-		//obtain singletons
+		
+		// obtain proxies to be used
 		GroupsProxy groups = GroupsProxy.getInstance();
 		UsersProxy users = UsersProxy.getInstance();
 		ConversationsProxy conversations = ConversationsProxy.getInstance();
 
-		@SuppressWarnings("resource")
-		int port = Integer.parseInt(args[0]);
 
-		// TODO: RETIRAR keystore no fim, colocar na linha de comandos
-		System.setProperty("javax.net.ssl.keyStore", "keys/server/server.keyStore");
-		System.setProperty("javax.net.ssl.keyStorePassword", "segredo");
-		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();
-		ServerSocket server = ssf.createServerSocket(port);
-		server.setReuseAddress(true);
-
+		
+		// initialize thread executor
 		ExecutorService executor = Executors.newFixedThreadPool(4);
 		
+		// receive requests
 		while (true) {
 			System.out.println("===============================");
 			System.out.println("Waiting for connections...");
@@ -94,10 +109,12 @@ public class MyWhatsServer {
 	}
 	
 	/**
-	 * Faz validacoes base de seguranca
+	 * Do all security validations
 	 *
-	 * @param key Secret key usada para gerar os MACs se preciso
-	 * @return True se o sistema for considerado não corrompido/hackeado
+	 * @param 	key Secret key to use when creating or validating
+	 * 			file macs if needed
+	 * @return True if the system is secured, false otherwise
+	 * 
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
@@ -107,7 +124,7 @@ public class MyWhatsServer {
 		
 		File f = new File(Proxy.getUsersIndex() + Proxy.getMacFileExtension());
 
-		//se nao tem mac criado, cria
+		// if has no mac files yet, create them
 		if (!f.exists()) {
 			System.out.println("System is not secure yet.");
 			System.out.println("Do you want to make it secure? Y/n");
@@ -117,16 +134,17 @@ public class MyWhatsServer {
 			if (!answer.equals("Y"))
 				return false;
 
-			//criar todas os .mac files necessarios
+			// create all mac files that are needed
 			MACService.generateAllMacFiles(key);
-			System.out.println("System is secure!");
+			System.out.println("System secured!");
+			return true;
 		}
-		//se jah existe
+		
+		// if there are already mac files, then validate them
 		else {
 			return MACService.validateMAC(Proxy.getUsersIndex(), key)
 					&& MACService.validateMAC(Proxy.getGroupsIndex(), key);
 		}
-		return true;
 	}
 
 }

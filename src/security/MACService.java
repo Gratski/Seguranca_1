@@ -28,11 +28,11 @@ public class MACService {
 	private static final String MAC_ALGORITHM = "HmacSHA256";
 
 	/**
-	 * Gera um MAC do ficheiro
+	 * Creates MAC from file
 	 *
-	 * @param f, ficheiro a considerar
-	 * @param k, chave secreta utilizada no hash
-	 * @return hash de ficheiro
+	 * @param f, file to consider
+	 * @param k, secret key to be used
+	 * @return file hash
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeyException
@@ -50,10 +50,10 @@ public class MACService {
 	}
 	
 	/**
-	 * Obtem o hash de um ficheiro .mac
+	 * Gets the .mac file content
 	 *
-	 * @param f, file a considerar
-	 * @return array de bytes com hash
+	 * @param f, file to be considered
+	 * @return a byte array with .mac content
 	 * @throws IOException
 	 */
 	public static byte[] readMACFile(File f) throws IOException{
@@ -62,11 +62,12 @@ public class MACService {
 	}
 
 	/**
-	 * Valida o MAC de um dado ficheiro
+	 * Validates the mac of a file
 	 *
-	 * @param baseURL, path base de ficheiro
-	 * @param key, chave simetrica a utilizar
-	 * @return true se valido, false caso contrario
+	 * @param baseURL, base path of file
+	 * @param key, the key to be used
+	 * @return true if correct, false otherwise
+	 * 
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
@@ -79,10 +80,11 @@ public class MACService {
 	}
 
 	/**
-	 * Actualiza o MAC de um dado ficheiro
+	 * Updates a file .mac
 	 *
-	 * @param basePath, path a conseiderar
-	 * @param key, chave simetrica a utilizar
+	 * @param basePath, base file path
+	 * @param key, key to be used
+	 * 
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
@@ -92,7 +94,7 @@ public class MACService {
 		File f = new File(basePath);
 		File fmac = new File(basePath + Proxy.getMacFileExtension());
 		
-		//gera mac de users file
+		// creates the mac of file
 		byte[] newMac = MACService.generateFileMac(f, key);
 		String macHexStr = SecUtils.getHexString(newMac);
 		BufferedWriter bw = new FilesHandler().getWriter(fmac);
@@ -114,14 +116,14 @@ public class MACService {
 		File f = new File(Proxy.getUsersIndex());
 		File fmac = new File(Proxy.getUsersIndex() + Proxy.getMacFileExtension());
 
-		// gera mac de users file
+		// creates the users file mac
 		byte[] mac = MACService.generateFileMac(f, key);
 		String macHexStr = SecUtils.getHexString(mac);
 		BufferedWriter bw = new FilesHandler().getWriter(fmac);
 		bw.write(macHexStr);
 		bw.close();
 
-		// gera mac de groups file
+		// creates the groups file mac
 		f = new File(Proxy.getGroupsIndex());
 		fmac = new File(Proxy.getGroupsIndex() + Proxy.getMacFileExtension());
 		mac = MACService.generateFileMac(f, key);

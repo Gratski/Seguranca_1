@@ -3,19 +3,18 @@ package validators;
 import java.util.HashMap;
 
 /**
- * Esta classe representa um validator de input
- * Neste projecto eh utilizada para validar o input
- * dado aquando da execução do programa client e server
+ * This class represents a validator input
+ * In this project it is used to validate command line inputs
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class InputValidator {
 
 	/**
-	 * Valida input com base em regras MyWhats
+	 * Validates input according to MyWhats rules
 	 *
-	 * @param input Input a ser analisado
-	 * @return true se valido, false caso contrario
+	 * @param input Input to be parsed
+	 * @return true if valid, false otherwise
      */
 	public static Boolean validInput(String[] input) {
 		if (input == null || input.length < 3 || !validName(input[0]) || !validAddress(input[1]))
@@ -39,40 +38,40 @@ public class InputValidator {
 	}
 
 	/**
-	 * Valida server
+	 * Validates server command line input
 	 *
-	 * @param input Server a ser considerado
-	 * @return true se valido, false caso contrario
+	 * @param input, input to be parsed
+	 * @return true if valid, false otherwise
      */
 	public static Boolean validServerInput(String[] input) {
 		return  (input != null && input.length == 1 && validPort(input[0]));
 	}
 
 	/**
-	 * Valida o nome de User passado como atributo
+	 * Validates username string
 	 *
-	 * @param name Nome a ser considerado
-	 * @return true se valido, false caso contrario
+	 * @param name, user name to be parsed
+	 * @return true if valid, false otherwise
      */
 	public static Boolean validName(String name) {
 		return !name.contains(":") && !name.contains(",");
 	}
 
 	/**
-	 * Valida a password
+	 * Validates password string
 	 *
-	 * @param password Password a ser considerada
-	 * @return true se valida, false caso contrario
+	 * @param password, password to be parsed
+	 * @return true if valid, false otherwise
      */
 	public static Boolean validPassword(String password) {
 		return !password.contains(":") && password.length() > 2;
 	}
 
 	/**
-	 * Valida flag
+	 * Validates flag according to MyWhats valid operations
 	 *
-	 * @param flag Flag a ser considerada
-	 * @return true se valida, false caso contrario
+	 * @param flag, flag to be considered
+	 * @return true if valid, false otherwise
      */
 	public static Boolean validFlag(String flag) {
 		return (flag.equals("-a") || flag.equals("-d") || flag.equals("-r") 
@@ -80,20 +79,20 @@ public class InputValidator {
 	}
 
 	/**
-	 * Valida IP
+	 * Validates IP address
 	 *
-	 * @param ip IP a ser considerada
-	 * @return true se valida, false caso contrario
+	 * @param ip, ip to be parsed
+	 * @return true if valid, false otherwise
      */
 	private static Boolean validIp(String ip) {
 		return ip.matches("^(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)(\\.(25[0-5]|2[0-4]\\d|[0-1]?\\d?\\d)){3}$");
 	}
 
 	/**
-	 * Valida porto
+	 * Validates address port
 	 *
-	 * @param port Porto a ser considerado
-	 * @return true se valido, false caso contrario
+	 * @param port, address port to be parsed
+	 * @return true if valid, false otherwise
      */
 	public static Boolean validPort(String port) {
 		int portInt;
@@ -106,10 +105,10 @@ public class InputValidator {
 	}
 
 	/**
-	 * Valida endereco com IP e Porto
+	 * Validates address, both the ip and port
 	 *
-	 * @param address Endereco a ser considerado
-	 * @return true se valido, false caso contrario
+	 * @param address, complete address to be parsed
+	 * @return true if valid, false otherwise
      */
 	public static Boolean validAddress(String address) {
 		String[] addressSplit = address.split(":");
@@ -117,10 +116,10 @@ public class InputValidator {
 	}
 
 	/**
-	 * Devolve um Input mais facil de utilizar
+	 * Creates a more handful input object
 	 *
-	 * @param args Input base a ser considerado
-	 * @return Nova estrutura de Input
+	 * @param args, input array to be considered
+	 * @return new input object
      */
 	public static HashMap<String, String> parseInput(String[] args) {
 		HashMap<String, String> parsedInput = new HashMap<>();
@@ -141,11 +140,11 @@ public class InputValidator {
 			parsedInput.put("passwordFlag", null);
 		}
 
-		//flag
+		// flag
 		parsedInput.put("flag", args[i++]);
 		
-		//specification fields
-		//<flag> <field_1> <field_2>
+		// specification fields
+		// <flag> <field_1> <field_2>
 		if (args.length > i)
 			parsedInput.put("field_1", args[i++]);
 		if (args.length > i)

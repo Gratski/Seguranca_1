@@ -31,17 +31,17 @@ import sun.security.x509.X509CertInfo;
 public class SecUtils {
 
     /**
-     * Gera representacao hexadecimal de array de bytes
-     * @param raw, array de bytes a considerar
-     * @return string com a representacao hexadecimal de raw
+     * Creates a string hex representation of a byte array 
+     * @param raw, byte array to be considered
+     * @return byte array hex representation
      */
 	public static String getHexString( byte [] raw ) {
 		return DatatypeConverter.printHexBinary(raw);
 	}
 	  
 	/**
-	 * Gera chave simetrica
-	 * @return chave simetrica gerada
+	 * Creates a symmetric key
+	 * @return symmetric key
 	 * @throws NoSuchAlgorithmException
 	 */
 	public static Key generateSymetricKey() throws NoSuchAlgorithmException{
@@ -51,18 +51,18 @@ public class SecUtils {
 	}
 	
 	/**
-	 * Converte uma string hexadecimal em array de bytes
-	 * @param s, string a considerar
-	 * @return array de bytes
+	 * Creates a byte array based on a given hex string
+	 * @param s, string to be considered
+	 * @return byte array
 	 */
 	public static byte[] getStringHex(String s) {
 	    return DatatypeConverter.parseHexBinary(s);
 	}
 	
 	/**
-	 * Gera salt aleatorio
-	 * @param size, tamanho de salt
-	 * @return salt em array de bytes
+	 * Creates a random salt
+	 * @param size, salt size
+	 * @return salt
 	 */
 	public static int generateRandomSalt(int size){
 		Random rand = new Random();
@@ -159,10 +159,10 @@ public class SecUtils {
 	}
 
 	/**
-	 * Gera uma chave secreta simetrica com base numa string
+	 * Creates a secret key based on a given string
 	 *
-	 * @param str, string a considerar
-	 * @return chave simetrica gerada
+	 * @param str, string to be considered
+	 * @return symmetric key
 	 * @throws NoSuchAlgorithmException
 	 * @throws InvalidKeySpecException
 	 */

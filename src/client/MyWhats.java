@@ -108,6 +108,18 @@ public class MyWhats {
 				}
 			}
 
+			// if is a file operation validates if file exists
+			// before establish server connection
+			if(request.getType().equals("-f"))
+			{
+				File file = new File(request.getFile().getFullPath());
+				if(!file.exists())
+				{
+					System.out.println("Ficheiro nao localizado");
+					System.exit(-1);
+				}
+			}
+			
 			// establish connection
 			System.setProperty("javax.net.ssl.trustStore", "keys/certificates.trustStore");
 			SocketFactory sf = SSLSocketFactory.getDefault();
@@ -139,6 +151,7 @@ public class MyWhats {
 	 * @require conn != null && req != null && conn.getOutputStream != null
 	 */
 	public static Reply sendRequest(Connection conn, Request req) throws Exception {
+		
 		// send base request
 		conn.getOutputStream().writeObject(req);
 

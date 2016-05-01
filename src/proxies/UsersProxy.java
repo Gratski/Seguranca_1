@@ -31,18 +31,41 @@ import security.SecUtils;
  */
 public class UsersProxy extends Proxy {
 
+	/**
+	 * salt size constant
+	 */
 	private static final int SALT_SIZE = 6;
 	
+	/**
+	 * users proxy singleton
+	 */
 	private static UsersProxy instance = null;
+	
+	/**
+	 * users file
+	 */
 	private File file;
+	
+	/**
+	 * file writer to be used
+	 */
 	private FileWriter fw;
+	
+	/**
+	 * buffered writer to be used
+	 */
 	private BufferedWriter bw;
+	
+	/**
+	 * users map to have O(1) when searching for a user
+	 * when in central memory
+	 */
 	private Map<String, User> users;
 	
 
 	/**
-	 * Constructor para usersProxy
-	 * Cria um Map e popula-o através do ficheiro de users (se existir)
+	 * Constructor
+	 * Initializes the users map based on users file
 	 *
 	 * @throws IOException
 	 * @throws CertificateException 
@@ -55,9 +78,10 @@ public class UsersProxy extends Proxy {
 	}
 
 	/**
-	 * Função para obter a instância de UsersProxy
+	 * Gets the instance of the users proxy
 	 *
-	 * @return usersProxy para ser usado para persistir Users
+	 * @return usersProxy users proxy instance
+	 * 
 	 * @throws IOException
 	 * @throws CertificateException 
 	 * @throws NoSuchAlgorithmException 
@@ -70,8 +94,8 @@ public class UsersProxy extends Proxy {
 	}
 	
 	/**
-	 * Popula o map de users
-	 * Abre streams de escrita em USERS
+	 * Populate users map
+	 * Open needed streams
 	 *
 	 * @throws IOException
 	 * @throws KeyStoreException 
@@ -83,7 +107,7 @@ public class UsersProxy extends Proxy {
 		FileReader fr = new FileReader(file);
 		BufferedReader br = new BufferedReader(fr);
 		
-		//reading users file
+		// reading users file
 		String line = null;
 		while ((line = br.readLine()) != null) {
 			String[] arr = line.split(":");
@@ -93,37 +117,38 @@ public class UsersProxy extends Proxy {
 			byte[] password = SecUtils.getStringHex(arr[2]);
 			User u = new User(arr[0], password, salt );
 			
-			//add to users
+			// add to users
 			this.users.put(u.getName(), u);
 		}
 		
-		//close readers
+		// close readers
 		fr.close();
 		br.close();
 		
-		//open writing streams
+		// open writing streams
 		this.file = new File(USERS_INDEX);
 		this.fw = new FileWriter(this.file, true);
 		this.bw = new BufferedWriter(this.fw);
 	}
 	
 	/**
-	 * Verifica se um user ja existe
+	 * Checks if the given users already exists
 	 * @param user
-	 * 		User a ser considerado na comparacao
+	 * 		User to be considered when checking
 	 * @return
-	 * 		true se ja existe, false caso contrario
+	 * 		true if exists, false otherwise
 	 */
 	public boolean exists(User user){
 		return this.users.containsKey(user.getName());
 	}
 	
 	/**
-	 * Autentica determinado utilizador
+	 * Authenticates the given user
 	 * @param user
-	 * 		User a ser autenticado
+	 * 		User to be authenticated
 	 * @return
-	 * 		true se valid, false caso contrario
+	 * 		true if authorized, false otherwise
+	 * 
 	 * @throws NoSuchAlgorithmException 
 	 * @throws InvalidKeyException 
 	 * @require
@@ -143,9 +168,10 @@ public class UsersProxy extends Proxy {
 	}
 	
 	/**
-	 * Insere um novo utilizador no ficheiro e em memoria
+	 * Inserts a new user into memory and file
+	 * 
 	 * @param user
-	 * 		User a ser inserido
+	 * 		User to be inserted
 	 * @throws NoSuchAlgorithmException 
 	 * @throws InvalidKeyException 
 	 * @throws IOException 
@@ -161,14 +187,14 @@ public class UsersProxy extends Proxy {
 		
 		user.setSalt(SecUtils.generateRandomSalt(SALT_SIZE));
 		
-		//gera hash de password
+		// creates a password hash
 		MessageDigest md = MessageDigest.getInstance("SHA-256");				
 		md.update(user.getPassword());
 		md.update(":".getBytes());
 		md.update(intToByteArray(user.getSalt()));
 		user.setPassword(md.digest());
 		
-		//converte para bytes
+		// converts it to an hex represented string
 		String passStr = SecUtils.getHexString(user.getPassword());
 		
 		System.out.println("Registo de novo User: " + user.toString());
@@ -180,7 +206,7 @@ public class UsersProxy extends Proxy {
 		sb.append(passStr);
 		sb.append("\n");
 		try {
-			//escreve em ficheiro de users
+			// writes new user into users file
 			this.bw.write(sb.toString());
 			this.bw.flush();
 			this.users.put(user.getName(), user);
@@ -207,6 +233,12 @@ public class UsersProxy extends Proxy {
 		return this.users.containsKey(name) ? this.users.get(name) : null;
 	}
 	
+	/**
+	 * Converts an integer into a byte array
+	 * 
+	 * @param value, integer to be converted
+	 * @return integer byte array representation
+	 */
 	public static final byte[] intToByteArray(int value) {
 	    return new byte[] {
 	            (byte)(value >>> 24),

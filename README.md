@@ -2,6 +2,8 @@
 Projecto de Seguranca
 All user keys, key stores, as well as trust stores are already created
 So we can only make use of three users
+User passwords are the same both for application usage and to the corresponding
+key stores access
 username: aligator 	| password: uiuiui
 username: joao		| password: yoyoyo
 username: simao		| password: aiaiai
@@ -19,7 +21,7 @@ keys/server
 keys/certificates.trustStore 
 
 ## Run server in the command line:
-java -Djava.security.manager -Djava.security.policy==server.policy -cp ./bin/ server.MyWhatsServer 23456 segredo
+java -Djava.security.manager -Djava.security.policy==server.policy -cp ./bin/ server.MyWhatsServer 23456
 
 
 ## What follows next is an interaction of three users using MyWhats application
