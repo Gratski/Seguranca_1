@@ -47,17 +47,16 @@ public class MyWhatsServer {
 		if (!createdFolders)
 			System.exit(-1);
 		
-		// TODO: ALTERAR NO FIM
 		//valida seguranca de sistema
 		SecretKey key;
-		String pass = "segredo";
-//		do {
-//			System.out.println("Insert your password:");
-//			Scanner sc = new Scanner(System.in);
-//			pass = sc.nextLine();
-//			if (pass.equals(""))
-//				System.out.println("Invalid password format!");
-//		} while (pass.equals(""));
+		String pass = "";
+		do {
+			System.out.println("Insert your password:");
+			Scanner sc = new Scanner(System.in);
+			pass = sc.nextLine();
+			if (pass.equals(""))
+				System.out.println("Invalid password format!");
+		} while (pass.equals(""));
 		key = SecUtils.getKeyByString(pass);
 		
 		boolean isSecured = secureSystem(key);
@@ -74,7 +73,6 @@ public class MyWhatsServer {
 		@SuppressWarnings("resource")
 		int port = Integer.parseInt(args[0]);
 
-		// TODO: RETIRAR keystore no fim, colocar na linha de comandos
 		System.setProperty("javax.net.ssl.keyStore", "keys/server/server.keyStore");
 		System.setProperty("javax.net.ssl.keyStorePassword", "segredo");
 		ServerSocketFactory ssf = SSLServerSocketFactory.getDefault();

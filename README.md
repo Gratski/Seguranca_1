@@ -19,7 +19,7 @@ keys/server
 keys/certificates.trustStore 
 
 ## Run server in the command line:
-java -Djava.security.manager -Djava.security.policy==server.policy -cp ./bin/ server.MyWhatsServer 23456 segredo
+java -Djava.security.manager -Djava.security.policy==server.policy -cp ./bin/ server.MyWhatsServer 23456 
 
 
 ## What follows next is an interaction of three users using MyWhats application

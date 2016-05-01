@@ -226,7 +226,7 @@ public class MyWhats {
 				PublicKey publicKey = getCertificates(names, req.getUser()).get(msg.getFrom()).getPublicKey();
 				
 				// validate message hash
-				MessageDigest md = GenericSignature.getMessageDigest();
+				MessageDigest md = HashService.getMessageDigest();
 				byte[] receivedHash = md.digest(body.getBytes());
 				Signature signature = Signature.getInstance("SHA256withRSA");
 				signature.initVerify(publicKey);
