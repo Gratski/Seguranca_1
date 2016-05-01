@@ -15,11 +15,6 @@ import javax.crypto.NoSuchPaddingException;
 public class GenericSignature implements Serializable{
 
 	/**
-	 * Algorithm used for MessageDigest
-	 */
-	private final static String ALGORITHM = "SHA-256";
-
-	/**
 	 * Byte array that represents the signature
 	 */
 	private final byte[] signature;
@@ -60,9 +55,11 @@ public class GenericSignature implements Serializable{
      * @throws SignatureException
      */
 	public static GenericSignature createGenericMessageSignature(PrivateKey privateKey, byte[] content) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {
+
 		
 		// creates content hash
-		MessageDigest md = getMessageDigest();
+		MessageDigest md = HashService.getMessageDigest();
+
 		byte[] hash = md.digest(content);
 
 		// signs created hash
@@ -94,8 +91,10 @@ public class GenericSignature implements Serializable{
 			NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException, 
 			BadPaddingException, SignatureException {
 		
+
 		// create file hash
-		MessageDigest md = getMessageDigest();
+		MessageDigest md = HashService.getMessageDigest();
+
 		byte[] hash = new byte[16];
 		int sent = 0;
 		FileInputStream fis = new FileInputStream(file);
@@ -130,16 +129,5 @@ public class GenericSignature implements Serializable{
 		String signatureAsString = bis.readLine();
 		bis.close();
 		return new GenericSignature(SecUtils.getStringHex(signatureAsString));
-	}
-
-	/**
-	 * Returns the MessageDigest instance with the correct algorithm
-	 *
-	 * @return
-	 * 		MessageDigest isntance, ready to use with the correct algorithm
-	 * @throws NoSuchAlgorithmException
-     */
-	public static MessageDigest getMessageDigest() throws NoSuchAlgorithmException{
-		return MessageDigest.getInstance(ALGORITHM);
 	}
 }

@@ -51,7 +51,6 @@ public class MyWhatsServer {
 		if (!createdFolders)
 			System.exit(-1);
 		
-		
 		// asks for system password
 		String pass = null;
 		do {
@@ -91,8 +90,6 @@ public class MyWhatsServer {
 		GroupsProxy groups = GroupsProxy.getInstance();
 		UsersProxy users = UsersProxy.getInstance();
 		ConversationsProxy conversations = ConversationsProxy.getInstance();
-
-
 		
 		// initialize thread executor
 		ExecutorService executor = Executors.newFixedThreadPool(4);

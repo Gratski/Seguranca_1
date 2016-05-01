@@ -53,7 +53,7 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -a aligator GATORFCUL
 
 #### Simao welcome both joao and aligator
-java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m GATORFCUL "Hey guys!! :D"
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m GATORFCUL "Hey guys!! :D "
 
 #### Aligator replies to group
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -m GATORFCUL "Whats up"
@@ -115,9 +115,3 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 
 
 ## This conversations flow show how this application can be used and how it can not.
-
-
-TODO:
-==============
-- Retirar do client e do server os comandos SetProperty e colocar nos comandos da linha de comandos
-- Retirar password
