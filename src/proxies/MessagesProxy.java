@@ -53,30 +53,30 @@ public class MessagesProxy extends Proxy {
 	 * 		true se registou, false caso contrario
 	 * @throws IOException 
 	 */
-	public boolean persist(String path, String fname, Message msg, Map<String, CipheredKey> keys, GenericSignature sign ) throws IOException {
+	public boolean persist(String path, String fname, Message msg, Map<String, CipheredKey> keys, GenericSignature sign) throws IOException {
 		File dir = new File(path + "/" + fname);
 		if(!dir.exists())
 			dir.mkdirs();
 		
 		// grava mensagem
-		File file = new File(path + "/" + fname + "/" + "body" + Proxy.getMessageFileExtension());
+		File file = new File(path + "/" + fname + "/" + "body" + MESSAGE_FILE_EXTENSION);
 		if (file.exists())
 			return false;
 		writeToFile(file, toStoreFormat(msg));
 		
 		// grava assinatura
-		file = new File(path + "/" + fname + "/" + "signature.sig");
+		file = new File(path + "/" + fname + "/" + "signature" + SIGNATURE_FILE_EXTENSION);
 		if (file.exists())
 			return false;
 		writeToFile(file, SecUtils.getHexString(sign.getSignature()));
 		
 		// grava chaves
-		Set<String> chaves = keys.keySet();
-		Iterator<String> it = chaves.iterator();
+		Set<String> names = keys.keySet();
+		Iterator<String> it = names.iterator();
 		while (it.hasNext()) {
 			String name = it.next();
 			CipheredKey key = keys.get(name);
-			file = new File(path + "/" + fname + "/" + name + ".key");
+			file = new File(path + "/" + fname + "/message" + KEY_FILE_EXTENSION + "." + name);
 			writeToFile(file, SecUtils.getHexString(key.getKey()));
 		}
 		return true;

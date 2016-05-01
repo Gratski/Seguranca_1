@@ -20,6 +20,8 @@ public class Proxy {
 	protected static final String FILES_FOLDER = "FILES/";
 	protected static final String MESSAGE_FILE_EXTENSION = ".msg";
 	protected static final String MAC_FILE_EXTENSION = ".mac";
+	protected static final String KEY_FILE_EXTENSION = ".key";
+	protected static final String SIGNATURE_FILE_EXTENSION = ".sig";
 
 	protected static final String HASH_ALGORITHM = "SHA-256";
 
@@ -101,5 +103,21 @@ public class Proxy {
 	 */
 	public static String getMessageFileExtension(){
 		return MESSAGE_FILE_EXTENSION;
+	}
+
+	/**
+	 * Getter para a extensão com que os ficheiros de mensagens são guardados
+	 * @return Extensão dos ficheiros das mensagens
+	 */
+	public static String getKeyFileExtension(){
+		return KEY_FILE_EXTENSION;
+	}
+
+	/**
+	 * Getter para a extensão com que os ficheiros de mensagens são guardados
+	 * @return Extensão dos ficheiros das mensagens
+	 */
+	public static String getSignatureFileExtension(){
+		return SIGNATURE_FILE_EXTENSION;
 	}
 }

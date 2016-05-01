@@ -217,7 +217,7 @@ public class ConversationsProxy extends Proxy {
 
 		if ((line = br.readLine()) != null) {
 			// Verificar se user pode receber mensagem com base na existência do user.key
-			if (new File(CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/" + user + ".key").exists())
+			if (new File(CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/message" + KEY_FILE_EXTENSION + "." + user).exists())
 				message = createMessageFromLine(line, user, CONVERSATIONS + folder + "/" + id + "/" + lastMessageID + "/");
 		} else {
 			br.close();
@@ -255,8 +255,8 @@ public class ConversationsProxy extends Proxy {
 
 		Message message = new Message(from, messageBody);
 		message.setTimeInMilliseconds(Long.parseLong(timeInMilliseconds));
-		message.setSignature(GenericSignature.readSignatureFromFile(path + "signature.sig"));
-		message.setKey(SecUtils.readKeyFromFile(path + user + ".key"));
+		message.setSignature(GenericSignature.readSignatureFromFile(path + "signature" + SIGNATURE_FILE_EXTENSION));
+		message.setKey(SecUtils.readKeyFromFile(path + "message" + KEY_FILE_EXTENSION + "." + user));
 
 		return message;
 	}
@@ -310,7 +310,7 @@ public class ConversationsProxy extends Proxy {
 			System.out.println("Processing message: " + i);
 
 			if ((line = br.readLine()) != null) {
-				if (new File(path + "/" + i + "/" + user + ".key").exists()) {
+				if (new File(path + "/" + i + "/message" + KEY_FILE_EXTENSION + "." + user).exists()) {
 					message = createMessageFromLine(line, user, path + "/" + i + "/");
 					conversation.addMessage(message);
 				}
@@ -439,11 +439,6 @@ public class ConversationsProxy extends Proxy {
 		f.mkdirs();
 		if (!f.exists())
 			return null;
-		
-		// cria files index file
-		File index = new File(CONVERSATIONS_PRIVATE + id + "/" + FILES_FOLDER + "/index");
-		if(!index.exists())
-			index.createNewFile();
 		
 		//save on file
 		BufferedWriter writer = FileStreamBuilder.makeWriter(CONVERSATIONS_PRIVATE_INDEX, true);

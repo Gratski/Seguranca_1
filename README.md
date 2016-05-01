@@ -112,8 +112,3 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 TODO:
 ==============
 - Retirar do client e do server os comandos SetProperty e colocar nos comandos da linha de comandos
-- Não guardar o hash do Salt no ficheiro das passwords
-- Quando se remove um user de um grupo, temos de apagar todas as suas keys dos ficheiros!
-- Alterar ficheiros "user.key" para "message.key.user"
-- Criar no Proxy as constantes para as extensões de ficheiros ".key" e ".sig"
-- Remover ficheiro "index" de FILES
