@@ -99,8 +99,9 @@ public class MyWhatsServer {
 	
 	/**
 	 * Faz validacoes base de seguranca
-	 * @param key
-	 * @return
+	 *
+	 * @param key Secret key usada para gerar os MACs se preciso
+	 * @return True se o sistema for considerado não corrompido/hackeado
 	 * @throws InvalidKeyException
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
@@ -108,7 +109,7 @@ public class MyWhatsServer {
 	 */
 	private static boolean secureSystem(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException, InvalidKeySpecException{
 		
-		File f = new File(Proxy.getUsersIndex()+""+Proxy.getMacFileExtension());
+		File f = new File(Proxy.getUsersIndex() + Proxy.getMacFileExtension());
 
 		//se nao tem mac criado, cria
 		if (!f.exists()) {
@@ -120,10 +121,9 @@ public class MyWhatsServer {
 			if (!answer.equals("Y"))
 				return false;
 
-			System.out.println("Using your password to calculate new MACs..");
 			//criar todas os .mac files necessarios
-			generateAllMacFiles(key);
-			System.out.println("Done!");
+			MACService.generateAllMacFiles(key);
+			System.out.println("System is secure!");
 		}
 		//se jah existe
 		else {
@@ -131,28 +131,5 @@ public class MyWhatsServer {
 		}
 		return true;
 	}
-	
-	private static void generateAllMacFiles(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
-		
-		//FILES
-		File f = new File(Proxy.getUsersIndex());
-		File fmac = new File(Proxy.getUsersIndex()+""+Proxy.getMacFileExtension());
-		
-		//gera mac de users file
-		byte[] mac = MACService.generateFileMac(f, key);
-		String macHexStr = SecUtils.getHexString(mac);
-		BufferedWriter bw = new FilesHandler().getWriter(fmac);
-		bw.write(macHexStr);
-		bw.close();
-		
-		//gera mac de groups file
-		f = new File(Proxy.getGroupsIndex());
-		fmac = new File(Proxy.getGroupsIndex() + "" + Proxy.getMacFileExtension());
-		mac = MACService.generateFileMac(f, key);
-		macHexStr = SecUtils.getHexString(mac);
-		bw = new FilesHandler().getWriter(fmac);
-		bw.write(macHexStr);
-		bw.close();
-		
-	}
+
 }

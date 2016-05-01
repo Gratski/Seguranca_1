@@ -440,11 +440,6 @@ public class ConversationsProxy extends Proxy {
 		if (!f.exists())
 			return null;
 		
-		// cria files index file
-		File index = new File(CONVERSATIONS_PRIVATE + id + "/" + FILES_FOLDER + "/index");
-		if(!index.exists())
-			index.createNewFile();
-		
 		//save on file
 		BufferedWriter writer = FileStreamBuilder.makeWriter(CONVERSATIONS_PRIVATE_INDEX, true);
 		StringBuilder sb = new StringBuilder();

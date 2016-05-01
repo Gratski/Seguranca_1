@@ -112,4 +112,3 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 TODO:
 ==============
 - Retirar do client e do server os comandos SetProperty e colocar nos comandos da linha de comandos
-- Remover ficheiro "index" de FILES
