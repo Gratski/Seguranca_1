@@ -14,24 +14,22 @@ import javax.crypto.SecretKey;
 import helpers.FilesHandler;
 import proxies.Proxy;
 
+/**
+ * Class the represents a Service to be used in the application with functions and utilities
+ * regarding MACs (Message Authentication Code)
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class MACService {
 
-	private static final String MAC_ALGORITHM = "HmacSHA256";
-	
 	/**
-	 * Obtem uma instancia de mac
-	 * @return Instancia de Mac
-	 * @throws NoSuchAlgorithmException
-	 * @throws InvalidKeyException 
+	 * Hashing algorithm used in the MACs creation
 	 */
-	public static Mac getMacInstance(SecretKey key) throws NoSuchAlgorithmException, InvalidKeyException{
-		Mac mac = Mac.getInstance(MAC_ALGORITHM); 
-		mac.init(key);
-		return mac;
-	}
-	
+	private static final String MAC_ALGORITHM = "HmacSHA256";
+
 	/**
-	 * Gera um mac do ficheiro
+	 * Gera um MAC do ficheiro
+	 *
 	 * @param f, ficheiro a considerar
 	 * @param k, chave secreta utilizada no hash
 	 * @return hash de ficheiro
@@ -40,7 +38,7 @@ public class MACService {
 	 * @throws InvalidKeyException
 	 */
 	public static byte[] generateFileMac(File f, SecretKey k) throws IOException, NoSuchAlgorithmException, InvalidKeyException{
-		Mac mac = Mac.getInstance("HmacSHA256");
+		Mac mac = Mac.getInstance(MAC_ALGORITHM);
 		mac.init(k);
 		
 		BufferedReader br = new FilesHandler().getReader(f);
@@ -53,6 +51,7 @@ public class MACService {
 	
 	/**
 	 * Obtem o hash de um ficheiro .mac
+	 *
 	 * @param f, file a considerar
 	 * @return array de bytes com hash
 	 * @throws IOException
@@ -61,25 +60,10 @@ public class MACService {
 		BufferedReader br = new FilesHandler().getReader(f);
 		return SecUtils.getStringHex(br.readLine());
 	}
-	
-	/**
-	 * Verifica se o mac de um ficheiro eh igual a outro dado
-	 * @param f, ficheiro a considerar
-	 * @param key, chave secreta a utilizar no mac
-	 * @param hash, mac a comparar
-	 * @return true se iguais, false caso contrario
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws IOException
-	 */
-	public static boolean validateFileMac(File f, SecretKey key, byte[] hash) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
-		byte[] calcHash = generateFileMac(f, key);
-		return MessageDigest.isEqual(calcHash, hash);
-	}
 
-	
 	/**
 	 * Valida o MAC de um dado ficheiro
+	 *
 	 * @param baseURL, path base de ficheiro
 	 * @param key, chave simetrica a utilizar
 	 * @return true se valido, false caso contrario
@@ -96,6 +80,7 @@ public class MACService {
 
 	/**
 	 * Actualiza o MAC de um dado ficheiro
+	 *
 	 * @param basePath, path a conseiderar
 	 * @param key, chave simetrica a utilizar
 	 * @throws InvalidKeyException
@@ -125,18 +110,18 @@ public class MACService {
 	 */
 	public static void generateAllMacFiles(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException {
 
-		//FILES
+		// FILES
 		File f = new File(Proxy.getUsersIndex());
 		File fmac = new File(Proxy.getUsersIndex() + Proxy.getMacFileExtension());
 
-		//gera mac de users file
+		// gera mac de users file
 		byte[] mac = MACService.generateFileMac(f, key);
 		String macHexStr = SecUtils.getHexString(mac);
 		BufferedWriter bw = new FilesHandler().getWriter(fmac);
 		bw.write(macHexStr);
 		bw.close();
 
-		//gera mac de groups file
+		// gera mac de groups file
 		f = new File(Proxy.getGroupsIndex());
 		fmac = new File(Proxy.getGroupsIndex() + Proxy.getMacFileExtension());
 		mac = MACService.generateFileMac(f, key);

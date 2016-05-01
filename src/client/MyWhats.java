@@ -43,7 +43,6 @@ import domain.Reply;
 import domain.Request;
 import domain.User;
 import helpers.Connection;
-import security.CipherFactory;
 import security.CipheredKey;
 import security.GenericSignature;
 import security.HashService;
@@ -394,7 +393,7 @@ public class MyWhats {
 		c.init(Cipher.ENCRYPT_MODE, key);
 		
 		// send used encryption initialization vector (IV)
-		Cipher cIV = CipherFactory.getStandardCipher();
+		Cipher cIV = Cipher.getInstance("AES");
 		cIV.init(Cipher.ENCRYPT_MODE, key);
 		byte[] IV = c.getIV();
 		byte[] IVCiphered = cIV.doFinal(IV);

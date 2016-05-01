@@ -9,12 +9,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 import java.util.Random;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.Mac;
-import javax.crypto.NoSuchPaddingException;
+import javax.crypto.*;
+import javax.crypto.spec.PBEKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
 import sun.security.x509.AlgorithmId;
@@ -27,10 +23,13 @@ import sun.security.x509.X500Name;
 import sun.security.x509.X509CertImpl;
 import sun.security.x509.X509CertInfo;
 
+/**
+ * Class that has many Security functions and utilities
+ *
+ * @author Joao Rodrigues & Simao Neves
+ */
 public class SecUtils {
 
-    private static final String HEXES = "0123456789ABCDEF";
-	
     /**
      * Gera representacao hexadecimal de array de bytes
      * @param raw, array de bytes a considerar
@@ -40,8 +39,6 @@ public class SecUtils {
 		return DatatypeConverter.printHexBinary(raw);
 	}
 	  
-	
-	
 	/**
 	 * Gera chave simetrica
 	 * @return chave simetrica gerada
@@ -76,19 +73,27 @@ public class SecUtils {
 		}
 		return salt;
 	}
-	
+
 	/**
-	 * Cria um novo certificado
+	 * Creates self-signed Certificates on the fly using the parameters
+	 *
+	 * @param filename
+	 *		Name to be used as CN
+	 * @param publicKey
+	 * 		Public key to be used in the Certificate
+	 * @param privateKey
+	 * 		Private key to sign the Certificate
 	 * @return
+	 * 		Self-signed Certificate
 	 * @throws KeyStoreException
 	 * @throws NoSuchAlgorithmException
 	 * @throws CertificateException
 	 * @throws IOException
-	 * @throws InvalidKeySpecException 
-	 * @throws SignatureException 
-	 * @throws NoSuchProviderException 
-	 * @throws InvalidKeyException 
-	 */
+	 * @throws InvalidKeySpecException
+	 * @throws InvalidKeyException
+	 * @throws NoSuchProviderException
+     * @throws SignatureException
+     */
 	public static Certificate generateCertificate(String filename, PublicKey publicKey, PrivateKey privateKey) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeySpecException, InvalidKeyException, NoSuchProviderException, SignatureException{
 		
 		X509CertInfo certInfo = new X509CertInfo();
@@ -122,18 +127,12 @@ public class SecUtils {
 		
 		return certificate;
 	}
-	
-	/**
-	 * Gerar um par de chaves publica e privada
-	 * @return o par de chaves
-	 * @throws NoSuchAlgorithmException
-	 */
-	public static KeyPair generateKeyPair() throws NoSuchAlgorithmException{
-		KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
-		keyPairGen.initialize(2048);
-		return keyPairGen.generateKeyPair();
-	}
 
+	/**
+	 * Creates a CertificateValidity
+	 *
+	 * @return CertificateValidity
+     */
 	private static CertificateValidity getDefaultCertificateValidity(){
 		Date from = new Date();
 		Date to = new Date(from.getTime() + 10 * 86400000l);
@@ -141,25 +140,35 @@ public class SecUtils {
 		return validity;
 	}
 
-	public static void createCertificate(File ksFile, Certificate cert, PrivateKey privateKey, 
-			String username, String password) throws KeyStoreException, CertificateException, 
-	NoSuchAlgorithmException, IOException, SignatureException, NoSuchProviderException, 
-	InvalidKeyException, InvalidKeySpecException {
-		KeyStore ks = KeyStore.getInstance("JCEKS");
-		Certificate[] chain = new Certificate[1];
-		chain[0] = cert;
-		ks.load(null, password.toCharArray());
-		ks.setKeyEntry(username, privateKey, password.toCharArray(), chain);
-		FileOutputStream fos = new FileOutputStream(ksFile);
-		ks.store(fos, password.toCharArray());
-		fos.close();
-	}
-
+	/**
+	 * Reads a key in String format in a file transforms it
+	 * into a byte array format key
+	 *
+ 	 * @param path
+	 * 		The path to the file where the key is stored
+	 * @return
+	 * 		The key in Byte array format
+	 * @throws IOException
+     */
 	public static byte[] readKeyFromFile(String path) throws IOException {
 		File fileKey = new File(path);
 		BufferedReader bis = new BufferedReader(new FileReader(fileKey));
 		String keyAsString = bis.readLine();
 		bis.close();
 		return SecUtils.getStringHex(keyAsString);
+	}
+
+	/**
+	 * Gera uma chave secreta simetrica com base numa string
+	 *
+	 * @param str, string a considerar
+	 * @return chave simetrica gerada
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidKeySpecException
+	 */
+	public static SecretKey getKeyByString(String str) throws NoSuchAlgorithmException, InvalidKeySpecException {
+		PBEKeySpec param = new PBEKeySpec(str.toCharArray());
+		SecretKeyFactory skf = SecretKeyFactory.getInstance("PBEWithMD5AndDES");
+		return skf.generateSecret(param);
 	}
 }

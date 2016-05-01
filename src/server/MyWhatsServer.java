@@ -1,6 +1,5 @@
 package server;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -20,13 +19,11 @@ import javax.net.ssl.SSLServerSocketFactory;
 
 import handlers.RequestHandler;
 import helpers.DatabaseBuilder;
-import helpers.FilesHandler;
 import proxies.ConversationsProxy;
 import proxies.GroupsProxy;
 import proxies.Proxy;
 import proxies.UsersProxy;
 import security.MACService;
-import security.PBEService;
 import security.SecUtils;
 import validators.InputValidator;
 
@@ -62,7 +59,7 @@ public class MyWhatsServer {
 //			if (pass.equals(""))
 //				System.out.println("Invalid password format!");
 //		} while (pass.equals(""));
-		key = PBEService.getKeyByString(pass);
+		key = SecUtils.getKeyByString(pass);
 		
 		boolean isSecured = secureSystem(key);
 		if (!isSecured) {
