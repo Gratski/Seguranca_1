@@ -128,7 +128,7 @@ public class RequestHandler extends Thread {
 			reply = parseRequest(clientRequest, key);
 
 		} catch(SecurityException e) {
-			reply = new Reply(400, "The server may have been hacked");
+			reply = new Reply(400, "Security issue: "+e.getMessage());
 		} catch( ApplicationException e){
 			reply = new Reply(400, e.getMessage());
 		}catch (Exception e) {
@@ -735,6 +735,10 @@ public class RequestHandler extends Thread {
      */
 	private Reply removeUserFromGroup(String groupName, User user, String member) throws ApplicationException, IOException, InvalidKeyException, NoSuchAlgorithmException {
 		
+		// checks file integrity
+		if(!MACService.validateMAC(Proxy.getGroupsIndex(), key))
+			throw new SecurityException("Groups file has been hacked");
+		
 		// find group by the given group name
 		Group group = groupsProxy.find(groupName);
 		
@@ -750,7 +754,7 @@ public class RequestHandler extends Thread {
 		if (!group.hasMemberOrOwner(member))
 			throw new ApplicationException("O utilizador " + member + " nao eh membro do group " + groupName);
 			
-		// remove member do group
+		// remove member do group and update mac
 		if (!groupsProxy.removeMember(groupName, member, key))
 			throw new ApplicationException("Erro ao remover membro do group");
 		
@@ -794,6 +798,10 @@ public class RequestHandler extends Thread {
      */
 	private Reply addUserToGroup(String groupName, User user, String newMember, SecretKey key) throws ApplicationException, IOException, InvalidKeyException, NoSuchAlgorithmException {
 
+		// checks file integrity
+		if(!MACService.validateMAC(Proxy.getGroupsIndex(), key))
+			throw new SecurityException("Groups file has been hacked");
+		
 		// checks if the new given member exists
 		if (!this.userProxy.exists(new User(newMember)))
 			throw new ApplicationException("O user " + newMember + " nao existe");
@@ -806,10 +814,10 @@ public class RequestHandler extends Thread {
 		else if(!this.groupsProxy.isOwner(groupName, user.getName()))
 			throw new ApplicationException("Operacao nao permitida. Nao é o owner deste grupo");
 
-		// adds the new member to group
+		// adds the new member to group and update mac
 		if (!this.groupsProxy.addMember(groupName, newMember, key))
 			throw new ApplicationException("O utilizador " + newMember + " ja e membro do grupo " + groupName);
-
+		
 		// operation ok
 		return new Reply(200);
 	}

@@ -43,14 +43,13 @@ public class MyWhatsServer {
 			System.out.println("Parâmetros mal formados");
 			System.exit(-1);
 		}
-	
+		
 		//prepare file structure
 		DatabaseBuilder dbBuilder = new DatabaseBuilder();
 		boolean createdFolders = dbBuilder.make();
 		if (!createdFolders)
 			System.exit(-1);
-
-
+		
 		// TODO: ALTERAR NO FIM
 		//valida seguranca de sistema
 		SecretKey key;
@@ -127,7 +126,8 @@ public class MyWhatsServer {
 		}
 		//se jah existe
 		else {
-			return MACService.validateMAC(Proxy.getUsersIndex(), key);
+			return MACService.validateMAC(Proxy.getUsersIndex(), key)
+					&& MACService.validateMAC(Proxy.getGroupsIndex(), key);
 		}
 		return true;
 	}
