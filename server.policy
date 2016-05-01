@@ -32,8 +32,6 @@ grant codeBase "file:bin${/}-" {
   // KeyStores
   permission java.util.PropertyPermission "javax.net.ssl.keyStore", "read, write";
   permission java.util.PropertyPermission "javax.net.ssl.keyStorePassword", "read, write";
-  permission java.io.FilePermission ".${/}server-joao.keyStore", "read, write";
-  permission java.io.FilePermission ".${/}server-simao.keyStore", "read, write";
 
   // Certificates
   permission java.lang.RuntimePermission "accessClassInPackage.sun.security.x509", "read";
