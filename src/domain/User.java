@@ -25,7 +25,7 @@ public class User implements Serializable {
 	/**
 	 * user password salt
 	 */
-	private byte[] salt;
+	private int salt;
 	
 	/**
 	 * user private key
@@ -64,7 +64,7 @@ public class User implements Serializable {
 	 * @param password, user password
 	 * @param salt, user password salt
 	 */
-	public User(String name, byte[] password, byte[] salt){
+	public User(String name, byte[] password, int salt){
 		this.name = name;
 		this.password = password;
 		this.salt = salt;
@@ -130,7 +130,7 @@ public class User implements Serializable {
 	 * 
 	 * @param salt, new user password salt
 	 */
-	public void setSalt(byte[] salt){
+	public void setSalt(int salt){
 		this.salt = salt;
 	}
 
@@ -148,7 +148,7 @@ public class User implements Serializable {
 	 * 
 	 * @return user password salt
 	 */
-	public byte[] getSalt() {
+	public int getSalt() {
 		return this.salt;
 	}
 	

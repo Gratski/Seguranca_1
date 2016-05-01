@@ -31,11 +31,14 @@ import security.SecUtils;
  */
 public class UsersProxy extends Proxy {
 
+	private static final int SALT_SIZE = 6;
+	
 	private static UsersProxy instance = null;
 	private File file;
 	private FileWriter fw;
 	private BufferedWriter bw;
 	private Map<String, User> users;
+	
 
 	/**
 	 * Constructor para usersProxy
@@ -86,7 +89,7 @@ public class UsersProxy extends Proxy {
 			String[] arr = line.split(":");
 			if (arr.length < 3)
 				continue;
-			byte[] salt = SecUtils.getStringHex(arr[1]);
+			int salt = new Integer(arr[1]);
 			byte[] password = SecUtils.getStringHex(arr[2]);
 			User u = new User(arr[0], password, salt );
 			
@@ -128,12 +131,12 @@ public class UsersProxy extends Proxy {
 	 */
 	public boolean autheticate(User user) throws InvalidKeyException, NoSuchAlgorithmException {
 		User register = this.users.get(user.getName());
-		byte[] salt = register.getSalt();
+		int salt = register.getSalt();
 		
 		MessageDigest md = MessageDigest.getInstance(HASH_ALGORITHM);
 		md.update(user.getPassword());
 		md.update(":".getBytes());
-		md.update(salt);
+		md.update(intToByteArray(salt));
 		byte[] genHash = md.digest();
 		
 		return MessageDigest.isEqual(register.getPassword(), genHash);
@@ -152,26 +155,24 @@ public class UsersProxy extends Proxy {
 	public String insert(User user) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
 		if (this.users.containsKey(user.getName()))
 			return null;
-
-		user.setSalt(SecUtils.generateRandomSalt(8));
+		
+		user.setSalt(SecUtils.generateRandomSalt(SALT_SIZE));
 		
 		//gera hash de password
-		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		MessageDigest md = MessageDigest.getInstance("SHA-256");				
 		md.update(user.getPassword());
 		md.update(":".getBytes());
-		md.update(user.getSalt());
-		
+		md.update(intToByteArray(user.getSalt()));
 		user.setPassword(md.digest());
 		
 		//converte para bytes
 		String passStr = SecUtils.getHexString(user.getPassword());
-		String saltStr = SecUtils.getHexString(user.getSalt());
 		
 		System.out.println("Registo de novo User: " + user.toString());
 		StringBuilder sb = new StringBuilder();
 		sb.append(user.getName());
 		sb.append(":");
-		sb.append(saltStr);
+		sb.append(user.getSalt());
 		sb.append(":");
 		sb.append(passStr);
 		sb.append("\n");
@@ -196,5 +197,13 @@ public class UsersProxy extends Proxy {
 	 */
 	public User find(String name){
 		return this.users.containsKey(name) ? this.users.get(name) : null;
+	}
+	
+	public static final byte[] intToByteArray(int value) {
+	    return new byte[] {
+	            (byte)(value >>> 24),
+	            (byte)(value >>> 16),
+	            (byte)(value >>> 8),
+	            (byte)value};
 	}
 }
