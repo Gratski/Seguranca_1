@@ -300,7 +300,7 @@ public class RequestHandler extends Thread {
 			throw new ApplicationException("Ficheiro inexistente");
 		
 		// Verifica se quem pediu o ficheiro o pode receber
-		file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getUser().getName() + ".key");
+		file = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getUser().getName() + Proxy.getKeyFileExtension());
 		if (!file.exists())
 			throw new ApplicationException("Ficheiro não pode ser acedido");
 
@@ -327,14 +327,14 @@ public class RequestHandler extends Thread {
 		this.connection.getOutputStream().writeLong(fileSize);
 		
 		//obtem chave cifrada
-		String keyPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getUser().getName() + ".key";
+		String keyPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/" + req.getUser().getName() + Proxy.getKeyFileExtension();
 		System.out.println("Key Path: " + keyPath);
 		byte[] cipheredKey = SecUtils.readKeyFromFile(keyPath);
 		CipheredKey ck = new CipheredKey(req.getUser().getName(), cipheredKey);
 		this.connection.getOutputStream().writeObject(ck);
 		
 		//envia IV
-		File IVPath = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath()+"/iv");
+		File IVPath = new File(path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/iv");
 		fr = new FileReader(IVPath);
 		br = new BufferedReader(fr);
 		String IV = br.readLine();
@@ -353,10 +353,10 @@ public class RequestHandler extends Thread {
 			totalSent += read;
 		}
 		fis.close();
-		System.out.println("ENVIADOS: " + totalSent +", OF: " + fileSize );
+		System.out.println("ENVIADOS: " + totalSent + ", OF: " + fileSize );
 		
 		//envia assinatura
-		String sigPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/signature.sig";
+		String sigPath = path + "/" + Proxy.getFilesFolder() + req.getFile().getFullPath() + "/signature" + Proxy.getSignatureFileExtension();
 		GenericSignature gs = GenericSignature.readSignatureFromFile(sigPath);
 		this.connection.getOutputStream().writeObject(gs);
 		
@@ -495,7 +495,7 @@ public class RequestHandler extends Thread {
 	 * @throws IOException
 	 */
 	private void storeSignature(String basePath, GenericSignature gs) throws IOException{
-		File sigPath = new File(basePath + "/" + "signature.sig");
+		File sigPath = new File(basePath + "/" + "signature" + Proxy.getSignatureFileExtension());
 		FileWriter fw = new FileWriter(sigPath);
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write(SecUtils.getHexString(gs.getSignature()));
@@ -515,7 +515,7 @@ public class RequestHandler extends Thread {
 		while (it.hasNext()) {
 			String name = it.next();
 			CipheredKey key = keys.get(name);
-			File keyFile = new File(basePath + "/" + name + ".key");
+			File keyFile = new File(basePath + "/" + name + Proxy.getKeyFileExtension());
 			FileWriter fw = new FileWriter(keyFile);
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(SecUtils.getHexString(key.getKey()));

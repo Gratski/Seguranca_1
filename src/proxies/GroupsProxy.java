@@ -237,8 +237,8 @@ public class GroupsProxy extends Proxy {
 			File msg = new File(CONVERSATIONS_GROUP + groupName + "/" + msgs[i]);
 			String[] innerFiles = msg.list();
 			
-			if (contains(innerFiles, member + ".key")) {
-				File kf = new File(CONVERSATIONS_GROUP + groupName + "/" + msgs[i] + "/" + "" + member + ".key");
+			if (contains(innerFiles, member + KEY_FILE_EXTENSION)) {
+				File kf = new File(CONVERSATIONS_GROUP + groupName + "/" + msgs[i] + "/" + "" + member + KEY_FILE_EXTENSION);
 				kf.delete();
 			}
 		}
@@ -250,8 +250,8 @@ public class GroupsProxy extends Proxy {
 			File ficheiro = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER + ficheiros[i]);
 			String[] innerFiles = ficheiro.list();
 
-			if (contains(innerFiles, member + ".key")) {
-				File kf = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER + ficheiros[i] + "/" + member + ".key");
+			if (contains(innerFiles, member + KEY_FILE_EXTENSION)) {
+				File kf = new File(CONVERSATIONS_GROUP + groupName + "/" + FILES_FOLDER + ficheiros[i] + "/" + member + KEY_FILE_EXTENSION);
 				kf.delete();
 			}
 		}
