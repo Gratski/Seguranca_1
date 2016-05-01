@@ -1,5 +1,10 @@
 # Seguranca_1
 Projecto de Seguranca
+All user keys, key stores, as well as trust stores are already created
+So we can only make use of three users
+username: aligator 	| password: uiuiui
+username: joao		| password: yoyoyo
+username: simao		| password: aiaiai
 
 ## Compile project
 mkdir bin && javac -Xlint -d bin ./src/*/*.java
@@ -79,8 +84,26 @@ java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ cl
 #### joao sends a picture of last years hackaton to simao so he can feel it!
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -m simao myFile.txt
 
+#### simao checks if joao said anything else
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -r joao
+
+#### OMG! A picture of last years hackaton? no way... Gotta have it!
 #### simao downloads the newly received file upload
 java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -r joao myFile.txt
+
+#### simao figured out they need a third member in order to contest
+#### simao imediatly adds gator to GATORFCUL group again and sends him a message
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -a aligator GATORFCUL
+
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats simao 127.0.0.1:23456 -p aiaiai -m GATORFCUL "Hey Gator you know what.. we know you don't like to code but... can you please be physically there with us? They have meetballs for you to eat xD"
+
+#### aligator them checks what have been said on group so far (again)
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats aligator 127.0.0.1:23456 -p uiuiui -r GATORFCUL
+
+#### And this time he can retrieve all messages again because he is a GATORFCUL member again
+
+#### joao wants to check all the latest messages of his conversations
+java -Djava.security.manager -Djava.security.policy==client.policy -cp ./bin/ client.MyWhats joao 127.0.0.1:23456 -p yoyoyo -r
 
 
 ## This conversations flow show how this application can be used and how it can not.
