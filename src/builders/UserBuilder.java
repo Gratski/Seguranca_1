@@ -7,23 +7,23 @@ import domain.User;
 import validators.InputValidator;
 
 /**
- * Esta classe representa a entidade responsavel
- * pela criacao de Users
+ * This class represents an entity that is responsible for
+ * the creation of User objects based on the given parameters
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class UserBuilder {
 
 	/**
-	 * Cria um User com base no input
-	 * @param  input representa o input
-	 * @return       um novo User
+	 * Creates a new User object based on input
+	 * @param  input, input to be considered
+	 * @return a new User object
 	 * @require input != null
 	 */
 	public static User make(HashMap<String, String> input) {
 		String password = input.get("password");
 		
-		// se não passou a password em args
+		// ask for password if not given yet
 		if (password == null) {
 			Scanner sc = new Scanner(System.in);
 			do {

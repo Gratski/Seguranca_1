@@ -4,21 +4,28 @@ import java.io.File;
 import java.io.Serializable;
 
 /**
- * Esta classe representa a entidade que encapsula
- * a informacao de um ficheiro a ser transmitido pela
- * rede
+ * This class represents an entity: Network File
+ * A network file is a file that can be sent
+ * both from client to server and from server to client
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class NetworkFile implements Serializable {
 
+	/**
+	 * file descriptor 
+	 */
 	private File file;
+	
+	/**
+	 * file path/name.ext
+	 */
 	private String fullPath;
 
 	/**
 	 * Constructor
 	 *
-	 * @param fullPath Path de ficheiro
+	 * @param fullPath file path
      */
 	public NetworkFile(String fullPath) {
 		this.fullPath = fullPath;
@@ -26,18 +33,18 @@ public class NetworkFile implements Serializable {
 	}
 
 	/**
-	 * Obtem caminho de ficheiro
+	 * Gets the file full path
 	 *
-	 * @return String Path
+	 * @return file full path including file name
      */
 	public String getFullPath(){
 		return this.fullPath;
 	}
 
 	/**
-	 * Obtem File Descriptor
+	 * Gets file descriptor
 	 *
-	 * @return File ficheiro
+	 * @return file descriptor
      */
 	public File getFile(){
 		return this.file;

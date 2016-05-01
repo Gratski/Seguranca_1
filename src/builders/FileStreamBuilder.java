@@ -8,17 +8,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 /**
- * Esta classe representa a entidade responsavel por estabelecer
- * canais de leitura/escrita em ficheiros.
+ * This class represents an entity that is responsible for the creation
+ * read/write streams
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class FileStreamBuilder {
 
 	/**
-	 * Cria um stream de leitura
-	 * @param filename Nome do ficheiro a abrir
-	 * @return BufferedReader
+	 * Creates a reading stream
+	 * @param filename, Filename to be opened
+	 * @return BufferedReader, an open and ready reading stream 
 	 * @throws IOException
 	 */
 	public static BufferedReader makeReader(String filename) throws IOException {
@@ -28,9 +28,9 @@ public class FileStreamBuilder {
 	}
 	
 	/**
-	 * Cria um stream de escrita
-	 * @param filename Nome do ficheiro a abrir
-	 * @param append se true abre em modo b, se false abre em modo w
+	 * Creates a writing stream
+	 * @param filename, Filename to be opened
+	 * @param append, used to flag b ou w file accessing mode
 	 * @return BufferedWriter
 	 * @throws IOException
 	 */

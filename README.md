@@ -18,3 +18,5 @@ TODO:
 - Bug onde as mensagens são enviadas sem key para quem não as pode ler
 - Quando se remove um user de um grupo, temos de apagar todas as suas keys dos ficheiros!
 - Criar no Proxy as constantes para as extensões de ficheiros ".key" e ".sig"
+- Remover ficheiro "index" de FILES
+- Fazer readme com script

@@ -6,23 +6,58 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * Esta classe representa a entidade Message
+ * This class represents an entity: Message
+ * A message flows always from a user to a contact
+ * This contact can either be a group name or a user name
  *
  * @author Joao Rodrigues & Simao Neves
  */
 public class Message implements Serializable, Comparable {
 
-	private String from, to, body, type;
+	/**
+	 * message sender name
+	 */
+	private String from;
+	
+	/**
+	 * message receiver name
+	 * can be either a user name or a group name
+	 */
+	private String to;
+	
+	/**
+	 * message body
+	 */
+	private String body;
+	
+	/**
+	 * message type
+	 * it can be text type -t
+	 * it can be file type -f
+	 */
+	private String type;
+	
+	/**
+	 * sent date
+	 */
 	private Date timestamp;
+	
+	/**
+	 * message signature
+	 */
 	private GenericSignature signature;
+	
+	/**
+	 * message ciphered key
+	 */
 	private byte[] key;
 
 	/**
 	 * Constructor
 	 *
-	 * @param from 	Nome do autor
-	 * @param to 	Nome do destinatario
-	 * @param body 	Conteudo da mensagem
+	 * @param from, sender name
+	 * @param to, receiver name
+	 * @param body, message content
      */
 	public Message(String from, String to, String body) {
 		this.from = from;
@@ -34,8 +69,8 @@ public class Message implements Serializable, Comparable {
 	/**
 	 * Constructor
 	 *
-	 * @param from 	Nome do autor
-	 * @param body	Conteudo da mensagem
+	 * @param from, sender name
+	 * @param body, message content
      */
 	public Message(String from, String body) {
 		this.from = from;
@@ -45,115 +80,114 @@ public class Message implements Serializable, Comparable {
 	}
 
 	/**
-	 * Getter para a key
-	 *
-	 * @return array de bytes que representam a chave simétrica (cifrada) para decifrar a mensagem
-     */
+	 * Gets message key
+	 * 
+	 * @return the key
+	 */
 	public byte[] getKey() {
 		return key;
 	}
 
 	/**
-	 * Setter para key
-	 *
-	 * @param key key que vai ser enviada em conjunto com a mensagem
-     */
+	 * Sets a new value to ciphered key
+	 * 
+	 * @param key, new key value
+	 */
 	public void setKey(byte[] key) {
 		this.key = key;
 	}
 
 	/**
-	 * Getter para a assinatura digital do conteúdo da mensagem
-	 *
-	 * @return GenericSignature que contém assinatura digital da mensagem
-     */
+	 * Gets the message signature
+	 * 
+	 * @return the message signature
+	 */
 	public GenericSignature getSignature() {
 		return signature;
 	}
-
+	
 	/**
-	 * Serrer para a assinatura digital da mensagem
-	 *
-	 * @param signature assinatura a ser guardada na mensagem
-     */
+	 * Sets message signature
+	 * 
+	 * @param signature, new message signature 
+	 */
 	public void setSignature(GenericSignature signature) {
 		this.signature = signature;
 	}
 
 	/**
-	 * Obtem o nome do autor
+	 * Gets sender name
 	 *
-	 * @return String
+	 * @return String, sender name
      */
 	public String getFrom() {
 		return from;
 	}
 
 	/**
-	 * Obtem o destinatario
+	 * Gets message receiver name
 	 *
-	 * @return String
+	 * @return String, receiver name
      */
 	public String getTo() {
 		return to;
 	}
 
 	/**
-	 * Obtem o conteudo
+	 * Gets message content
 	 *
-	 * @return String
+	 * @return String, message content
      */
 	public String getBody() {
 		return body;
 	}
 
 	/**
-	 * Obtem tipo de mensagem
+	 * Gets message type
 	 *
-	 * @return String
+	 * @return String, message type
      */
 	public String getType(){
 		return this.type;
 	}
 
 	/**
-	 * Altera tipo de mensagem
+	 * Sets message type
 	 *
-	 * @param type Novo tipo de mensagem
+	 * @param type, new message type
      */
 	public void setType(String type){ this.type = type; }
 
 	/**
-	 * Altera o valor de timestamp da mensagem
-	 * para timestamp do instante da invocacao
-	 * deste metodo
+	 * Sets message timestamp to the exact moment
+	 * this method is called
 	 */
 	public void setTimestampNow(){
 		this.timestamp = new Date();
 	}
 
 	/**
-	 * Obtem o timestamp da mensagem
+	 * Gets messagem timestamp
 	 *
-	 * @return Date timestamp
+	 * @return Date, message timestamp
      */
 	public Date getTimestamp() {
 		return timestamp;
 	}
 
 	/**
-	 * Obtem o timestamp me Milisegundos
+	 * Gets message timestamp in milliseconds
 	 *
-	 * @return long milisegundos
+	 * @return long, message timestamp
      */
 	public long getTimeInMiliseconds() {
 		return this.timestamp.getTime();
 	}
 
 	/**
-	 * Altera o timestamp da mensagem
+	 * Sets message timestamp value
 	 *
-	 * @param milliseconds Novo valor timestamp em milisegundos
+	 * @param milliseconds, new timestamp in milliseconds
      */
 	public void setTimeInMilliseconds(long milliseconds) {
 		this.timestamp = new Date();
@@ -161,9 +195,8 @@ public class Message implements Serializable, Comparable {
 	}
 
 	/**
-	 * Obtem a data readable
+	 * Prints message in a human readable format
 	 *
-	 * @return mensagem em String num formato perceptivel
 	 * @require name != null
      */
 	public void printMessageFromPerspective(String name) {
@@ -173,18 +206,18 @@ public class Message implements Serializable, Comparable {
 	}
 
 	/**
-	 * Adicionar a String body à mensagem
-	 *
-	 * @param body body da mensagem
-     */
+	 * Sets message body
+	 * 
+	 * @param body, new message body
+	 */
 	public void setBody(String body){
 		this.body = body;
 	}
 	
 	/**
-	 * Obtem data para ser impressa no ecran
+	 * Gets message timestamp in human readable format
 	 *
-	 * @return data num formato perceptivel
+	 * @return message timestamp in a readable format
      */
 	public String getHumanDateString() {
 		Date date = this.timestamp;
