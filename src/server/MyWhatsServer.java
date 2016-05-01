@@ -63,7 +63,7 @@ public class MyWhatsServer {
 //				System.out.println("Invalid password format!");
 //		} while (pass.equals(""));
 		key = PBEService.getKeyByString(pass);
-		System.out.println("HERE 2");
+		
 		boolean isSecured = secureSystem(key);
 		if (!isSecured) {
 			System.out.println("System is not secured.");
