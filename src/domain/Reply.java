@@ -3,7 +3,6 @@ package domain;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-
 import security.CipheredKey;
 
 /**
@@ -20,7 +19,6 @@ public class Reply extends NetworkMessage implements Serializable {
 	private int status;
 	private String message;
 	private ArrayList<String> names;
-	private CipheredKey cipheredKey;
 	private String uploader;
 	
 	/**
@@ -32,22 +30,25 @@ public class Reply extends NetworkMessage implements Serializable {
 		this.message = null;
 		this.names = null;
 	}
-	
+
+	/**
+	 * Getter de nome de quem envia ficheiro
+	 *
+	 * @return nome do utilizador
+     */
 	public String getUploader(){
 		return this.uploader;
 	}
+
+	/**
+	 * Setter para definir quem faz upload de ficheiro
+	 *
+	 * @param uploader nome do utilizador
+     */
 	public void setUploader(String uploader){
 		this.uploader = uploader;
 	}
-	
-	public CipheredKey getCipheredKey(){
-		return this.cipheredKey;
-	}
-	
-	public void setCipheredKey(CipheredKey key){
-		this.cipheredKey = key;
-	}
-	
+
 	/**
 	 * Getter para nomes e certificados
 	 *

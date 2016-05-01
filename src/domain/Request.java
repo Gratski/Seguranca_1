@@ -1,8 +1,6 @@
 package domain;
 
 import java.io.Serializable;
-import java.security.PrivateKey;
-import java.security.cert.Certificate;
 
 /**
  * This class represents an entity: Request
@@ -82,7 +80,7 @@ public class Request extends NetworkMessage implements Serializable {
 	public String getContact() {
 		return this.contact;
 	}
-	
+
 	/**
 	 * Sets contact value
 	 *
@@ -126,33 +124,6 @@ public class Request extends NetworkMessage implements Serializable {
      */
 	public String getSpecs(){
 		return this.specification;
-	}
-
-	/**
-	 * Checks this message is of type -m (message)
-	 * 
-	 * @return true if so, false otherwise
-	 */
-	public Boolean isMessage() {
-		return this.type.equals("-m");
-	}
-
-	/**
-	 * Checks if this message has a file set
-	 *
-	 * @return true if so, false otherwise
-	 */
-	public Boolean isFileOperation() {
-		return ( this.type.equals("-f") || ( this.type.equals("-r") && this.specification.equals("download") ) );
-	}
-
-	/**
-	 * Checks if this message is of type -f (file upload)
-	 * 
-	 * @return true if so, false otherwise
-     */
-	public Boolean isFileUpload(){
-		return this.type.equals("-f");
 	}
 
 	public String toString() {

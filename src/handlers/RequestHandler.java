@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -232,7 +231,18 @@ public class RequestHandler extends Thread {
 		return reply;
 	}
 
-	
+	/**
+	 * Executa a acção de enviar um ficheiro para o cliente
+	 *
+	 * @param req Request que contém toda a informação para executar o pedido
+	 * @return Reply final que vai ser enviada para o cliente
+	 * @throws IOException
+	 * @throws InvalidKeyException
+	 * @throws NoSuchAlgorithmException
+	 * @throws NoSuchPaddingException
+	 * @throws IllegalBlockSizeException
+     * @throws BadPaddingException
+     */
 	private Reply executeSendFile(Request req) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException{
 		
 		Reply reply = new Reply();
@@ -307,11 +317,16 @@ public class RequestHandler extends Thread {
 		GenericSignature gs = GenericSignature.readSignatureFromFile(sigPath);
 		this.connection.getOutputStream().writeObject(gs);
 		
-		
 		return new Reply(200);
-		
 	}
-	
+
+	/**
+	 * Executa a acção de receber um ficheiro do cliente
+	 *
+	 * @param req Request que contém toda a informação necessária para realizar a acção
+	 * @return Reply final que vai ser enviada ao cliente
+	 * @throws Exception
+     */
 	private Reply executeReceiveFile(Request req) throws Exception {
 		
 		// reply object
@@ -355,9 +370,12 @@ public class RequestHandler extends Thread {
 		reply.setNames(names);
 		this.connection.getOutputStream().writeObject(reply);
 		
-		// recebe assinatura
-		Message messageWithSignature = (Message) this.connection.getInputStream().readObject();
-		
+		// recebe assinatura do ficheiro
+		GenericSignature signature = (GenericSignature) this.connection.getInputStream().readObject();
+
+		// recebe mensagem para apresentação
+		Message message = (Message) this.connection.getInputStream().readObject();
+
 		//obtem tamanho de ficheiro
 		long fileSize = this.connection.getInputStream().readLong();
 		System.out.println("Filesize eh: " + fileSize);
@@ -398,34 +416,40 @@ public class RequestHandler extends Thread {
 		storeAllKeys(path + "" + filename, keys);
 			
 		//escreve assinatura
-		storeSignature(path + "" + filename, messageWithSignature.getSignature());
+		storeSignature(path + "" + filename, signature);
 
 		// Gravar mensagem
-		boolean inserted = false;
+		boolean inserted;
 		if (group != null) {
 			inserted =
-					this.convProxy.insertGroupMessage(messageWithSignature, keys,
-							messageWithSignature.getSignature());
+					this.convProxy.insertGroupMessage(message, keys,
+							message.getSignature());
 		}
 		//se eh para private
 		else {
-			inserted = this.convProxy.insertPrivateMessage(messageWithSignature, keys,
-					messageWithSignature.getSignature());
+			inserted = this.convProxy.insertPrivateMessage(message, keys,
+					message.getSignature());
 		}
-		
-		//set codigo de success
-		reply.setStatus(200);
+
+		if (inserted)
+			reply.setStatus(200);
+		else {
+			reply.setStatus(400);
+			reply.setMessage("Ficheiro não foi gravada correctamente!");
+		}
+
 		return reply;
 	}
 
 	/**
 	 * Guarda uma assinatura
+	 *
 	 * @param basePath, pasta onde guardar assinatura
 	 * @param gs, assinatura a guardar
 	 * @throws IOException
 	 */
 	private void storeSignature(String basePath, GenericSignature gs) throws IOException{
-		File sigPath = new File(basePath+"/"+"signature.sig");
+		File sigPath = new File(basePath + "/" + "signature.sig");
 		FileWriter fw = new FileWriter(sigPath);
 		BufferedWriter bw = new BufferedWriter(fw);
 		bw.write(SecUtils.getHexString(gs.getSignature()));
@@ -434,6 +458,7 @@ public class RequestHandler extends Thread {
 	
 	/**
 	 * Guarda multiplas chaves cifradas
+	 *
 	 * @param basePath, pasta onde guardar chaves
 	 * @param keys, chaves a guardar
 	 * @throws IOException
@@ -441,11 +466,10 @@ public class RequestHandler extends Thread {
 	private void storeAllKeys(String basePath, Map<String, CipheredKey> keys) throws IOException{
 		Set<String> keyNames = keys.keySet();
 		Iterator<String> it = keyNames.iterator();
-		while(it.hasNext())
-		{
+		while (it.hasNext()) {
 			String name = it.next();
 			CipheredKey key = keys.get(name);
-			File keyFile = new File(basePath+"/"+name+".key");
+			File keyFile = new File(basePath + "/" + name + ".key");
 			FileWriter fw = new FileWriter(keyFile);
 			BufferedWriter bw = new BufferedWriter(fw);
 			bw.write(SecUtils.getHexString(key.getKey()));
@@ -455,21 +479,20 @@ public class RequestHandler extends Thread {
 	
 	/**
 	 * Recebe ficheiro por stream
+	 *
 	 * @param fileSize, tamanho do ficheiro esperado
 	 * @param filePath, path onde guardar o ficheiro recebido
 	 * @return true se recebeu o tamanho esperado, false caso contrario
 	 * @throws IOException
 	 */
 	private boolean receiveFile(long fileSize, File filePath) throws IOException{
-		
 		int totalRead = 0;
 		int read = 0;
 		byte[] buf = new byte[16];
 		FileOutputStream fos = new FileOutputStream(filePath);
-		while(totalRead < fileSize)
-		{
+		while (totalRead < fileSize) {
 			read = this.connection.getInputStream().read(buf);
-			if(read == -1)
+			if (read == -1)
 				continue;
 			totalRead += read;
 			System.out.println("READ: " + read);
@@ -479,7 +502,7 @@ public class RequestHandler extends Thread {
 		
 		//fechar fos
 		fos.close();
-		System.out.println("RECEIVED: " + totalRead + ", OF: " + fileSize);
+		System.out.println("RECEIVED: " + totalRead + " OF: " + fileSize);
 		return totalRead == fileSize;
 	}
 	
@@ -537,79 +560,7 @@ public class RequestHandler extends Thread {
 	}
 
 	/**
-	 * Metodo para upload de ficheiro e registo de respectiva
-	 * mensagem em respectiva conversacao
-	 *
-	 * @param req Request a ser considerado
-	 * @return	true em caso de sucesso, false caso contrario
-	 * @throws Exception
-	 * @require req != null && req.getFile() != null
-	 * 			req.getUser() != null
-     */
-	private boolean executeGetFile(Request req) throws Exception {
-
-		// Obtem nome de ficheiro
-		String filename = req.getFile().getFile().getName();
-
-		//por defeito assume que nao eh group
-		boolean isGroup = false;
-		
-		// formula message
-		Message msg = new Message(req.getUser().getName(), req.getContact(), filename);
-		msg.setType("-f");
-		msg.setTimestampNow();
-		req.setMessage(msg);
-		
-		Group group = this.groupsProxy.find(req.getContact());
-
-		String path = "";
-		
-		// verifica se eh group
-		if (group != null) {
-			if ( group.hasMemberOrOwner(req.getUser().getName()) ) {
-				path = Proxy.getConversationsGroup() + req.getContact();
-				isGroup = true;
-			} else {
-				return false;
-			}
-		}
-		// verifica se eh private
-		else {
-			path = Proxy.getConversationsPrivate();
-			path = path + this.convProxy.getOrCreate(req.getUser().getName(), req.getContact());
-		}
-
-		//pasta de ficheiros
-		path = path + "/" + Proxy.getFilesFolder();
-		System.out.println("Filepath: " + path);
-
-		//verifica se o file jah existe
-		FilesHandler fHandler = new FilesHandler();
-		if (fHandler.existsFile(path + filename)) {
-			System.out.println("File ja existe");
-			return false;
-		}
-
-		//envia mensagem
-		boolean ok = true;
-		if (isGroup)
-			//TODO -> Alterar isto para guardar sintese e chaves K
-			ok = this.convProxy.insertGroupMessage(req.getMessage(), null, null);
-		else
-			ok = this.convProxy.insertPrivateMessage(req.getMessage(), null, null);
-		
-		//envia feedback ao user
-		if (ok)
-			this.connection.getOutputStream().writeObject(new Reply(200));
-		else{
-			this.connection.getOutputStream().writeObject(new Reply(400, "Erro ao enviar ficheiro"));
-			return false;
-		}
-
-		return fHandler.receive(this.connection, path, filename, 1) != null;
-	}
-
-	/**
+	 * Executa a acção de receber uma mensagem de um cliente
 	 * Envia uma mensagem de utilizador para outro
 	 * Considera-se neste metodo que um utilizador pode
 	 * ser um Grupo
@@ -709,56 +660,20 @@ public class RequestHandler extends Thread {
 					messageWithSignature.getSignature());
 		}
 
+		if (inserted)
+			reply.setStatus(200);
+		else {
+			reply.setStatus(400);
+			reply.setMessage("Mensagem não foi gravada correctamente!");
+		}
+
 		System.out.println("Gravou mensagem!");
-		reply.setStatus(200);
 		return reply;
 
 	}
 
 	/**
-	 * Envia um ficheiro para client
-	 *
-	 * @param req Request a ser considerado
-	 * @return	true se com sucesso, false caso contrario
-	 * @throws IOException
-	 * @throws KeyStoreException 
-	 * @throws CertificateException 
-	 * @throws SignatureException 
-	 * @throws BadPaddingException 
-	 * @throws IllegalBlockSizeException 
-	 * @throws NoSuchPaddingException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws InvalidKeyException 
-	 * @require req != null && req.getFile() != null
-	 * 			req.getUser() != null
-     */
-	private boolean sendFile(Request req) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, CertificateException, KeyStoreException {
-		String filename = req.getFile().getFullPath();
-		String path = this.convProxy.userHasConversationWith(req.getUser().getName(), req.getContact());
-
-		boolean ok = false;
-		File file = null;
-		if (path != null) {
-			file = new File(path + "/" + Proxy.getFilesFolder() + filename);
-			ok = file.exists();
-		}
-
-		// send auth level
-		Reply reply = new Reply(ok ? 200 : 400);
-
-		//conexao utilizada para o envio do ficheiro
-		this.connection.getOutputStream().writeObject(reply);
-		this.connection.getOutputStream().flush();
-
-		if (!ok)
-			return false;
-
-		// devolve o resultado do envio do file
-		return new FilesHandler().send(this.connection, null, req.getUser(), file);
-	}
-
-	/**
-	 * Remove um Utilizador de um Grupo
+	 * Execura a acção de remover um Utilizador de um Grupo
 	 *
 	 * @param groupName Nome do Grupo
 	 * @param user		Utilizador autor de pedido
@@ -782,8 +697,8 @@ public class RequestHandler extends Thread {
 		}
 		// verifica se user eh owner
 		if (!group.getOwner().equals(user.getName())) {
-			reply.setStatus(401);
-			reply.setMessage("User " + user.getName() + " is not the owner of group " + groupName);
+			reply.setStatus(400);
+			reply.setMessage("User " + user.getName() + " nao eh owner de grupo " + groupName);
 			return reply;
 		}
 
@@ -803,8 +718,15 @@ public class RequestHandler extends Thread {
 		return reply;
 	}
 
-	private String getPath(Group group, Request req) throws IOException
-	{
+	/**
+	 * Getter para um path de uma conversa com base nos intervenientes
+	 *
+	 * @param group Possível interveniente
+	 * @param req Request que contém um dos intervenientes
+	 * @return String com o path da conversa
+	 * @throws IOException
+     */
+	private String getPath(Group group, Request req) throws IOException {
 		String path = "";
 		if (group != null) {
 			if ( group.hasMemberOrOwner(req.getUser().getName()) )
@@ -819,7 +741,7 @@ public class RequestHandler extends Thread {
 	}
 	
 	/**
-	 * Adiciona um Utilizador a um Grupo
+	 * Executa a acção de adicionar um Utilizador a um Grupo
 	 *
 	 * @param groupName Nome do Grupo
 	 * @param user        Utilizador autor do Request
@@ -842,7 +764,7 @@ public class RequestHandler extends Thread {
 
 		// verifica se user eh owner
 		if (!this.groupsProxy.isOwner(groupName, user.getName()))
-			return new Reply(400, "User " + user.getName() + " is not the owner of group " + groupName);
+			return new Reply(400, "User " + user.getName() + " nao eh o owner do grupo " + groupName);
 
 		// adiciona newMember a group
 		if (!this.groupsProxy.addMember(groupName, newMember, key))
@@ -881,9 +803,7 @@ public class RequestHandler extends Thread {
 			if (valid){
 				MACService.updateMAC(Proxy.getUsersIndex(), key);
 			}
-			
 		}
-
 		return valid;
 	}
 }

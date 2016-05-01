@@ -78,38 +78,4 @@ public class DatabaseBuilder {
 			file.createNewFile();
 		return file.exists();
 	}
-
-	/**
-	 * Método usado em testes, usado para destruir a estrutura de ficheiros
-	 *
-	 * @return True se eliminar todas as directorias e subdirectorias
-     */
-	public boolean destroy(){
-		File directory = new File(Proxy.getDATABASE());
-		return deleteDirectory(directory);
-	}
-
-	/**
-	 * Método auxiliar para eliminar uma directoria e as suas subdirectorias e ficheiros
-	 *
-	 * @param directory
-	 * 		Ficheiro de directoria a ser eliminada
-	 * @return
-	 * 		True se eliminar todo o conteúdo da directoria e a própria directoria
-     */
-	public boolean deleteDirectory(File directory) {
-		if (directory.exists()) {
-			File[] files = directory.listFiles();
-			if (files != null) {
-				for (int i = 0; i < files.length; i++) {
-					if (files[i].isDirectory()) {
-						deleteDirectory(files[i]);
-					} else {
-						files[i].delete();
-					}
-				}
-			}
-		}
-		return(directory.delete());
-	}
 }

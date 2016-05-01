@@ -14,7 +14,7 @@ public class SecurityException extends Exception{
 	 * exception message
 	 */
 	private String msg;
-	
+
 	/**
 	 * Constructor
 	 * 
@@ -29,5 +29,4 @@ public class SecurityException extends Exception{
 	public String getMessage(){
 		return this.msg;
 	}
-	
 }

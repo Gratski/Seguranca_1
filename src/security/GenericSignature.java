@@ -4,33 +4,24 @@ import java.io.*;
 import java.security.*;
 
 import javax.crypto.BadPaddingException;
-import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 
+/**
+ *
+ */
 public class GenericSignature implements Serializable{
 
 	private final static String ALGORITHM = "SHA-256";
 	
 	private final byte[] signature;
-	private final PublicKey publicKey;
-	
-	public GenericSignature(byte[] hash){
+
+	public GenericSignature(byte[] hash) {
 		this.signature = hash;
-		this.publicKey = null;
 	}
-	public GenericSignature(byte[] hash, PublicKey key){
-		this.signature = hash;
-		this.publicKey = key;
-	}
-	
+
 	public byte[] getSignature(){
 		return this.signature;
-	}
-	
-	public PublicKey getPublicKey(){
-		return this.publicKey;
 	}
 	
 	public static GenericSignature createGenericMessageSignature(PrivateKey pkey, byte[] content) throws NoSuchAlgorithmException, InvalidKeyException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException {

@@ -234,14 +234,14 @@ public class MyWhats {
 				signature.update(receivedHash);
 				boolean valid = signature.verify(msg.getSignature().getSignature());
 
-				// if hash is not valid
-				if (!valid)
-					msg.setBody("Mensagem currompida.");
-				
-				// if hash is valid
-				else
+				if (valid) {
+					// if hash is valid
 					msg.setBody(body);
-				
+				} else {
+					// if hash is not valid
+					msg.setBody("{(Mensagem corrompida)}");
+					System.out.println("Foi encontrada uma mensagem corrompida");
+				}
 			}
 		}
 		reply.setConversations(convs);
@@ -300,11 +300,7 @@ public class MyWhats {
 		byte[] originalBytes = originalMsg.getBytes();
 		byte[] ciphered = c.doFinal(originalBytes);
 		String cipheredStr = SecUtils.getHexString(ciphered);
-		
-		// this is just for client side encryption validation
-		c.init(Cipher.DECRYPT_MODE, key);
-		byte[] deciphered = c.doFinal(SecUtils.getStringHex(cipheredStr));
-		
+
 		// prepare message to be sent with encrypted message
 		Message cm = new Message(req.getUser().getName(), req.getContact(), cipheredStr);
 		cm.setType("-t");
@@ -350,7 +346,7 @@ public class MyWhats {
 	 * @throws ClassNotFoundException
 	 * @throws ShortBufferException 
 	 */
-	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException, ShortBufferException{
+	private static Reply executeSendFile(Connection conn, Request req, Reply reply) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException, SignatureException, IOException, CertificateException, KeyStoreException, ClassNotFoundException, ShortBufferException {
 
 		// get session user private key
 		PrivateKey privateKey = req.getUser().getPrivateKey();
@@ -359,9 +355,10 @@ public class MyWhats {
 		ArrayList<String> members = reply.getNames();
 		Map<String, Certificate> certs = getCertificates(members, req.getUser());
 		
-		// sign message and sends generated signature
+		// send file signature
 		File file = new File(req.getFile().getFullPath());
 		GenericSignature gs = GenericSignature.createGenericFileSignature(privateKey, file);
+		conn.getOutputStream().writeObject(gs);
 
 		// generate symmetric key K
 		Key key = SecUtils.generateSymetricKey();
@@ -369,14 +366,16 @@ public class MyWhats {
 		// initialize Cipher with AES and K key
 		Cipher c = Cipher.getInstance("AES");
 		c.init(Cipher.ENCRYPT_MODE, key);
-		
+
+		// Gerar mensagem e enviar
 		String originalMsg = req.getFile().getFullPath();
 		byte[] originalBytes = originalMsg.getBytes();
 		byte[] ciphered = c.doFinal(originalBytes);
 		String cipheredStr = SecUtils.getHexString(ciphered);
-		c.init(Cipher.DECRYPT_MODE, key);
-		
-		// send file signature
+		gs = GenericSignature.createGenericMessageSignature(
+				req.getUser().getPrivateKey(), originalBytes);
+
+		// sends message for presentation
 		Message cm = new Message(req.getUser().getName(), req.getContact(), cipheredStr);
 		cm.setSignature(gs);
 		cm.setType("-f");
@@ -508,13 +507,12 @@ public class MyWhats {
 		// if unverified signature delete downloaded file
 		if (!valid) {
 			file.delete();
-			reply = new Reply(400, "Ficheiro currompido.");
-		} 
+			reply = new Reply(400, "Ficheiro corrompido.");
+		}
 		// if valid store file
 		else
-			reply = new Reply(200, "Fcheiro guardado em DOWNLOADS/"+file.getName());
+			reply = new Reply(200, "Ficheiro guardado em DOWNLOADS/" + file.getName());
 
-		
 		return reply;
 	}
 	
@@ -580,8 +578,7 @@ public class MyWhats {
 		
 		// create certificates map
 		Map<String, Certificate> certs = new HashMap<String, Certificate>();
-		for(int i = 0; i < aliases.size(); i++)
-		{
+		for (int i = 0; i < aliases.size(); i++) {
 			// obtain user certificate
 			Certificate cert = ks.getCertificate(aliases.get(i));
 			certs.put(aliases.get(i), cert);
@@ -593,5 +590,4 @@ public class MyWhats {
 		
 		return certs;
 	}
-	
 }

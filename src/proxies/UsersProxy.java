@@ -153,7 +153,6 @@ public class UsersProxy extends Proxy {
 		if (this.users.containsKey(user.getName()))
 			return null;
 
-		
 		user.setSalt(SecUtils.generateRandomSalt(8));
 		
 		//gera hash de password
@@ -197,42 +196,5 @@ public class UsersProxy extends Proxy {
 	 */
 	public User find(String name){
 		return this.users.containsKey(name) ? this.users.get(name) : null;
-	}
-
-	/**
-	 * Method used for tests, emptys the Map in memory and
-	 * reloads from the Users file
-	 *
-	 * @throws IOException
-	 * @throws CertificateException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws KeyStoreException 
-     */
-	public void reload() throws IOException, KeyStoreException, NoSuchAlgorithmException, CertificateException {
-		this.users = new HashMap<>();
-		init();
-	}
-	
-	/**
-	 * Valid MAC de users file
-	 * @param key, chave simetrica a ser utilizada
-	 * @return true se nao comprometido, false caso contrario
-	 * @throws IOException
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 */
-	private boolean validMac(SecretKey key) throws IOException, InvalidKeyException, NoSuchAlgorithmException{
-		return MACService.validateMAC(Proxy.getUsersIndex(), key);
-	}
-	
-	/**
-	 * Actualiza MAC de users file
-	 * @param key, chave simetrica a ser utilizada
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws IOException
-	 */
- 	private void updateMac(SecretKey key) throws InvalidKeyException, NoSuchAlgorithmException, IOException{
-		MACService.updateMAC(Proxy.getUsersIndex(), key);
 	}
 }

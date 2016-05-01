@@ -3,8 +3,6 @@ package domain;
 import security.GenericSignature;
 
 import java.io.Serializable;
-import java.security.cert.Certificate;
-import java.util.Comparator;
 import java.util.Date;
 
 /**

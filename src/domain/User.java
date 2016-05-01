@@ -56,7 +56,7 @@ public class User implements Serializable {
 		this.name = name;
 		this.password = password;
 	}
-	
+
 	/**
 	 * Constructor
 	 * 
@@ -105,7 +105,7 @@ public class User implements Serializable {
 	public PrivateKey getPrivateKey(){
 		return this.privateKey;
 	}
-	
+
 	/**
 	 * Sets user private key
 	 * 
@@ -124,6 +124,7 @@ public class User implements Serializable {
 		this.certificate = cert;
 	}
 	
+
 	/**
 	 * Sets user password salt
 	 * 
