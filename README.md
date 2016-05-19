@@ -1,5 +1,6 @@
-# Seguranca_1
-Projecto de Seguranca
+# Java Security Project
+A WhatsApp like app has been developed in order to implement secure communications and to guarantee the 4 essencial security properties, which are Availability, Confidentiality, Integrity and Authenticity.
+
 All user keys, key stores, as well as trust stores are already created
 So we can only make use of three users
 User passwords are the same both for application usage and to the corresponding
